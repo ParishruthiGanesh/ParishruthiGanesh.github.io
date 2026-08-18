@@ -59,7 +59,15 @@ const heroLinks = [
   <section class="relative overflow-hidden border-b" style="border-color: var(--border)">
     <div class="bg-grid pointer-events-none absolute inset-0 opacity-40" aria-hidden="true"></div>
     <div class="container-page relative py-16 sm:py-20 lg:py-24">
-      <div class="animate-rise max-w-4xl">
+      <div
+        class:list={[
+          'animate-rise',
+          profile.avatar
+            ? 'grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16'
+            : 'max-w-4xl',
+        ]}
+      >
+      <div class:list={[!profile.avatar && 'max-w-4xl']}>
         <p class="eyebrow">{profile.role} · {profile.affiliation}</p>
         <h1 class="mt-4 text-4xl font-semibold leading-[1.1] sm:text-5xl lg:text-6xl" style="color: var(--ink)">
           {profile.name}
@@ -96,6 +104,25 @@ const heroLinks = [
             {user}<span aria-hidden="true">@</span>{domain}
           </a>
         </p>
+      </div>
+
+      {
+        profile.avatar && (
+          <div class="order-first lg:order-none">
+            <img
+              src={url(profile.avatar)}
+              alt={`Portrait of ${profile.name}`}
+              width="320"
+              height="400"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              class="h-auto w-40 rounded-2xl border object-cover shadow-[var(--shadow-card)] sm:w-48 lg:w-[19rem]"
+              style="border-color: var(--border); background: var(--surface-sunken); aspect-ratio: 4 / 5"
+            />
+          </div>
+        )
+      }
       </div>
     </div>
   </section>

@@ -208,6 +208,40 @@ The Resume page's inline preview and download button both read that path, so
 both update at once. Remember to update `education.yml`, `experience.yml` and
 `skills.yml` too — the HTML resume should never drift from the PDF.
 
+### `set-photo`
+
+```bash
+npm run portfolio -- set-photo ~/Pictures/headshot.jpg
+```
+
+Converts the image to WebP (capped at 960px wide, quality 82), honours EXIF
+orientation so a phone photo is not sideways, writes it to
+`public/images/profile/`, and sets `avatar` in `profile.yml`.
+
+The portrait then appears on the home hero and in the About sidebar. Both slots
+crop to **4:5**, so a portrait-shaped photo works best — the command warns if
+you hand it a landscape one.
+
+Removing the `avatar` line removes the photo from both pages cleanly: neither
+shows a placeholder or leaves a gap.
+
+### `add-image`
+
+```bash
+npm run portfolio -- add-image astranova ~/Pictures/astranova.png "Alt text describing the image"
+```
+
+Converts and installs the image under `public/images/projects/<project-id>/`,
+then appends it to that project's `screenshots`. The **first** image for a
+project also becomes its card thumbnail on `/projects`.
+
+Alt text is required and must be longer than 25 characters — it is prompted for
+if not passed, and rejected if too short. A screenshot nobody can describe is
+one a screen-reader user cannot see at all, and the schema enforces the same
+rule for hand edits.
+
+You are also prompted for an optional caption, shown beneath the image.
+
 ---
 
 ## Ship

@@ -18,6 +18,8 @@ import {
   cmdFeatureRepo,
   cmdHideRepo,
   cmdUpdateResume,
+  cmdSetPhoto,
+  cmdAddImage,
   cmdLinkCheck,
   cmdBuild,
   cmdPublish,
@@ -51,6 +53,9 @@ ${c.bold('Curate')}
   feature-repo <repository>    Mark a repository as featured
   hide-repo <repository>       Hide a repository without deleting its synced metadata
   update-resume <path.pdf>     Install a new resume PDF and record the date
+  set-photo <path.jpg>         Install your portrait (home hero + About page)
+  add-image <project-id> <path> ["alt"]
+                               Add an image to a project (first one is the card thumbnail)
 
 ${c.bold('Ship')}
   build [--no-sync]            Sync, validate, test, then build
@@ -84,6 +89,10 @@ export async function dispatch(command: string, argv: string[]): Promise<number>
       return cmdHideRepo(argv);
     case 'update-resume':
       return cmdUpdateResume(argv);
+    case 'set-photo':
+      return cmdSetPhoto(argv);
+    case 'add-image':
+      return cmdAddImage(argv);
     case 'linkcheck':
       return cmdLinkCheck(argv);
     case 'build':
