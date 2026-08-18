@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-18T19:20:24.817Z",
+  "syncedAt": "2026-08-18T23:29:43.747Z",
   "owner": "ParishruthiGanesh",
   "source": "https://api.github.com/users/ParishruthiGanesh/repos",
   "repositories": [
@@ -10,7 +10,9 @@
       "url": "https://github.com/ParishruthiGanesh/Circular-trade-Fraud-Detection",
       "homepage": null,
       "language": "Jupyter Notebook",
-      "languages": {},
+      "languages": {
+        "Jupyter Notebook": 130579
+      },
       "topics": [],
       "stars": 0,
       "forks": 0,
@@ -26,13 +28,37 @@
       "defaultBranch": "main"
     },
     {
+      "name": "COVID19",
+      "fullName": "ParishruthiGanesh/COVID19",
+      "githubDescription": "Placeholder for analysis scripts to mine COVID19 software projects",
+      "url": "https://github.com/ParishruthiGanesh/COVID19",
+      "homepage": null,
+      "language": "Python",
+      "languages": {},
+      "topics": [],
+      "stars": 0,
+      "forks": 0,
+      "openIssues": 0,
+      "license": null,
+      "isFork": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "createdAt": "2024-10-28T19:56:49Z",
+      "updatedAt": "2024-10-28T23:07:13Z",
+      "pushedAt": "2024-10-28T23:07:09Z",
+      "size": 7,
+      "defaultBranch": "master"
+    },
+    {
       "name": "Demo-repo",
       "fullName": "ParishruthiGanesh/Demo-repo",
       "githubDescription": null,
       "url": "https://github.com/ParishruthiGanesh/Demo-repo",
       "homepage": null,
       "language": "HTML",
-      "languages": {},
+      "languages": {
+        "HTML": 129
+      },
       "topics": [],
       "stars": 0,
       "forks": 0,
@@ -70,10 +96,32 @@
       "defaultBranch": "main"
     },
     {
-      "name": "ParishruthiGanesh.github.io",
-      "fullName": "ParishruthiGanesh/ParishruthiGanesh.github.io",
+      "name": "IaCTesting",
+      "fullName": "ParishruthiGanesh/IaCTesting",
+      "githubDescription": "Placeholder for the research study related to IaC testing anti-patterns ",
+      "url": "https://github.com/ParishruthiGanesh/IaCTesting",
+      "homepage": null,
+      "language": "Python",
+      "languages": {},
+      "topics": [],
+      "stars": 0,
+      "forks": 0,
+      "openIssues": 0,
+      "license": null,
+      "isFork": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "createdAt": "2024-10-28T23:24:11Z",
+      "updatedAt": "2024-10-29T00:08:17Z",
+      "pushedAt": "2024-10-29T00:08:14Z",
+      "size": 1654,
+      "defaultBranch": "master"
+    },
+    {
+      "name": "Logic-Legends-Fall2024-SQA",
+      "fullName": "ParishruthiGanesh/Logic-Legends-Fall2024-SQA",
       "githubDescription": null,
-      "url": "https://github.com/ParishruthiGanesh/ParishruthiGanesh.github.io",
+      "url": "https://github.com/ParishruthiGanesh/Logic-Legends-Fall2024-SQA",
       "homepage": null,
       "language": null,
       "languages": {},
@@ -81,14 +129,41 @@
       "stars": 0,
       "forks": 0,
       "openIssues": 0,
+      "license": null,
+      "isFork": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "createdAt": "2024-12-06T05:48:57Z",
+      "updatedAt": "2024-12-06T05:48:57Z",
+      "pushedAt": "2024-12-06T04:07:04Z",
+      "size": 405,
+      "defaultBranch": "main"
+    },
+    {
+      "name": "ParishruthiGanesh.github.io",
+      "fullName": "ParishruthiGanesh/ParishruthiGanesh.github.io",
+      "githubDescription": null,
+      "url": "https://github.com/ParishruthiGanesh/ParishruthiGanesh.github.io",
+      "homepage": null,
+      "language": "TypeScript",
+      "languages": {
+        "Astro": 166685,
+        "CSS": 9906,
+        "JavaScript": 933,
+        "TypeScript": 173415
+      },
+      "topics": [],
+      "stars": 0,
+      "forks": 0,
+      "openIssues": 11,
       "license": "MIT",
       "isFork": false,
       "isArchived": false,
       "isPrivate": false,
       "createdAt": "2026-08-18T18:42:40Z",
-      "updatedAt": "2026-08-18T18:44:49Z",
-      "pushedAt": "2026-08-18T18:42:41Z",
-      "size": 0,
+      "updatedAt": "2026-08-18T23:29:28Z",
+      "pushedAt": "2026-08-18T23:29:22Z",
+      "size": 1626,
       "defaultBranch": "main"
     },
     {
@@ -98,7 +173,9 @@
       "url": "https://github.com/ParishruthiGanesh/Sentimental-Analysis",
       "homepage": null,
       "language": "Jupyter Notebook",
-      "languages": {},
+      "languages": {
+        "Jupyter Notebook": 32994
+      },
       "topics": [],
       "stars": 0,
       "forks": 0,
@@ -120,7 +197,11 @@
       "url": "https://github.com/ParishruthiGanesh/sentinel-memory",
       "homepage": "https://sentinel-memory-lemon.vercel.app",
       "language": "TypeScript",
-      "languages": {},
+      "languages": {
+        "CSS": 2608,
+        "JavaScript": 18916,
+        "TypeScript": 375072
+      },
       "topics": [],
       "stars": 0,
       "forks": 0,
@@ -142,7 +223,11 @@
       "url": "https://github.com/ParishruthiGanesh/To-Do-List-Application",
       "homepage": "https://simply-tasked-list.netlify.app/",
       "language": "JavaScript",
-      "languages": {},
+      "languages": {
+        "CSS": 18795,
+        "HTML": 12924,
+        "JavaScript": 34514
+      },
       "topics": [
         "bootrsap",
         "css",
@@ -171,7 +256,9 @@
       "url": "https://github.com/ParishruthiGanesh/WebPage",
       "homepage": null,
       "language": "HTML",
-      "languages": {},
+      "languages": {
+        "HTML": 6997
+      },
       "topics": [],
       "stars": 0,
       "forks": 0,
