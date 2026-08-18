@@ -325,8 +325,13 @@
     An automated system that can place real trades carries direct financial
     risk. The project is presented here as an engineering artefact from a
     hackathon, not as a product recommendation or an investment tool.
-  # Add the title card with:
-  #   npm run portfolio -- add-image astranova ~/path/to/astranova.png "alt text"
+  screenshots:
+    - src: /images/projects/astranova/cover.webp
+      alt: >-
+        AstraNova title card — the project name above the tagline "AI intraday options
+        copilot", with three labels reading live AI signals, one-tap execution and
+        instant alerts, set over a row of green and red candlestick bars.
+      caption: The project's title card.
   links:
     repo:
       label: GitHub — astranova-trading-copilot (private)
