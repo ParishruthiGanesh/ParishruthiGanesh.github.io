@@ -22,8 +22,15 @@ on:
   push:
     branches: [main]
     paths:
-      # Re-run when the curated layer changes, so generated data stays in step.
+      # Re-run when the CURATED layer changes, so generated data stays in step.
       - 'content/**'
+      # ...but never on the generated layer itself. Merging a sync pull request
+      # writes content/generated/, and this repository is one of the ones being
+      # synced — so its own merge commit changes its byte counts and pushedAt.
+      # Without this exclusion each merge triggers a fresh sync, which opens a
+      # new pull request, which triggers another sync, indefinitely. The daily
+      # schedule still keeps the data fresh.
+      - '!content/generated/**'
       - 'scripts/portfolio/**'
       - 'src/lib/schema.ts'
 

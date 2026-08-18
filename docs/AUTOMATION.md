@@ -125,6 +125,12 @@ install → sync repos → sync papers → validate → build → test → statu
   non-empty.
 - `workflow_dispatch` accepts a `dry-run` input to see what would change without
   opening a pull request.
+- The push trigger watches `content/**` but **excludes `content/generated/**`**.
+  This repository is one of the ones being synced, so merging a sync pull
+  request changes its own byte counts and `pushedAt` — without the exclusion,
+  every merge would trigger a fresh sync, which would open a new pull request,
+  which would trigger another sync, indefinitely. The daily schedule still keeps
+  the data current.
 
 The workflow **never pushes to `main`**. Synchronised data can be wrong, so a
 human sees the diff before it reaches the live site.
