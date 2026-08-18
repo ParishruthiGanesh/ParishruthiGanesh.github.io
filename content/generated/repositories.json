@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-18T23:37:33.100Z",
+  "syncedAt": "2026-08-18T23:43:38.221Z",
   "owner": "ParishruthiGanesh",
   "source": "https://api.github.com/users/ParishruthiGanesh/repos",
   "repositories": [
@@ -147,7 +147,7 @@
       "homepage": null,
       "language": "TypeScript",
       "languages": {
-        "Astro": 166685,
+        "Astro": 166888,
         "CSS": 9906,
         "JavaScript": 933,
         "TypeScript": 173415
@@ -161,8 +161,8 @@
       "isArchived": false,
       "isPrivate": false,
       "createdAt": "2026-08-18T18:42:40Z",
-      "updatedAt": "2026-08-18T23:37:26Z",
-      "pushedAt": "2026-08-18T23:37:25Z",
+      "updatedAt": "2026-08-18T23:43:22Z",
+      "pushedAt": "2026-08-18T23:43:16Z",
       "size": 1626,
       "defaultBranch": "main"
     },
