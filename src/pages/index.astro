@@ -314,12 +314,14 @@ const heroLinks = [
           <ul class="mt-9 grid gap-4 sm:grid-cols-2">
             {activeRepos.map((repo) => (
               <li class="surface-card card-interactive p-5">
-                <div class="flex items-baseline justify-between gap-3">
+                <div class="flex min-w-0 items-baseline justify-between gap-3">
+                  {/* A long monospace repository name would otherwise force the
+                      card wider than a 320px viewport, so it wraps instead. */}
                   <a
                     href={repo.url}
                     rel="noopener"
-                    class="font-mono text-sm font-medium no-underline transition-colors hover:text-[var(--accent)]"
-                    style="color: var(--ink)"
+                    class="min-w-0 font-mono text-sm font-medium no-underline transition-colors hover:text-[var(--accent)]"
+                    style="color: var(--ink); overflow-wrap: anywhere"
                   >
                     {repo.name}
                   </a>
