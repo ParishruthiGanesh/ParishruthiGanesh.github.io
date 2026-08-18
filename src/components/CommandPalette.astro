@@ -1,0 +1,252 @@
+---
+/**
+ * ⌘K / Ctrl-K command palette and full-text search.
+ *
+ * The index is inlined as JSON at build time — no network request, no service.
+ * Scoring is simple and deliberate: an exact title match beats a title prefix,
+ * which beats a title substring, which beats a match anywhere in the entry's
+ * terms. That is enough for an index of this size and it stays predictable.
+ */
+import { buildSearchIndex } from '../lib/search.js';
+
+const index = buildSearchIndex();
+---
+
+<button
+  type="button"
+  id="palette-open"
+  class="inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm transition-colors hover:bg-[var(--surface-sunken)]"
+  style="border-color: var(--border); color: var(--ink-subtle)"
+  aria-label="Search the site (Command K)"
+>
+  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+    <circle cx="11" cy="11" r="7" />
+    <path d="m20 20-3.5-3.5" stroke-linecap="round" />
+  </svg>
+  <span class="hidden 2xl:inline">Search</span>
+  <kbd
+    class="hidden rounded border px-1.5 py-0.5 font-mono text-[0.65rem] sm:inline"
+    style="border-color: var(--border)">⌘K</kbd
+  >
+</button>
+
+<dialog
+  id="palette"
+  class="m-0 w-full max-w-2xl rounded-xl border p-0 backdrop:bg-[rgba(6,11,24,0.55)] backdrop:backdrop-blur-sm"
+  style="background: var(--surface-raised); border-color: var(--border-strong); color: var(--ink); margin-inline: auto; margin-top: 8vh;"
+  aria-label="Site search"
+>
+  <div class="flex items-center gap-3 border-b px-4 py-3" style="border-color: var(--border)">
+    <svg class="h-4 w-4 shrink-0" style="color: var(--ink-subtle)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" stroke-linecap="round" />
+    </svg>
+    <label for="palette-input" class="sr-only">Search projects, publications, research and repositories</label>
+    <input
+      id="palette-input"
+      type="search"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder="Search publications, projects, research, repositories…"
+      class="w-full bg-transparent text-base outline-none placeholder:text-[var(--ink-subtle)]"
+      aria-controls="palette-results"
+      aria-describedby="palette-hint"
+    />
+    <kbd class="hidden rounded border px-1.5 py-0.5 font-mono text-[0.65rem] sm:inline" style="border-color: var(--border); color: var(--ink-subtle)">Esc</kbd>
+  </div>
+
+  <ul
+    id="palette-results"
+    class="max-h-[min(60vh,26rem)] overflow-y-auto py-2"
+    role="listbox"
+    aria-label="Search results"
+  ></ul>
+
+  <p id="palette-hint" class="border-t px-4 py-2 text-xs" style="border-color: var(--border); color: var(--ink-subtle)">
+    <span aria-hidden="true">↑↓</span> to navigate · <span aria-hidden="true">↵</span> to open · Esc to close
+  </p>
+</dialog>
+
+<script is:inline type="application/json" id="search-index" set:html={JSON.stringify(index)} />
+
+<script>
+  interface Entry {
+    id: string;
+    kind: string;
+    title: string;
+    subtitle: string;
+    href: string;
+    terms: string;
+  }
+
+  const raw = document.getElementById('search-index')?.textContent ?? '[]';
+  const entries: Entry[] = JSON.parse(raw);
+
+  const dialog = document.getElementById('palette') as HTMLDialogElement | null;
+  const input = document.getElementById('palette-input') as HTMLInputElement | null;
+  const list = document.getElementById('palette-results');
+  const openButton = document.getElementById('palette-open');
+  if (!dialog || !input || !list) throw new Error('command palette markup missing');
+
+  const KIND_LABELS: Record<string, string> = {
+    page: 'Page',
+    research: 'Research',
+    publication: 'Publication',
+    project: 'Project',
+    hackathon: 'Hackathon',
+    experience: 'Experience',
+    repository: 'Repository',
+  };
+
+  let active = 0;
+  let current: Entry[] = [];
+
+  function score(entry: Entry, query: string): number {
+    const title = entry.title.toLowerCase();
+    if (title === query) return 0;
+    if (title.startsWith(query)) return 1;
+    if (title.includes(query)) return 2;
+    if (entry.subtitle.toLowerCase().includes(query)) return 3;
+    if (entry.terms.includes(query)) return 4;
+    return Number.POSITIVE_INFINITY;
+  }
+
+  function search(query: string): Entry[] {
+    const trimmed = query.trim().toLowerCase();
+    if (!trimmed) return entries.filter((entry) => entry.kind === 'page').slice(0, 10);
+    // Every whitespace-separated word must match somewhere in the entry.
+    const words = trimmed.split(/\s+/);
+    return entries
+      .map((entry) => ({
+        entry,
+        rank: Math.max(...words.map((word) => score(entry, word))),
+      }))
+      .filter((result) => Number.isFinite(result.rank))
+      .sort((a, b) => a.rank - b.rank || a.entry.title.localeCompare(b.entry.title))
+      .slice(0, 24)
+      .map((result) => result.entry);
+  }
+
+  function render(): void {
+    list!.innerHTML = '';
+    if (current.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'px-4 py-6 text-center text-sm';
+      empty.style.color = 'var(--ink-subtle)';
+      empty.textContent = 'No matches.';
+      list!.append(empty);
+      return;
+    }
+    current.forEach((entry, index) => {
+      const item = document.createElement('li');
+      item.setAttribute('role', 'option');
+      item.id = `palette-option-${index}`;
+      item.setAttribute('aria-selected', String(index === active));
+
+      const link = document.createElement('a');
+      link.href = entry.href;
+      link.className =
+        'flex items-baseline gap-3 px-4 py-2.5 text-sm no-underline transition-colors';
+      link.style.color = 'var(--ink)';
+      if (index === active) link.style.background = 'var(--accent-soft)';
+
+      const label = document.createElement('span');
+      label.className = 'shrink-0 font-mono text-[0.62rem] uppercase tracking-wider';
+      label.style.color = 'var(--ink-subtle)';
+      label.textContent = KIND_LABELS[entry.kind] ?? entry.kind;
+
+      const body = document.createElement('span');
+      body.className = 'min-w-0 flex-1';
+      const title = document.createElement('span');
+      title.className = 'block truncate font-medium';
+      title.textContent = entry.title;
+      const subtitle = document.createElement('span');
+      subtitle.className = 'block truncate text-xs';
+      subtitle.style.color = 'var(--ink-subtle)';
+      subtitle.textContent = entry.subtitle;
+      body.append(title, subtitle);
+
+      link.append(label, body);
+      item.append(link);
+      list!.append(item);
+    });
+    input!.setAttribute('aria-activedescendant', `palette-option-${active}`);
+  }
+
+  function refresh(): void {
+    current = search(input!.value);
+    active = 0;
+    render();
+  }
+
+  function open(): void {
+    if (dialog!.open) return;
+    dialog!.showModal();
+    input!.value = '';
+    refresh();
+    input!.focus();
+  }
+
+  openButton?.addEventListener('click', open);
+
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      dialog!.open ? dialog!.close() : open();
+      return;
+    }
+    // "/" opens search, unless the user is already typing into a field.
+    const target = event.target as HTMLElement | null;
+    const typing = target?.matches('input, textarea, select, [contenteditable="true"]');
+    if (event.key === '/' && !typing && !dialog!.open) {
+      event.preventDefault();
+      open();
+    }
+  });
+
+  input.addEventListener('input', refresh);
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (current.length === 0) return;
+      active =
+        event.key === 'ArrowDown'
+          ? (active + 1) % current.length
+          : (active - 1 + current.length) % current.length;
+      render();
+      document.getElementById(`palette-option-${active}`)?.scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const target = current[active];
+      if (target) window.location.href = target.href;
+    }
+  });
+
+  // Clicking the backdrop (i.e. outside the dialog's own box) closes it.
+  dialog.addEventListener('click', (event) => {
+    const box = dialog!.getBoundingClientRect();
+    const outside =
+      event.clientX < box.left ||
+      event.clientX > box.right ||
+      event.clientY < box.top ||
+      event.clientY > box.bottom;
+    if (outside) dialog!.close();
+  });
+</script>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  #palette::backdrop {
+    background: rgba(6, 11, 24, 0.55);
+  }
+</style>

@@ -1,0 +1,167 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Tag from '../components/Tag.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import { splitEmail } from '../lib/format.js';
+
+const { profile } = loadContent();
+const { user, domain } = splitEmail(profile.email);
+
+/**
+ * Only links that were verified from a supplied source appear here. An entry
+ * with no URL is simply absent rather than shown as a dead placeholder.
+ */
+const channels = [
+  {
+    label: 'Email',
+    value: `${user}@${domain}`,
+    href: `mailto:${user}@${domain}`,
+    note: 'The most reliable way to reach me.',
+    obfuscated: true,
+  },
+  profile.links.github && {
+    label: 'GitHub',
+    value: profile.links.github.replace(/^https?:\/\//, ''),
+    href: profile.links.github,
+    note: 'Source for the projects and hackathon builds on this site.',
+  },
+  profile.links.googleScholar && {
+    label: 'Google Scholar',
+    value: 'Google Scholar profile',
+    href: profile.links.googleScholar,
+    note: 'Publication record. Citation counts are not mirrored onto this site.',
+  },
+  profile.links.linkedin && {
+    label: 'LinkedIn',
+    value: profile.links.linkedin.replace(/^https?:\/\/(www\.)?/, ''),
+    href: profile.links.linkedin,
+    note: 'Professional history.',
+  },
+  profile.links.orcid && {
+    label: 'ORCID',
+    value: profile.links.orcid.replace(/^https?:\/\//, ''),
+    href: profile.links.orcid,
+    note: 'Persistent researcher identifier.',
+  },
+  profile.links.affiliationUrl ?? profile.affiliationUrl
+    ? {
+        label: 'Affiliation',
+        value: profile.affiliation,
+        href: profile.affiliationUrl!,
+        note: `${profile.role}, ${profile.affiliation}.`,
+      }
+    : null,
+  {
+    label: 'Resume',
+    value: profile.resume.filename,
+    href: url(profile.resume.path),
+    note: `Updated ${profile.resume.lastUpdated}.`,
+    internal: true,
+  },
+].filter(Boolean) as Array<{
+  label: string;
+  value: string;
+  href: string;
+  note: string;
+  obfuscated?: boolean;
+  internal?: boolean;
+}>;
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Get in touch with ${profile.name} — email, GitHub, Google Scholar and LinkedIn.`}
+>
+  <PageHeader
+    eyebrow="Contact"
+    title="Get in touch"
+    lead="I read everything that arrives by email and reply to anything substantive. Research collaborations, questions about a paper or a repository, and internship or reviewing enquiries are all welcome."
+  />
+
+  <div class="container-page py-12 sm:py-16">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div>
+        <h2 class="eyebrow">Where to find me</h2>
+        <ul class="mt-5 space-y-4">
+          {
+            channels.map((channel) => (
+              <li class="surface-card card-interactive p-5">
+                <div class="flex flex-wrap items-baseline justify-between gap-3">
+                  <h3 class="text-base font-semibold" style="color: var(--ink)">
+                    {channel.label}
+                  </h3>
+                  {channel.obfuscated ? (
+                    <a
+                      href={channel.href}
+                      class="link-underline font-mono text-sm no-underline"
+                      style="color: var(--accent)"
+                    >
+                      {user}<span aria-hidden="true">@</span>{domain}
+                    </a>
+                  ) : (
+                    <a
+                      href={channel.href}
+                      rel={channel.internal ? undefined : 'me noopener'}
+                      class="link-underline break-all font-mono text-sm no-underline"
+                      style="color: var(--accent)"
+                    >
+                      {channel.value}
+                    </a>
+                  )}
+                </div>
+                <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                  {channel.note}
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="mt-6 text-sm leading-relaxed" style="color: var(--ink-subtle)">
+          There is no contact form here on purpose: a form needs a backend and a secret to
+          run, and a <code class="font-mono">mailto:</code> link does the same job without
+          either. The address is split in the markup so it is not trivially harvested, and it
+          stays selectable and clickable.
+        </p>
+      </div>
+
+      <aside class="space-y-8">
+        <section class="surface-card p-6">
+          <h2 class="eyebrow">Open to</h2>
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {profile.openTo.map((item) => <li><Tag tone="accent" size="md">{item}</Tag></li>)}
+          </ul>
+        </section>
+
+        <section class="surface-card p-6">
+          <h2 class="eyebrow">What helps</h2>
+          <ul class="mt-4 space-y-3 text-sm leading-relaxed" style="color: var(--ink-muted)">
+            <li>
+              If you are writing about a specific paper, naming which result you are asking
+              about makes for a much faster answer.
+            </li>
+            <li>
+              For collaboration enquiries, a sentence on the question you are working on is
+              more useful than a description of the method.
+            </li>
+            <li>
+              For anything about a repository, a link to the file or line is ideal.
+            </li>
+          </ul>
+        </section>
+
+        <section class="surface-card p-6">
+          <h2 class="eyebrow">Based in</h2>
+          <p class="mt-3 text-sm" style="color: var(--ink-muted)">
+            {profile.location}
+          </p>
+          <p class="mt-1 text-sm" style="color: var(--ink-subtle)">
+            {profile.role}, {profile.affiliation}
+          </p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

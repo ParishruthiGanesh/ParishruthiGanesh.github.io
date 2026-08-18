@@ -1,0 +1,137 @@
+---
+import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { loadContent } from '../lib/content.js';
+import { absoluteUrl, url } from '../lib/url.js';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Omit to fall back to the site-wide OG image. */
+  image?: string;
+  /** Extra JSON-LD blocks for this page. */
+  schema?: Array<Record<string, unknown>>;
+  /** `article` for detail pages; `website` elsewhere. */
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  image,
+  schema = [],
+  ogType = 'website',
+  noindex = false,
+} = Astro.props;
+
+const { profile } = loadContent();
+const site = Astro.site;
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', site ?? Astro.url).href;
+const pageTitle =
+  Astro.url.pathname === url('/') ? `${profile.name} — ${profile.headline}` : `${title} · ${profile.name}`;
+const ogImage = absoluteUrl(image ?? '/og-default.svg', site);
+
+const FONT_STYLESHEET =
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600' +
+  '&family=JetBrains+Mono:wght@400;500' +
+  '&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap';
+
+/**
+ * Person is emitted on every page so search engines and scholarly indexers can
+ * associate the site with one author. Page-specific types (ScholarlyArticle,
+ * SoftwareSourceCode) are passed in via `schema`.
+ */
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  jobTitle: profile.role,
+  description: profile.shortBio,
+  email: `mailto:${profile.email}`,
+  url: absoluteUrl('/', site),
+  affiliation: {
+    '@type': 'CollegeOrUniversity',
+    name: profile.affiliation,
+    ...(profile.affiliationUrl ? { url: profile.affiliationUrl } : {}),
+  },
+  knowsAbout: profile.researchInterests,
+  sameAs: Object.values(profile.links).filter(Boolean),
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content={`${profile.name} — ${profile.headline}`} />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <meta name="author" content={profile.name} />
+    <meta name="theme-color" content="#0a1122" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f9fc" media="(prefers-color-scheme: light)" />
+
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${profile.name} — updates`} href={url('/rss.xml')} />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+
+    {/*
+      Web fonts are loaded off the critical path. `media="print"` means the
+      browser fetches the stylesheet without blocking first paint, and the
+      onload handler promotes it to `all` once it arrives. The page therefore
+      renders immediately in the system fallback stack and swaps in Inter and
+      Newsreader when they land — so a slow or unreachable fonts.googleapis.com
+      costs a typeface, never a blank screen. `display=swap` completes the
+      picture for the font files themselves.
+    */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href={FONT_STYLESHEET}
+      media="print"
+      onload="this.media='all'; this.onload=null;"
+    />
+    <noscript><link rel="stylesheet" href={FONT_STYLESHEET} /></noscript>
+
+    <script is:inline>
+      // Applied before first paint so the correct theme never flashes.
+      try {
+        const stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') {
+          document.documentElement.dataset.theme = stored;
+        }
+      } catch {
+        /* storage unavailable — fall back to prefers-color-scheme */
+      }
+    </script>
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(personSchema)} />
+    {schema.map((block) => <script type="application/ld+json" is:inline set:html={JSON.stringify(block)} />)}
+  </head>
+
+  <body class="min-h-screen">
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

@@ -1,0 +1,48 @@
+---
+/**
+ * "Related paper / code / demo" block used at the bottom of detail pages.
+ * Renders nothing when there is nothing genuinely related to show.
+ */
+import { url } from '../lib/url.js';
+
+interface Item {
+  kind: string;
+  title: string;
+  href: string;
+  note?: string;
+  external?: boolean;
+}
+interface Props {
+  items: Item[];
+  title?: string;
+}
+const { items, title = 'Related' } = Astro.props;
+---
+{
+  items.length > 0 && (
+    <section class="mt-14 border-t pt-8" style="border-color: var(--border)" aria-labelledby="related-heading">
+      <h2 id="related-heading" class="eyebrow">{title}</h2>
+      <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+        {items.map((item) => (
+          <li>
+            <a
+              href={item.external ? item.href : url(item.href)}
+              rel={item.external ? 'noopener' : undefined}
+              class="surface-card card-interactive block p-4 no-underline"
+            >
+              <span class="eyebrow">{item.kind}</span>
+              <span class="mt-1.5 block font-medium leading-snug" style="color: var(--ink)">
+                {item.title}
+              </span>
+              {item.note && (
+                <span class="mt-1 block text-xs" style="color: var(--ink-subtle)">
+                  {item.note}
+                </span>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

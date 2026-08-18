@@ -1,0 +1,384 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Tag from '../components/Tag.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import { REPO_CATEGORY_LABELS, relativeDate, escapeHtml } from '../lib/format.js';
+
+const content = loadContent();
+const { repositories, overrides, syncedAt } = content;
+
+/**
+ * Hidden repositories keep their synchronised metadata but are not listed.
+ * Archived ones are listed, and filterable, but never featured.
+ */
+const visible = repositories.filter((repo) => !repo.hidden);
+const categories = [...new Set(visible.flatMap((repo) => repo.categories))].sort();
+const languages = [...new Set(visible.map((repo) => repo.language).filter(Boolean))].sort() as string[];
+const hiddenCount = repositories.length - visible.length;
+---
+
+<BaseLayout
+  title="Repositories"
+  description={`Public GitHub repositories for ${overrides.github.owner}, synchronised automatically and curated by hand.`}
+>
+  <PageHeader
+    eyebrow="Repositories"
+    title="Synchronised from GitHub, curated by hand"
+    lead="Metadata below is fetched from the GitHub API on a schedule. Written summaries are curated separately and are never overwritten by a sync — where both exist, both are shown."
+  >
+    <p class="mt-6 text-sm" style="color: var(--ink-subtle)">
+      {
+        syncedAt ? (
+          <>
+            Last synchronised <time datetime={syncedAt}>{syncedAt.slice(0, 10)}</time> ({relativeDate(syncedAt)}) ·{' '}
+          </>
+        ) : (
+          'Not yet synchronised · '
+        )
+      }
+      <a href={`https://github.com/${overrides.github.owner}`} rel="noopener" class="link-underline no-underline" style="color: var(--accent)">
+        github.com/{overrides.github.owner}
+      </a>
+    </p>
+  </PageHeader>
+
+  <div class="container-page py-12">
+    {/* ---------- Filters ---------- */}
+    <div class="surface-card p-5 sm:p-6" role="group" aria-label="Filter repositories">
+      <div class="grid gap-5 sm:grid-cols-3">
+        <div>
+          <label for="repo-search" class="eyebrow block">Search</label>
+          <input
+            id="repo-search"
+            type="search"
+            placeholder="Name, description, topic…"
+            class="mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+            style="border-color: var(--border); color: var(--ink)"
+          />
+        </div>
+        <div>
+          <label for="repo-language" class="eyebrow block">Language</label>
+          <select
+            id="repo-language"
+            class="mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+            style="border-color: var(--border); color: var(--ink)"
+          >
+            <option value="">All languages</option>
+            {languages.map((language) => <option value={language}>{language}</option>)}
+          </select>
+        </div>
+        <div>
+          <span class="eyebrow block" id="repo-sort-label">Sort</span>
+          <select
+            id="repo-sort"
+            aria-labelledby="repo-sort-label"
+            class="mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+            style="border-color: var(--border); color: var(--ink)"
+          >
+            <option value="curated">Curated order</option>
+            <option value="updated">Recently pushed</option>
+            <option value="name">Name (A–Z)</option>
+            <option value="stars">Stars</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-wrap items-center gap-2">
+        <span class="eyebrow">Category</span>
+        <button
+          type="button"
+          class="filter-category rounded-full border px-3 py-1 text-sm"
+          data-value=""
+          aria-pressed="true"
+          style="border-color: var(--border-strong); color: var(--ink); background: var(--surface-sunken)"
+        >
+          All
+        </button>
+        {
+          categories.map((category) => (
+            <button
+              type="button"
+              class="filter-category rounded-full border px-3 py-1 text-sm"
+              data-value={category}
+              aria-pressed="false"
+              style="border-color: var(--border); color: var(--ink-muted)"
+            >
+              {REPO_CATEGORY_LABELS[category] ?? category}
+            </button>
+          ))
+        }
+      </div>
+
+      <p id="repo-count" class="mt-4 text-sm" style="color: var(--ink-subtle)" aria-live="polite">
+        Showing {visible.length} of {visible.length} repositories
+      </p>
+    </div>
+
+    {/* ---------- List ---------- */}
+    <ul id="repo-list" class="mt-8 grid gap-5 lg:grid-cols-2">
+      {
+        visible.map((repo) => (
+          <li
+            id={`repo-${repo.name.toLowerCase()}`}
+            class="surface-card card-interactive flex min-w-0 flex-col p-6 scroll-mt-24"
+            data-name={repo.name.toLowerCase()}
+            data-language={repo.language ?? ''}
+            data-categories={repo.categories.join(' ')}
+            data-stars={repo.stars}
+            data-pushed={repo.pushedAt}
+            data-order={repo.order}
+            data-search={escapeHtml(
+              `${repo.name} ${repo.description ?? ''} ${repo.githubDescription ?? ''} ${repo.topics.join(' ')}`.toLowerCase(),
+            )}
+          >
+            <div class="flex flex-wrap items-center gap-2">
+              {repo.featured && <Tag tone="ember">Featured</Tag>}
+              {repo.isArchived && <Tag tone="outline">Archived</Tag>}
+              {repo.isPrivate && <Tag tone="outline">Private</Tag>}
+              {repo.isFork && <Tag tone="outline">Fork</Tag>}
+              {!repo.synced && <Tag tone="outline">Not in last sync</Tag>}
+            </div>
+
+            <h2 class="mt-3 font-mono text-base font-semibold" style="overflow-wrap: anywhere">
+              {repo.isPrivate ? (
+                <span style="color: var(--ink)">{repo.name}</span>
+              ) : (
+                <a
+                  href={repo.url}
+                  rel="noopener"
+                  class="no-underline transition-colors hover:text-[var(--accent)]"
+                  style="color: var(--ink)"
+                >
+                  {repo.name}
+                </a>
+              )}
+            </h2>
+
+            {repo.portfolioSummary && (
+              <p class="mt-3 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                {repo.portfolioSummary}
+              </p>
+            )}
+
+            {repo.githubDescription && repo.githubDescription !== repo.portfolioSummary && (
+              <p class="mt-3 border-l-2 pl-3 text-sm leading-relaxed" style="border-color: var(--border); color: var(--ink-subtle)">
+                <span class="eyebrow block">From GitHub</span>
+                <span class="mt-1 block">{repo.githubDescription}</span>
+              </p>
+            )}
+
+            {!repo.portfolioSummary && !repo.githubDescription && (
+              <p class="mt-3 text-sm italic" style="color: var(--ink-subtle)">
+                No description.
+              </p>
+            )}
+
+            {repo.isPrivate && (
+              <p class="mt-3 rounded-lg border p-3 text-xs leading-relaxed" style="border-color: var(--border); background: var(--surface-sunken); color: var(--ink-subtle)">
+                This repository is private on GitHub, so it is listed but not linked.
+              </p>
+            )}
+
+            {repo.topics.length > 0 && (
+              <ul class="mt-4 flex flex-wrap gap-1.5">
+                {repo.topics.map((topic) => (
+                  <li>
+                    <Tag tone="neutral">{topic}</Tag>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {repo.languages.length > 1 && (
+              <div class="mt-4">
+                <div
+                  class="flex h-1.5 overflow-hidden rounded-full"
+                  style="background: var(--surface-sunken)"
+                  role="img"
+                  aria-label={`Language breakdown: ${repo.languages
+                    .map((language) => `${language.name} ${language.percent.toFixed(0)}%`)
+                    .join(', ')}`}
+                >
+                  {repo.languages.slice(0, 5).map((language, index) => (
+                    <span
+                      style={`width: ${language.percent}%; background: ${
+                        ['var(--accent)', 'var(--ember)', 'var(--ink-subtle)', 'var(--border-strong)', 'var(--ink-muted)'][index]
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p class="mt-1.5 text-xs" style="color: var(--ink-subtle)">
+                  {repo.languages
+                    .slice(0, 3)
+                    .map((language) => `${language.name} ${language.percent.toFixed(0)}%`)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+
+            <dl class="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-5 text-xs" style="color: var(--ink-subtle)">
+              {repo.language && repo.languages.length <= 1 && (
+                <div class="flex gap-1">
+                  <dt class="sr-only">Language</dt>
+                  <dd>{repo.language}</dd>
+                </div>
+              )}
+              {repo.stars > 0 && (
+                <div class="flex gap-1">
+                  <dt>★</dt>
+                  <dd>{repo.stars}</dd>
+                </div>
+              )}
+              {repo.forks > 0 && (
+                <div class="flex gap-1">
+                  <dt>Forks</dt>
+                  <dd>{repo.forks}</dd>
+                </div>
+              )}
+              {repo.license && (
+                <div class="flex gap-1">
+                  <dt class="sr-only">Licence</dt>
+                  <dd>{repo.license}</dd>
+                </div>
+              )}
+              {repo.pushedAt && (
+                <div class="flex gap-1">
+                  <dt class="sr-only">Last push</dt>
+                  <dd>Pushed {relativeDate(repo.pushedAt)}</dd>
+                </div>
+              )}
+            </dl>
+
+            {(repo.relatedProjects.length > 0 ||
+              repo.relatedPublications.length > 0 ||
+              repo.relatedHackathons.length > 0 ||
+              repo.homepage) && (
+              <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 border-t pt-4 text-sm" style="border-color: var(--border)">
+                {repo.relatedProjects.map((project) => (
+                  <a href={url(`/projects/${project.id}`)} class="link-underline no-underline" style="color: var(--accent)">
+                    Project: {project.name}
+                  </a>
+                ))}
+                {repo.relatedPublications.map((pub) => (
+                  <a href={url(`/publications/${pub.id}`)} class="link-underline no-underline" style="color: var(--accent)">
+                    Paper: {pub.title}
+                  </a>
+                ))}
+                {repo.relatedHackathons.map((hackathon) => (
+                  <a href={url(`/hackathons#${hackathon.id}`)} class="link-underline no-underline" style="color: var(--accent)">
+                    Hackathon: {hackathon.hackathon}
+                  </a>
+                ))}
+                {repo.homepage && (
+                  <a href={repo.homepage} rel="noopener" class="link-underline no-underline" style="color: var(--ink-muted)">
+                    Homepage
+                  </a>
+                )}
+              </div>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+
+    <p id="repo-empty" hidden class="surface-card mt-8 p-10 text-center text-sm" style="color: var(--ink-subtle)">
+      No repositories match these filters.
+    </p>
+
+    <p class="mt-8 text-sm leading-relaxed" style="color: var(--ink-subtle)">
+      Forks and empty scratch repositories are excluded from this list by default.
+      {hiddenCount > 0 && ` ${hiddenCount} repository is hidden by editorial choice; its synchronised metadata is retained.`}
+      {' '}The exclusion rules live in <code class="font-mono">content/repositories-overrides.yml</code>.
+    </p>
+  </div>
+</BaseLayout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+</style>
+
+<script>
+  const list = document.getElementById('repo-list');
+  const search = document.getElementById('repo-search') as HTMLInputElement | null;
+  const language = document.getElementById('repo-language') as HTMLSelectElement | null;
+  const sort = document.getElementById('repo-sort') as HTMLSelectElement | null;
+  const count = document.getElementById('repo-count');
+  const empty = document.getElementById('repo-empty');
+  const categoryButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-category'));
+  if (!list || !search || !language || !sort || !count || !empty) {
+    throw new Error('repository filter markup missing');
+  }
+
+  const cards = Array.from(list.querySelectorAll<HTMLElement>(':scope > li'));
+  const total = cards.length;
+  let category = '';
+
+  function apply(): void {
+    const query = search!.value.trim().toLowerCase();
+    const lang = language!.value;
+    let visible = 0;
+
+    for (const card of cards) {
+      const matches =
+        (!query || (card.dataset.search ?? '').includes(query)) &&
+        (!lang || card.dataset.language === lang) &&
+        (!category || (card.dataset.categories ?? '').split(' ').includes(category));
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    }
+
+    count!.textContent = `Showing ${visible} of ${total} repositories`;
+    empty!.hidden = visible > 0;
+  }
+
+  function reorder(): void {
+    const mode = sort!.value;
+    const sorted = [...cards].sort((a, b) => {
+      switch (mode) {
+        case 'updated':
+          return (b.dataset.pushed ?? '').localeCompare(a.dataset.pushed ?? '');
+        case 'name':
+          return (a.dataset.name ?? '').localeCompare(b.dataset.name ?? '');
+        case 'stars':
+          return Number(b.dataset.stars ?? 0) - Number(a.dataset.stars ?? 0);
+        default:
+          return (
+            Number(a.dataset.order ?? 0) - Number(b.dataset.order ?? 0) ||
+            (a.dataset.name ?? '').localeCompare(b.dataset.name ?? '')
+          );
+      }
+    });
+    for (const card of sorted) list!.append(card);
+  }
+
+  for (const button of categoryButtons) {
+    button.addEventListener('click', () => {
+      category = button.dataset.value ?? '';
+      for (const other of categoryButtons) {
+        const active = other === button;
+        other.setAttribute('aria-pressed', String(active));
+        other.style.borderColor = active ? 'var(--border-strong)' : 'var(--border)';
+        other.style.color = active ? 'var(--ink)' : 'var(--ink-muted)';
+        other.style.background = active ? 'var(--surface-sunken)' : 'transparent';
+      }
+      apply();
+    });
+  }
+
+  search.addEventListener('input', apply);
+  language.addEventListener('change', apply);
+  sort.addEventListener('change', reorder);
+  apply();
+</script>

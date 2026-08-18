@@ -1,0 +1,204 @@
+# Research themes. Every theme below is anchored to a paper, a system, or a
+# workstream that appears on the resume or in a public repository. Themes with
+# no supporting evidence are NOT listed here — see content/review-needed.yml.
+
+- id: language-model-evaluation
+  title: Language-Model Evaluation and Model Selection
+  shortTitle: LLM Evaluation
+  order: 10
+  featured: true
+  status: active
+  question: >-
+    When a practitioner has to choose one open-weight language model out of
+    dozens for a classification task, what evidence actually supports that
+    choice — and how much of the apparent difference between leading models is
+    real rather than noise?
+  whyItMatters: >-
+    Model selection is usually settled by a single accuracy column on a single
+    benchmark. That column hides three things that matter in deployment:
+    whether the gap between two models is statistically distinguishable, whether
+    a model's confidence means anything, and whether the benchmark still has
+    headroom left to measure with. Getting this wrong is expensive — teams ship
+    a larger model than they need, or trust a confidence score that is not
+    calibrated.
+  approach: >-
+    Broad, controlled zero-shot evaluation rather than fine-tuned leaderboard
+    chasing: a fixed prompting protocol applied across model families and
+    parameter scales, evaluated on multiple datasets at once, and analysed with
+    calibration measures, input perturbations, pairwise significance testing and
+    deployment-cost accounting alongside raw accuracy.
+  findings:
+    - >-
+      Instruction-tuned 3B models can outperform several evaluated 7B base
+      models, so parameter count alone is a poor selection criterion within this
+      benchmark suite.
+    - >-
+      Differences among the leading models on MASSIVE are statistically
+      indistinguishable under pairwise McNemar tests — a ranking by raw accuracy
+      overstates how much separates them.
+    - >-
+      Widely used benchmarks such as SNIPS have saturated and no longer
+      meaningfully discriminate among current open-weight models.
+  futureDirection: >-
+    Extending the protocol beyond single-label intent classification to tasks
+    where label ambiguity is intrinsic, and treating benchmark saturation itself
+    as something to measure rather than discover after the fact.
+  keywords:
+    - Zero-shot classification
+    - Open-weight LLMs
+    - Confidence calibration
+    - Statistical significance
+    - Benchmark saturation
+    - Robustness
+  publications: [intent-classification-41-models]
+  projects: [intent-classification-benchmark]
+
+- id: video-understanding-safety
+  title: Video Understanding and Early Detection
+  shortTitle: Video Understanding
+  order: 20
+  featured: true
+  status: active
+  question: >-
+    How much of the performance of a video model on early detection tasks comes
+    from explicitly representing the interaction between people, rather than
+    from appearance and motion features that any strong backbone already
+    captures?
+  whyItMatters: >-
+    Papers in this area routinely add an interaction module and report an
+    improvement, but the improvement is rarely isolated from the backbone,
+    the training schedule or the evaluation protocol. Without that isolation
+    the field accumulates architectures rather than knowledge. Early detection
+    raises the stakes further: a system that must commit before an event
+    completes is operating on partial evidence by construction, and its errors
+    fall on people.
+  approach: >-
+    A controlled ablation study rather than a new state-of-the-art claim — hold
+    the backbone, data and protocol fixed and vary only the interaction
+    representation, so the attributable contribution can be reported as a
+    benchmark-scoped quantity rather than a general capability claim.
+  findings: []
+  futureDirection: >-
+    Reporting attributable contribution as a function of how much of an event
+    has been observed, and characterising where interaction representations stop
+    helping.
+  keywords:
+    - Video understanding
+    - Interaction representations
+    - Early event detection
+    - Ablation study
+    - Spatio-temporal modelling
+  publications: [interaction-representations-early-violence]
+  projects: [early-violence-detection]
+
+- id: retrieval-augmented-generation
+  title: Retrieval-Augmented Generation over Scholarly Corpora
+  shortTitle: RAG
+  order: 30
+  featured: true
+  status: ongoing
+  question: >-
+    What does a retrieval pipeline over a large, heterogeneous corpus of
+    research papers need in order to answer expertise questions — "who here
+    works on this, and what have they actually shown?" — rather than merely
+    returning topically similar text?
+  whyItMatters: >-
+    Institutional expertise is real but effectively unsearchable: it is
+    distributed across thousands of PDFs with inconsistent metadata. Making it
+    queryable in natural language changes who can find a collaborator, not just
+    how fast an existing search runs.
+  approach: >-
+    An end-to-end ingestion pipeline — scraping, parsing, metadata structuring
+    and embedding generation orchestrated with LangGraph — feeding semantic
+    retrieval over the full corpus, with summarisation grounded in retrieved
+    documents.
+  findings:
+    - >-
+      A corpus of roughly 25,000 research papers across 50+ faculty members runs
+      end to end through the retrieval pipeline in about 30 minutes.
+  futureDirection: >-
+    Deployment for faculty and research groups to query publications in natural
+    language, supporting interdisciplinary team formation.
+  keywords:
+    - Retrieval-augmented generation
+    - LangGraph
+    - Semantic retrieval
+    - Document parsing
+    - Scholarly search
+  publications: []
+  projects: [ausme-faculty-rag]
+
+- id: agentic-memory-systems
+  title: Agentic and Memory-Based Systems
+  shortTitle: Agentic Memory
+  order: 40
+  featured: true
+  status: exploratory
+  question: >-
+    If an agent's memory is a context window, it forgets on restart and on
+    handoff. What specifically does an operational agent need to persist — and
+    what changes when memory becomes a queryable, transactional store instead?
+  whyItMatters: >-
+    In safety-adjacent settings the costly failure is not a wrong fact but a
+    repeated action: recommending the thing that caused damage last time,
+    because the consequence was never available at the moment of decision.
+    That is a memory-architecture problem, not a prompting problem.
+  approach: >-
+    Separating episodic memory (what happened, in order) from semantic memory
+    (what a given action caused), storing both in one database so that retrieval
+    returns a precedent together with its provenance, and making every
+    model-produced recommendation pass a post-model safety check before a human
+    sees it.
+  findings:
+    - >-
+      Keeping episodic and semantic memory in a single database makes retrieval
+      and the human decision that follows transactional against the same rows,
+      removing a consistency boundary from the middle of a safety-critical path.
+    - >-
+      A post-model safety floor — re-checking model output and filtering
+      citations down to memory IDs that were genuinely retrieved — catches
+      failures that prompting alone does not.
+  futureDirection: >-
+    Closing the learning loop by writing back whether an approved action produced
+    its predicted outcome, and evaluating retrieval quality with a labelled set
+    and precision@k tracking.
+  keywords:
+    - Agentic systems
+    - Vector retrieval
+    - Episodic and semantic memory
+    - Human-in-the-loop approval
+    - Transactional consistency
+  publications: []
+  projects: [sentinel-memory]
+
+- id: applied-ai-data-systems
+  title: Applied AI and Data Integration
+  shortTitle: Applied AI & Data
+  order: 50
+  featured: false
+  status: ongoing
+  question: >-
+    What has to be true of the data layer — schemas, provenance, quality
+    classification — before a machine-learning or agentic system on top of it
+    can be trusted?
+  whyItMatters: >-
+    Most of the difficulty in applied AI is upstream of the model. Standardised
+    metadata, traceability between records, and an explicit notion of record
+    completeness determine whether downstream outputs can be audited at all.
+  approach: >-
+    Building the data layer as a first-class artefact: implementing a formal
+    conceptual information model, deriving entity relationships and
+    classification hierarchies from it, and automating data-quality
+    classification rather than leaving it to reviewers.
+  findings: []
+  futureDirection: >-
+    Extending automated quality classification and traceability across
+    integrated engineering workflows.
+  keywords:
+    - Data modelling
+    - CIM4DE
+    - Metadata standardisation
+    - Graph representations
+    - Anomaly detection
+  publications: []
+  projects: [dema-platform, circular-trade-fraud-detection, astranova]

@@ -1,0 +1,170 @@
+---
+import { NAV_ITEMS } from '../lib/nav.js';
+import { url, isActive } from '../lib/url.js';
+import { loadContent } from '../lib/content.js';
+import ThemeToggle from './ThemeToggle.astro';
+import CommandPalette from './CommandPalette.astro';
+
+const { profile } = loadContent();
+const pathname = Astro.url.pathname;
+---
+
+<a
+  href="#main"
+  class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
+  style="background: var(--surface-raised); color: var(--ink); border: 1px solid var(--border-strong)"
+>
+  Skip to content
+</a>
+
+<header
+  class="sticky top-0 z-40 border-b backdrop-blur-md"
+  style="background: color-mix(in oklab, var(--surface) 88%, transparent); border-color: var(--border)"
+>
+  <div class="header-track flex h-16 items-center justify-between gap-4">
+    <a
+      href={url('/')}
+      class="flex shrink-0 items-baseline gap-2 no-underline"
+      style="color: var(--ink)"
+    >
+      <span class="whitespace-nowrap font-serif text-lg font-semibold tracking-tight">{profile.name}</span>
+      {/* The headline only appears once there is room for it beside the full nav. */}
+      <span class="hidden shrink-0 text-xs 2xl:inline" style="color: var(--ink-subtle)">
+        {profile.headline}
+      </span>
+    </a>
+
+    <nav aria-label="Primary" class="hidden shrink-0 xl:block">
+      <ul class="flex items-center gap-0.5">
+        {
+          NAV_ITEMS.map((item) => {
+            const activeNow = isActive(item.href, pathname);
+            return (
+              <li>
+                <a
+                  href={url(item.href)}
+                  aria-current={activeNow ? 'page' : undefined}
+                  class="whitespace-nowrap rounded-md px-2 py-1.5 text-sm no-underline transition-colors"
+                  style={`color: ${activeNow ? 'var(--ink)' : 'var(--ink-muted)'}; ${
+                    activeNow ? 'background: var(--surface-sunken); font-weight: 550;' : ''
+                  }`}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </nav>
+
+    <div class="flex shrink-0 items-center gap-2">
+      <CommandPalette />
+      <ThemeToggle />
+      <button
+        type="button"
+        id="menu-toggle"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border xl:hidden"
+        style="border-color: var(--border); color: var(--ink-muted)"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Open navigation menu"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" aria-label="Primary mobile" hidden class="border-t xl:hidden" style="border-color: var(--border)">
+    <ul class="header-track grid gap-0.5 py-3 sm:grid-cols-2">
+      {
+        NAV_ITEMS.map((item) => {
+          const activeNow = isActive(item.href, pathname);
+          return (
+            <li>
+              <a
+                href={url(item.href)}
+                aria-current={activeNow ? 'page' : undefined}
+                class="block rounded-lg px-3 py-2.5 no-underline"
+                style={`color: ${activeNow ? 'var(--ink)' : 'var(--ink-muted)'}; ${
+                  activeNow ? 'background: var(--surface-sunken);' : ''
+                }`}
+              >
+                <span class="text-sm font-medium">{item.label}</span>
+                <span class="mt-0.5 block text-xs" style="color: var(--ink-subtle)">
+                  {item.description}
+                </span>
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const nav = document.getElementById('mobile-nav');
+
+  function setOpen(open: boolean): void {
+    if (!nav || !toggle) return;
+    nav.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+  }
+
+  toggle?.addEventListener('click', () => setOpen(nav?.hidden ?? true));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && nav && !nav.hidden) {
+      setOpen(false);
+      toggle?.focus();
+    }
+  });
+
+  // Collapse the mobile menu once the layout is wide enough to show the bar.
+  const wide = window.matchMedia('(min-width: 1280px)');
+  wide.addEventListener('change', (event) => {
+    if (event.matches) setOpen(false);
+  });
+</script>
+
+<style>
+  /* Wider than the prose container so the full nav fits without overflow. */
+  .header-track {
+    width: 100%;
+    max-width: 88rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .header-track {
+      padding-inline: 2rem;
+    }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+  .focus\:not-sr-only:focus {
+    position: fixed;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+</style>

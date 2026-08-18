@@ -1,0 +1,11 @@
+# Explicit paper ↔ code mappings.
+#
+# Never inferred by name similarity. Entries are created with:
+#   npm run portfolio -- link-paper-code <paper-id> <owner/repository>
+# which checks that the paper id exists in publications.yml and that the
+# repository exists and is reachable before writing anything here.
+#
+# The 41-model intent-classification evaluation and the WACV interaction study
+# do not currently have public code repositories, so no mapping is recorded for
+# them. See content/review-needed.yml.
+[]

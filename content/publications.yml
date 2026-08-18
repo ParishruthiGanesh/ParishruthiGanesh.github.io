@@ -1,0 +1,87 @@
+# Publications.
+#
+# Status is read from an explicit source and never inferred from a venue string.
+# `sources` records where each field came from; `lastVerified` is the date a
+# human last confirmed the record. Citation counts are only ever displayed when
+# retrieved from a supported API and labelled with a retrieval date — none are
+# recorded here, so none are displayed.
+
+- id: intent-classification-41-models
+  title: >-
+    Selecting Open-Weight Language Models for Zero-Shot Intent Classification:
+    A Systematic Evaluation of 41 Models
+  authors:
+    - Parishruthi Ganesh
+    - Gerry Dozier
+    - Cheryl Seals
+  highlightAuthor: Parishruthi Ganesh
+  venue: arXiv preprint
+  venueShort: arXiv
+  year: 2026
+  status: preprint
+  statusNote: Preprint available on arXiv; submitted to AAAI.
+  featured: true
+  order: 10
+  abstract: >-
+    A systematic zero-shot evaluation of 41 open-weight language models spanning
+    15 families and the 135M–9B parameter range, across eight English
+    single-label intent-classification datasets covering standard benchmarks, a
+    large-scale voice-assistant corpus, and production-derived e-commerce
+    datasets. Beyond exact-match accuracy the study analyses confidence
+    calibration, robustness to realistic input perturbations, statistical
+    reliability of model rankings, deployment efficiency, and benchmark
+    saturation. Results show that instruction-tuned 3B models can outperform
+    several evaluated 7B base models, that differences among leading models on
+    MASSIVE are statistically indistinguishable under pairwise McNemar tests,
+    and that widely used benchmarks such as SNIPS have become saturated and no
+    longer meaningfully discriminate among current open-weight models.
+  researchAreas: [language-model-evaluation]
+  arxivId: '2607.27421'
+  paperUrl: https://arxiv.org/abs/2607.27421
+  lastVerified: '2026-08-18'
+  sources:
+    - 'Resume (Publications section): title, author order, "Submitted to AAAI", arXiv identifier'
+    - 'arXiv listing for 2607.27421: title, author list, abstract, key findings'
+  bibtex: |
+    @misc{ganesh2026selecting,
+      title         = {Selecting Open-Weight Language Models for Zero-Shot Intent Classification: A Systematic Evaluation of 41 Models},
+      author        = {Ganesh, Parishruthi and Dozier, Gerry and Seals, Cheryl},
+      year          = {2026},
+      eprint        = {2607.27421},
+      archivePrefix = {arXiv},
+      primaryClass  = {cs.CL},
+      url           = {https://arxiv.org/abs/2607.27421}
+    }
+
+- id: interaction-representations-early-violence
+  title: >-
+    How Much Do Interaction Representations Contribute? A Controlled Study
+    Through Early Violence Detection
+  authors:
+    - Parishruthi Ganesh
+    - 'et al.'
+  highlightAuthor: Parishruthi Ganesh
+  year: 2026
+  status: under-review
+  statusNote: >-
+    Submitted to WACV. The resume records the submission but not the review
+    outcome, so no acceptance is claimed and no venue year is asserted.
+  featured: true
+  order: 20
+  abstract: >-
+    A controlled study measuring how much explicitly modelling the interaction
+    between people contributes to early violence detection in video, separated
+    from the contribution of the underlying backbone and training protocol. The
+    framing is deliberately narrow: the goal is an attributable, benchmark-scoped
+    measurement of one design choice rather than a general detection claim.
+  researchAreas: [video-understanding-safety]
+  lastVerified: '2026-08-18'
+  sources:
+    - 'Resume (Publications section): title, first author, "Submitted to WACV"'
+  bibtex: |
+    @unpublished{ganesh2026interaction,
+      title  = {How Much Do Interaction Representations Contribute? A Controlled Study Through Early Violence Detection},
+      author = {Ganesh, Parishruthi and others},
+      year   = {2026},
+      note   = {Submitted to WACV}
+    }

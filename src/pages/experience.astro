@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Tag from '../components/Tag.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import { formatRange } from '../lib/format.js';
+
+const content = loadContent();
+const { experience, projects, publications, profile } = content;
+const projectById = new Map(projects.map((project) => [project.id, project]));
+const pubById = new Map(publications.map((pub) => [pub.id, pub]));
+
+const TYPE_LABELS: Record<string, string> = {
+  research: 'Research',
+  industry: 'Industry',
+  teaching: 'Teaching',
+  service: 'Service',
+  leadership: 'Leadership',
+};
+
+/** Resolve related ids in the frontmatter — the template is compiled as JSX. */
+const roles = experience.map((entry) => ({
+  entry,
+  workstreams: entry.workstreams.map((stream) => ({
+    stream,
+    projects: stream.relatedProjects
+      .map((id) => projectById.get(id))
+      .filter((project): project is NonNullable<typeof project> => Boolean(project)),
+    publications: stream.relatedPublications
+      .map((id) => pubById.get(id))
+      .filter((pub): pub is NonNullable<typeof pub> => Boolean(pub)),
+  })),
+  projects: entry.relatedProjects
+    .map((id) => projectById.get(id))
+    .filter((project): project is NonNullable<typeof project> => Boolean(project)),
+  publications: entry.relatedPublications
+    .map((id) => pubById.get(id))
+    .filter((pub): pub is NonNullable<typeof pub> => Boolean(pub)),
+}));
+---
+
+<BaseLayout
+  title="Experience"
+  description={`Research, industry and teaching roles held by ${profile.name}, with the technical contributions in each.`}
+>
+  <PageHeader
+    eyebrow="Experience"
+    title="Research, industry and teaching"
+    lead="Drawn from the resume. Supervisor names, internal project details and anything not already public are deliberately omitted."
+  />
+
+  <div class="container-page py-12 sm:py-16">
+    <ol class="space-y-14">
+      {
+        roles.map(({ entry, workstreams, projects: entryProjects, publications: entryPublications }) => (
+          <li id={entry.id} class="scroll-mt-24">
+            <div class="border-t pt-9" style="border-color: var(--border)">
+              <div class="grid gap-8 lg:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] lg:gap-12">
+                <div class="lg:sticky lg:top-24 lg:self-start">
+                  <p class="font-mono text-sm" style="color: var(--ink-subtle)">
+                    {formatRange(entry.start, entry.end)}
+                  </p>
+                  <div class="mt-2">
+                    <Tag tone={entry.type === 'research' ? 'accent' : 'outline'}>
+                      {TYPE_LABELS[entry.type] ?? entry.type}
+                    </Tag>
+                  </div>
+                  {entry.location && (
+                    <p class="mt-3 text-sm" style="color: var(--ink-subtle)">
+                      {entry.location}
+                    </p>
+                  )}
+                </div>
+
+                <div class="min-w-0">
+                  <h2 class="text-xl font-semibold sm:text-2xl" style="color: var(--ink)">
+                    {entry.role}
+                  </h2>
+                  <p class="mt-1 text-base" style="color: var(--ink-muted)">
+                    {entry.organizationUrl ? (
+                      <a href={entry.organizationUrl} rel="noopener" class="link-underline no-underline" style="color: inherit">
+                        {entry.organization}
+                      </a>
+                    ) : (
+                      entry.organization
+                    )}
+                  </p>
+
+                  {entry.summary && (
+                    <p class="mt-4 max-w-2xl leading-relaxed" style="color: var(--ink-muted)">
+                      {entry.summary}
+                    </p>
+                  )}
+
+                  {entry.responsibilities.length > 0 && (
+                    <ul class="mt-5 space-y-2.5">
+                      {entry.responsibilities.map((item) => (
+                        <li class="flex gap-3 leading-relaxed" style="color: var(--ink-muted)">
+                          <span aria-hidden="true" style="color: var(--accent)">—</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {workstreams.length > 0 && (
+                    <div class="mt-8 space-y-6">
+                      <h3 class="eyebrow">Technical contributions</h3>
+                      {workstreams.map(({ stream, projects: streamProjects, publications: streamPublications }) => (
+                        <div class="surface-card p-5 sm:p-6">
+                          <h4 class="text-base font-semibold" style="color: var(--ink)">
+                            {stream.name}
+                          </h4>
+                          {stream.stack.length > 0 && (
+                            <p class="mt-1.5 font-mono text-xs" style="color: var(--ink-subtle)">
+                              {stream.stack.join(' · ')}
+                            </p>
+                          )}
+                          {stream.summary && (
+                            <p class="mt-3 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                              {stream.summary}
+                            </p>
+                          )}
+                          {stream.highlights.length > 0 && (
+                            <ul class="mt-4 space-y-2.5">
+                              {stream.highlights.map((highlight) => (
+                                <li class="flex gap-2.5 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                                  <span aria-hidden="true" style="color: var(--ink-subtle)">·</span>
+                                  <span>{highlight}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {(streamProjects.length > 0 || streamPublications.length > 0) && (
+                            <p class="mt-4 flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+                              {streamProjects.map((project) => (
+                                <a
+                                  href={url(`/projects/${project.id}`)}
+                                  class="link-underline no-underline"
+                                  style="color: var(--accent)"
+                                >
+                                  {project.name} →
+                                </a>
+                              ))}
+                              {streamPublications.map((pub) => (
+                                <a
+                                  href={url(`/publications/${pub.id}`)}
+                                  class="link-underline no-underline"
+                                  style="color: var(--accent)"
+                                >
+                                  {pub.title} →
+                                </a>
+                              ))}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {entry.technologies.length > 0 && (
+                    <div class="mt-7">
+                      <h3 class="eyebrow">Technologies</h3>
+                      <ul class="mt-3 flex flex-wrap gap-1.5">
+                        {entry.technologies.map((tech) => (
+                          <li>
+                            <Tag tone="outline">{tech}</Tag>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {(entryProjects.length > 0 || entryPublications.length > 0) && (
+                    <p class="mt-6 flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+                      {entryProjects.map((project) => (
+                        <a href={url(`/projects/${project.id}`)} class="link-underline no-underline" style="color: var(--accent)">
+                          {project.name} →
+                        </a>
+                      ))}
+                      {entryPublications.map((pub) => (
+                        <a href={url(`/publications/${pub.id}`)} class="link-underline no-underline" style="color: var(--accent)">
+                          {pub.title} →
+                        </a>
+                      ))}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="mt-14 text-sm" style="color: var(--ink-subtle)">
+      A condensed version of everything above is on the{' '}
+      <a href={url('/resume')} class="link-underline no-underline" style="color: var(--accent)">resume page</a>,
+      which also offers the PDF.
+    </p>
+  </div>
+</BaseLayout>

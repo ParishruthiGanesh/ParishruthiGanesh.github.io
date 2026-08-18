@@ -1,0 +1,285 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Tag from '../../components/Tag.astro';
+import LinkList from '../../components/LinkList.astro';
+import DetailSection from '../../components/DetailSection.astro';
+import Screenshot from '../../components/Screenshot.astro';
+import RelatedContent from '../../components/RelatedContent.astro';
+import { loadContent } from '../../lib/content.js';
+import { url } from '../../lib/url.js';
+import { PROJECT_STATUS_LABELS, STATUS_LABELS } from '../../lib/format.js';
+
+export function getStaticPaths() {
+  const { projects } = loadContent();
+  return projects.map((project) => ({
+    params: { id: project.id },
+    props: { projectId: project.id },
+  }));
+}
+
+interface Props {
+  projectId: string;
+}
+const { projectId } = Astro.props;
+const content = loadContent();
+const project = content.projects.find((entry) => entry.id === projectId)!;
+
+const areaLabels = Object.fromEntries(content.research.map((theme) => [theme.id, theme.shortTitle]));
+const relatedPublications = content.publications.filter((pub) =>
+  project.relatedPublications.includes(pub.id),
+);
+const relatedHackathons = content.hackathons.filter((hackathon) =>
+  project.relatedHackathons.includes(hackathon.id),
+);
+const repository = project.repository
+  ? content.repositories.find((repo) => repo.fullName === project.repository)
+  : undefined;
+const repositoryPrivate = repository?.isPrivate ?? false;
+
+/** Sections rendered in a fixed narrative order, skipping absent fields. */
+const sections = [
+  { id: 'problem', title: 'Problem', content: project.problem },
+  { id: 'motivation', title: 'Motivation', content: project.motivation },
+  { id: 'architecture', title: 'Architecture', content: project.architecture },
+  { id: 'dataset', title: 'Dataset', content: project.dataset },
+  { id: 'method', title: 'Method', content: project.method },
+  { id: 'setup-experimental', title: 'Experimental setup', content: project.experimentalSetup },
+  { id: 'results', title: 'Results', content: project.results },
+  { id: 'error-analysis', title: 'Error analysis', content: project.errorAnalysis },
+  { id: 'limitations', title: 'Limitations', content: project.limitations },
+  { id: 'responsible-use', title: 'Responsible use', content: project.responsibleUse },
+  { id: 'setup', title: 'Running it yourself', content: project.setup },
+  { id: 'future-work', title: 'Future work', content: project.futureWork },
+].filter((section) => Boolean(section.content));
+
+const related = [
+  ...relatedPublications.map((pub) => ({
+    kind: 'Related paper',
+    title: pub.title,
+    href: `/publications/${pub.id}`,
+    note: `${STATUS_LABELS[pub.status]} · ${pub.year}`,
+  })),
+  ...relatedHackathons.map((hackathon) => ({
+    kind: 'Related hackathon',
+    title: `${hackathon.projectName} — ${hackathon.hackathon}`,
+    href: `/hackathons#${hackathon.id}`,
+  })),
+  ...(project.links.repo && !repositoryPrivate
+    ? [{ kind: 'Related code', title: project.links.repo.label, href: project.links.repo.url, external: true }]
+    : []),
+  ...(project.links.demo
+    ? [{ kind: 'Related demo', title: project.links.demo.label, href: project.links.demo.url, external: true }]
+    : []),
+  ...project.researchAreas.map((area) => ({
+    kind: 'Research theme',
+    title: areaLabels[area] ?? area,
+    href: `/research#${area}`,
+  })),
+];
+---
+
+<BaseLayout
+  title={project.name}
+  description={project.tagline}
+  image={project.screenshots[0]?.src}
+  ogType="article"
+  schema={[
+    {
+      '@context': 'https://schema.org',
+      '@type': project.repository ? 'SoftwareSourceCode' : 'CreativeWork',
+      name: project.name,
+      description: project.tagline,
+      ...(project.repository ? { codeRepository: `https://github.com/${project.repository}` } : {}),
+      ...(project.technologies.length ? { programmingLanguage: project.technologies } : {}),
+      author: { '@type': 'Person', name: content.profile.name },
+    },
+  ]}
+>
+  <article>
+    <header class="border-b py-12 sm:py-16" style="border-color: var(--border)">
+      <div class="container-page">
+        <nav aria-label="Breadcrumb" class="mb-6 text-sm">
+          <a href={url('/projects')} class="link-underline no-underline" style="color: var(--ink-subtle)">
+            ← All projects
+          </a>
+        </nav>
+
+        <div class="flex flex-wrap items-center gap-2">
+          {project.featured && <Tag tone="ember" size="md">Featured</Tag>}
+          <Tag tone="outline" size="md">{PROJECT_STATUS_LABELS[project.status]}</Tag>
+          {
+            (project.period || project.year) && (
+              <span class="font-mono text-sm" style="color: var(--ink-subtle)">
+                {project.period ?? project.year}
+              </span>
+            )
+          }
+        </div>
+
+        <h1 class="mt-4 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl" style="color: var(--ink)">
+          {project.name}
+        </h1>
+        <p class="mt-4 max-w-3xl text-lg leading-relaxed" style="color: var(--ink-muted)">
+          {project.tagline}
+        </p>
+
+        {
+          project.researchAreas.length > 0 && (
+            <div class="mt-6 flex flex-wrap gap-2">
+              {project.researchAreas.map((area) => (
+                <Tag tone="accent" size="md" href={url(`/research#${area}`)}>
+                  {areaLabels[area] ?? area}
+                </Tag>
+              ))}
+            </div>
+          )
+        }
+
+        <div class="mt-7">
+          <LinkList links={project.links} repositoryPrivate={repositoryPrivate} />
+        </div>
+
+        {
+          repositoryPrivate && (
+            <p class="mt-3 max-w-2xl text-sm" style="color: var(--ink-subtle)">
+              The source repository is private on GitHub, so the write-up below is limited to
+              what could be established from sources that are public.
+            </p>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="container-page py-12 sm:py-14">
+      <div class="grid gap-12 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <div class="min-w-0">
+          {
+            project.highlights.length > 0 && (
+              <section aria-labelledby="highlights-heading">
+                <h2 id="highlights-heading" class="eyebrow">
+                  What it does
+                </h2>
+                <ul class="mt-3 space-y-2.5">
+                  {project.highlights.map((highlight) => (
+                    <li class="flex gap-3 leading-relaxed" style="color: var(--ink-muted)">
+                      <span aria-hidden="true" style="color: var(--accent)">—</span>
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          {sections.map((section) => (
+            <DetailSection id={section.id} title={section.title} content={section.content} />
+          ))}
+
+          {
+            project.screenshots.length > 0 && (
+              <section class="mt-12" aria-labelledby="screenshots-heading">
+                <h2 id="screenshots-heading" class="text-xl font-semibold" style="color: var(--ink)">
+                  Screenshots
+                </h2>
+                <div class="mt-5 space-y-8">
+                  {project.screenshots.map((shot, index) => (
+                    <Screenshot src={shot.src} alt={shot.alt} caption={shot.caption} eager={index === 0} />
+                  ))}
+                </div>
+              </section>
+            )
+          }
+
+          <RelatedContent items={related} />
+        </div>
+
+        {/* ---------- Sidebar ---------- */}
+        <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          {
+            sections.length > 2 && (
+              <nav class="surface-card p-5" aria-labelledby="toc-heading">
+                <h2 id="toc-heading" class="eyebrow">
+                  On this page
+                </h2>
+                <ul class="mt-3 space-y-1.5 text-sm">
+                  {sections.map((section) => (
+                    <li>
+                      <a href={`#${section.id}`} class="link-underline no-underline" style="color: var(--ink-muted)">
+                        {section.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )
+          }
+
+          {
+            project.technologies.length > 0 && (
+              <div class="surface-card p-5">
+                <h2 class="eyebrow">Built with</h2>
+                <ul class="mt-3 flex flex-wrap gap-1.5">
+                  {project.technologies.map((tech) => (
+                    <li>
+                      <Tag tone="outline">{tech}</Tag>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+
+          {
+            repository && (
+              <div class="surface-card p-5">
+                <h2 class="eyebrow">Repository</h2>
+                <p class="mt-3 font-mono text-sm">
+                  {repository.isPrivate ? (
+                    <span style="color: var(--ink-muted)">{repository.fullName} (private)</span>
+                  ) : (
+                    <a href={repository.url} rel="noopener" class="link-underline no-underline" style="color: var(--accent)">
+                      {repository.fullName}
+                    </a>
+                  )}
+                </p>
+                <dl class="mt-3 space-y-1.5 text-xs" style="color: var(--ink-subtle)">
+                  {repository.language && (
+                    <div class="flex justify-between gap-3">
+                      <dt>Language</dt>
+                      <dd style="color: var(--ink-muted)">{repository.language}</dd>
+                    </div>
+                  )}
+                  {repository.license && (
+                    <div class="flex justify-between gap-3">
+                      <dt>Licence</dt>
+                      <dd style="color: var(--ink-muted)">{repository.license}</dd>
+                    </div>
+                  )}
+                  {repository.synced && repository.stars > 0 && (
+                    <div class="flex justify-between gap-3">
+                      <dt>Stars</dt>
+                      <dd style="color: var(--ink-muted)">{repository.stars}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )
+          }
+
+          {
+            project.sources.length > 0 && (
+              <div class="surface-card p-5">
+                <h2 class="eyebrow">Sources</h2>
+                <ul class="mt-3 space-y-2 text-xs leading-relaxed" style="color: var(--ink-subtle)">
+                  {project.sources.map((source) => (
+                    <li>{source}</li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+        </aside>
+      </div>
+    </div>
+  </article>
+</BaseLayout>

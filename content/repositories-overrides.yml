@@ -1,0 +1,124 @@
+# Editorial control over the Repositories page.
+#
+# GitHub metadata is synchronised into content/generated/repositories.json by
+# `npm run portfolio -- sync` and is never edited by hand. This file holds the
+# curated layer on top of it: ordering, visibility, categories, relationships
+# and `portfolioSummary`. A sync updates `githubDescription`; it never touches
+# `portfolioSummary`, so a carefully written summary cannot be overwritten by a
+# one-line GitHub description.
+
+github:
+  owner: ParishruthiGanesh
+  exclude:
+    - Demo-repo
+    - Demo-repo2
+  includeForks: false
+  hideEmpty: true
+repositories:
+  - name: sentinel-memory
+    portfolioSummary: An incident-response agent whose memory is a transactional database
+      rather than a context window. Retrieval over CockroachDB's distributed vector
+      index surfaces what a proposed action cost during a previous incident, with the
+      incident code, date and damage attached; approval commits four writes in one
+      transaction. 94 tests, none requiring a live cluster.
+    categories:
+      - hackathons
+      - agentic
+      - rag
+      - applications
+    featured: true
+    hidden: false
+    privateRepo: false
+    order: 10
+    relatedPublications: []
+    relatedHackathons:
+      - cockroachdb-aws-agentic-memory
+    relatedProjects:
+      - sentinel-memory
+  - name: astranova-trading-copilot
+    portfolioSummary: AstraNova — an AI trading copilot for India's options traders, built
+      for the Build with Gemini XPRIZE hackathon. Joins live Angel One market data,
+      AI-scored signals, real broker execution and a Gemini-powered assistant.
+    categories:
+      - hackathons
+      - applications
+    featured: true
+    hidden: false
+    privateRepo: true
+    order: 20
+    relatedPublications: []
+    relatedHackathons:
+      - build-with-gemini-xprize
+    relatedProjects:
+      - astranova
+    note: Make it public once the hackathon submission is final, then run `npm run portfolio
+      -- sync` — the private label disappears on its own.
+  - name: Circular-trade-Fraud-Detection
+    portfolioSummary: "Graph-based detection of circular trading rings in iron-dealer
+      invoice data: cycle detection over a multi-graph representation feeds a per-node
+      suspicion score, Node2Vec embeddings, and DBSCAN clustering to isolate dense
+      regions of anomalous trading behaviour."
+    categories:
+      - research
+      - applications
+    featured: true
+    hidden: false
+    privateRepo: false
+    order: 30
+    relatedPublications: []
+    relatedHackathons: []
+    relatedProjects:
+      - circular-trade-fraud-detection
+  - name: Sentimental-Analysis
+    portfolioSummary: Fine-tuning bert-base-uncased on the SMILE annotation dataset for
+      multi-class sentiment classification — a complete PyTorch pipeline from
+      tokenisation through AdamW training with linear warm-up. A learning project rather
+      than a research contribution.
+    categories:
+      - nlp-llm
+      - coursework
+    featured: false
+    hidden: false
+    privateRepo: false
+    order: 40
+    relatedPublications: []
+    relatedHackathons: []
+    relatedProjects:
+      - bert-sentiment-analysis
+  - name: To-Do-List-Application
+    portfolioSummary: A small vanilla-JavaScript task list. Early web practice, listed for
+      completeness under coursework and learning labs.
+    categories:
+      - coursework
+    featured: false
+    hidden: false
+    privateRepo: false
+    order: 60
+    relatedPublications: []
+    relatedHackathons: []
+    relatedProjects: []
+  - name: WebPage
+    portfolioSummary: Static HTML/CSS practice page. Listed under coursework and learning labs.
+    categories:
+      - coursework
+    featured: false
+    hidden: false
+    privateRepo: false
+    order: 70
+    relatedPublications: []
+    relatedHackathons: []
+    relatedProjects: []
+  - name: ParishruthiGanesh.github.io
+    portfolioSummary: "The source of this site: an Astro + TypeScript + Tailwind portfolio
+      with Zod-validated structured content, a GitHub synchronisation pipeline and a
+      `portfolio` CLI for adding papers, projects and hackathons."
+    categories:
+      - applications
+      - coursework
+    featured: false
+    hidden: false
+    privateRepo: false
+    order: 80
+    relatedPublications: []
+    relatedHackathons: []
+    relatedProjects: []

@@ -1,0 +1,30 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  /** The first image on a page can load eagerly; the rest stay lazy. */
+  eager?: boolean;
+  class?: string;
+}
+import { url } from '../lib/url.js';
+const { src, alt, caption, eager = false, class: className = '' } = Astro.props;
+---
+<figure class:list={['m-0', className]}>
+  <img
+    src={url(src)}
+    alt={alt}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding="async"
+    fetchpriority={eager ? 'high' : 'auto'}
+    class="w-full rounded-xl border"
+    style="border-color: var(--border); background: var(--surface-sunken)"
+  />
+  {
+    caption && (
+      <figcaption class="mt-2.5 text-sm leading-relaxed" style="color: var(--ink-subtle)">
+        {caption}
+      </figcaption>
+    )
+  }
+</figure>

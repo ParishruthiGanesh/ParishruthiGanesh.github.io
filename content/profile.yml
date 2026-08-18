@@ -1,0 +1,68 @@
+# Source: Parishruthi_Ganesh_Resume.pdf (header, Profile, Education) + links
+# supplied directly by Parishruthi. Home address and telephone number are
+# deliberately omitted — see docs/SOURCE_AUDIT.md.
+
+name: Parishruthi Ganesh
+shortName: Parishruthi
+headline: AI/ML Researcher & Engineer
+role: Ph.D. Student, Computer Science and Software Engineering
+affiliation: Auburn University
+affiliationUrl: https://www.eng.auburn.edu/csse/
+location: Auburn, Alabama, USA
+tagline: "I build and evaluate machine-learning systems for video understanding,
+  language-model selection, and retrieval- and memory-grounded agents — with an emphasis
+  on measurement that holds up: controlled comparisons, calibration, and honest
+  reporting of what a benchmark can and cannot tell you."
+shortBio: Parishruthi Ganesh is a Ph.D. student in Computer Science and Software
+  Engineering at Auburn University working on large language models, NLP and computer
+  vision. Her first-author work includes a systematic zero-shot evaluation of 41
+  open-weight language models and a controlled study of interaction representations for
+  early violence detection in video.
+bio: |
+  I am a Ph.D. student in Computer Science and Software Engineering at Auburn
+  University, where my research sits at the intersection of **empirical
+  evaluation** and **applied machine-learning systems**.
+
+  Two questions run through most of my work. The first is a measurement
+  question: *when we say one model or one representation is better, what exactly
+  have we measured, and would that conclusion survive a different dataset, a
+  perturbed input, or a significance test?* That question produced a systematic
+  zero-shot evaluation of 41 open-weight language models across eight intent
+  classification datasets, where the interesting result was not a leaderboard
+  but the finding that several widely used benchmarks no longer discriminate
+  between current models at all.
+
+  The second is a systems question: *what does a model actually need to
+  remember, retrieve, or represent in order to be useful under real
+  constraints?* That question runs through a controlled study of interaction
+  representations for early violence detection in video, a retrieval-augmented
+  system over roughly 25,000 research papers, and an incident-response agent
+  whose memory lives in a database rather than a context window.
+
+  Before returning to research I spent about eighteen months as an Associate
+  Software Developer at Emids Technologies in Bangalore, building CRM modules
+  and REST services in Java and Spring Boot. That period is why I care about
+  systems that are maintainable and honest about their own failure modes, not
+  just accurate on a held-out split.
+email: parishruthig2@gmail.com
+links:
+  github: https://github.com/ParishruthiGanesh
+  linkedin: https://www.linkedin.com/in/parishruthi-ganesh-85909b188/
+  googleScholar: https://scholar.google.com/citations?hl=en&user=t5XIouoAAAAJ
+  universityProfile: https://www.eng.auburn.edu/csse/
+resume:
+  path: /resume/Parishruthi-Ganesh-Resume.pdf
+  lastUpdated: 2026-08-18
+  filename: Parishruthi-Ganesh-Resume.pdf
+researchInterests:
+  - Large Language Models
+  - Model Evaluation & Benchmarking
+  - Natural Language Processing
+  - Computer Vision & Video Understanding
+  - Retrieval-Augmented Generation
+  - Agentic & Memory-Based Systems
+openTo:
+  - Research collaborations
+  - Research internships
+  - Ph.D.-level co-authorship
+  - Reviewing and programme-committee service

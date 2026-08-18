@@ -1,0 +1,19 @@
+# Custom domain support, prepared but not enabled.
+#
+# GitHub Pages reads a file called exactly `CNAME` (no extension) from the
+# published site root. This file is named CNAME.example on purpose, so it is
+# inert until a domain actually exists.
+#
+# To enable a custom domain:
+#   1. Point the domain's DNS at GitHub Pages:
+#        - apex domain:      A/AAAA records to GitHub's Pages IPs
+#        - www subdomain:    CNAME to parishruthiganesh.github.io
+#   2. Copy this file:  cp public/CNAME.example public/CNAME
+#   3. Replace the contents with the bare hostname on a single line, e.g.
+#        parishruthi.dev
+#   4. Update `site` in astro.config.mjs to https://<that hostname>
+#      (canonical URLs, Open Graph tags, the sitemap and the RSS feed all read
+#      from that value, so missing this step is the usual cause of a custom
+#      domain that "works" but still advertises the github.io URL).
+#   5. Commit, merge to main, and enable "Enforce HTTPS" in
+#      Settings → Pages once the certificate has been issued.

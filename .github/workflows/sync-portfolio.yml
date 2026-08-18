@@ -1,0 +1,123 @@
+name: Sync portfolio data
+
+# Refreshes GitHub repository metadata and publication metadata, validates the
+# result, builds and tests it, and — only if something actually changed —
+# opens a pull request.
+#
+# It deliberately does NOT push to main. Synchronised data can be wrong (an API
+# hiccup, a renamed repository, an upstream metadata change), so a human sees
+# the diff before it reaches the live site.
+
+on:
+  schedule:
+    # 06:15 UTC daily. An off-the-hour minute avoids the top-of-hour congestion
+    # that makes GitHub's scheduler drop runs.
+    - cron: '15 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Report changes without opening a pull request'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      # Re-run when the curated layer changes, so generated data stays in step.
+      - 'content/**'
+      - 'scripts/portfolio/**'
+      - 'src/lib/schema.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-portfolio
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Fetch, validate and propose changes
+    runs-on: ubuntu-latest
+    permissions:
+      # Needed only by the pull-request step below.
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync GitHub repository metadata
+        env:
+          # The automatic token is sufficient: this only reads public
+          # repository metadata, and it raises the anonymous rate limit.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run portfolio -- sync --repos
+
+      - name: Sync publication metadata
+        env:
+          PORTFOLIO_CONTACT_EMAIL: ${{ vars.PORTFOLIO_CONTACT_EMAIL }}
+        # arXiv, Crossref, ORCID and Semantic Scholar are all external and can
+        # be briefly unavailable. A failure here must not fail the run or
+        # discard the repository sync that already succeeded — the CLI keeps
+        # existing records and reports what it could not reach.
+        continue-on-error: true
+        run: npm run portfolio -- sync --papers
+
+      - name: Validate structured content
+        run: npm run portfolio -- validate
+
+      - name: Build the site
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Report status
+        run: npm run portfolio -- status || true
+
+      - name: Detect changes
+        id: changes
+        run: |
+          if [ -z "$(git status --porcelain content/generated)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No synchronised data changed."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git --no-pager diff --stat content/generated
+          fi
+
+      - name: Open a pull request
+        if: steps.changes.outputs.changed == 'true' && inputs.dry-run != true
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: automated/portfolio-sync
+          base: main
+          # Only generated data is ever committed. Curated content under
+          # content/*.yml is never touched by this workflow.
+          add-paths: content/generated
+          commit-message: 'chore(sync): refresh GitHub and publication metadata'
+          title: 'Automated portfolio sync'
+          body: |
+            Synchronised repository and publication metadata.
+
+            Only files under `content/generated/` are changed. Curated content
+            in `content/*.yml` — including every `portfolioSummary` — is left
+            untouched by this workflow.
+
+            Validation, the production build and the test suite all passed
+            against these changes before this pull request was opened.
+
+            Review the diff and merge to publish. Merging to `main` triggers the
+            Pages deployment.
+          labels: automated, content-sync
+          delete-branch: true

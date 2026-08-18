@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      # One pull request per ecosystem rather than a dozen, so review is
+      # tractable. Majors stay separate because they need real attention.
+      astro:
+        patterns: ['astro', '@astrojs/*']
+        update-types: [minor, patch]
+      tooling:
+        patterns: ['typescript', 'tsx', 'vitest', '@playwright/*', 'tailwindcss', '@tailwindcss/*', 'vite']
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '07:00'
+    labels: [dependencies, github-actions]
+    commit-message:
+      prefix: 'chore(actions)'

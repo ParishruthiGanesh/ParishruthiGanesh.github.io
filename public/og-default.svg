@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Parishruthi Ganesh — AI/ML Researcher and Engineer">
+  <defs>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0v64" fill="none" stroke="#1b2a52" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1122" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#060b18" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#060b18"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#fade)"/>
+  <rect x="80" y="112" width="56" height="3" fill="#3cc9c6"/>
+  <text x="80" y="176" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="600" fill="#f7f9fc">Parishruthi Ganesh</text>
+  <text x="80" y="232" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="24" letter-spacing="3" fill="#3cc9c6">AI/ML RESEARCHER &amp; ENGINEER</text>
+  <text x="80" y="326" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#c2cddf">Ph.D. Student, Computer Science and Software Engineering</text>
+  <text x="80" y="370" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#94a3bd">Auburn University</text>
+  <text x="80" y="470" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="#94a3bd">Language-model evaluation · Video understanding · Retrieval-augmented</text>
+  <text x="80" y="508" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="#94a3bd">generation · Agentic memory systems</text>
+  <text x="80" y="566" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="22" fill="#6b7c99">parishruthiganesh.github.io</text>
+</svg>

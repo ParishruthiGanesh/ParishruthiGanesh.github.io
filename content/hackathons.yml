@@ -1,0 +1,160 @@
+# Hackathons.
+#
+# `award` is only ever set from a verified source and is displayed only when
+# `awardVerified: true`. `submissionStatus` keeps an in-progress submission from
+# reading as a result. Where a repository is private, `repositoryPrivate: true`
+# makes the site say so instead of publishing a link that 404s for visitors.
+
+- id: cockroachdb-aws-agentic-memory
+  hackathon: CockroachDB × AWS — Build with Agentic Memory
+  organizer: CockroachDB and AWS
+  date: '2026-08-17'
+  dateLabel: August 2026
+  projectName: Sentinel Memory
+  featured: true
+  order: 10
+  submissionStatus: submitted
+  tagline: An incident-response agent that remembers consequences.
+  problem: >-
+    During industrial emergencies, personnel rotate and agents restart, losing
+    the record of what was already attempted and what it caused. The same
+    reasonable-looking action gets taken again — including the one that did
+    damage last time — because the consequence history is not available at the
+    moment the decision is being made. An agent whose memory is a context window
+    reproduces that failure faster.
+  whatItDoes: >-
+    Sentinel Memory is an incident-response command centre where a database, not
+    a context window, is the memory. When a responder proposes an action, the
+    system embeds it, searches CockroachDB's distributed vector index for
+    precedents, and surfaces what that exact action cost during a previous
+    incident — with the incident code, date and damage — before recommending a
+    safer sequence and citing the memory it drew that from. Approval commits the
+    decision, the recommendation status, the incident state and the audit event
+    in a single transaction. When the primary agent disconnects, a backup agent
+    reconstructs the whole incident from the database alone.
+  architecture: >-
+    Next.js App Router with React 19 and TypeScript on the client; Node.js API
+    routes holding the agent loop; CockroachDB Cloud for episodic and semantic
+    memory with a VECTOR column and cosine-distance index; Amazon Bedrock via
+    the Converse API for reasoning and embeddings. DataStore, EmbeddingProvider
+    and Reasoner are interfaces with labelled local fallbacks, so the whole
+    system is previewable and testable without credentials.
+  technologies:
+    - TypeScript
+    - Next.js
+    - React 19
+    - Tailwind CSS
+    - CockroachDB Cloud
+    - Distributed Vector Indexing
+    - Amazon Bedrock
+    - Zod
+    - Vitest
+    - Vercel
+  lessons:
+    - >-
+      Agent memory is two problems, not one. Episodic memory (what happened, in
+      order) and semantic memory (what past actions caused) have different
+      shapes and different consumers; conflating them yields a system that can
+      replay a timeline or find similar text, but cannot answer "someone is
+      about to do X — has X hurt us before?"
+    - >-
+      Keeping both in one database is the actual advantage, and the reason is
+      the join: retrieval returns the memory together with its incident code,
+      severity and date in a single query, and the human decision that follows
+      is transactional against the same rows.
+    - >-
+      Structure memory around the action. Embedding incident summaries gets you
+      "similar incidents"; storing action → outcome → lesson as distinct fields
+      gets you "this specific action caused this specific damage".
+    - >-
+      Constraints beat prompts for safety. The prompt is necessary and not
+      sufficient — schema CHECK constraints, Zod validation and a post-model
+      safety floor are what make the guarantee real.
+    - >-
+      Honest degradation turned out to be a feature rather than a compliance
+      chore: labelling exactly which implementation is running makes the
+      architecture legible in a way a demo claiming everything works is not.
+  repository: ParishruthiGanesh/sentinel-memory
+  youtubeId: zg6Ys6pP6LA
+  relatedProjects: [sentinel-memory]
+  screenshots:
+    - src: /images/projects/sentinel-memory/command-center.webp
+      alt: Sentinel Memory command centre showing an active incident alongside a counterfactual memory card describing what the same proposed action caused during an earlier incident.
+      caption: The counterfactual moment — the whole pitch in one screen.
+    - src: /images/projects/sentinel-memory/handoff-before.webp
+      alt: Agent handoff view immediately after the primary agent disconnects, before the backup agent has rebuilt state.
+      caption: The primary agent disconnects.
+    - src: /images/projects/sentinel-memory/handoff-after.webp
+      alt: Agent handoff view after the backup agent has reconstructed the incident entirely from database records.
+      caption: The backup rebuilds the incident from the database — not from a transcript.
+  links:
+    repo:
+      label: GitHub — sentinel-memory
+      url: https://github.com/ParishruthiGanesh/sentinel-memory
+      verified: true
+    demo:
+      label: Live demo
+      url: https://sentinel-memory-git-main-pari19.vercel.app
+      verified: false
+    devpost:
+      label: Devpost submission
+      url: https://devpost.com/software/sentinal-memory
+      verified: false
+    video:
+      label: YouTube demo
+      url: https://youtu.be/zg6Ys6pP6LA
+      verified: false
+  sources:
+    - 'github.com/ParishruthiGanesh/sentinel-memory — README.md, docs/DEVPOST_SUBMISSION.md (hackathon name, problem, architecture, lessons)'
+    - 'GitHub API repository metadata (creation date 2026-08-17)'
+    - 'Demo, Devpost and YouTube URLs supplied directly by Parishruthi'
+
+- id: build-with-gemini-xprize
+  hackathon: Build with Gemini XPRIZE
+  organizer: Google & XPRIZE
+  hackathonUrl: https://xprize.devpost.com/
+  date: '2026-08-17'
+  dateLabel: August 2026
+  projectName: AstraNova
+  featured: true
+  order: 20
+  submissionStatus: in-progress
+  tagline: An AI trading copilot for India's options traders.
+  problem: >-
+    Retail options traders in India work across fragmented tools — market data
+    in one place, analysis in another, execution in a third — with no shared
+    context carried between them.
+  whatItDoes: >-
+    AstraNova joins live Angel One market data, AI-scored trading signals, real
+    broker execution and a Gemini-powered assistant into a single surface. This
+    description is taken from the project's own repository summary; a fuller
+    write-up is not published here because the repository is currently private.
+  technologies:
+    - Python
+    - Google Gemini
+    - Angel One API
+    - Real-time Market Data
+  repository: ParishruthiGanesh/astranova-trading-copilot
+  repositoryPrivate: true
+  youtubeId: mH3apHH-qnk
+  relatedProjects: [astranova]
+  links:
+    repo:
+      label: GitHub — astranova-trading-copilot (private repository)
+      url: https://github.com/ParishruthiGanesh/astranova-trading-copilot
+      verified: false
+    demo:
+      label: Live demo
+      url: https://nifty-research-47875.web.app
+      verified: false
+    devpost:
+      label: Devpost submission
+      url: https://devpost.com/software/astranova-intelligent-trading-copilot
+      verified: false
+    video:
+      label: YouTube demo
+      url: https://youtu.be/mH3apHH-qnk
+      verified: false
+  sources:
+    - 'GitHub API metadata for ParishruthiGanesh/astranova-trading-copilot — description names "Build with Gemini XPRIZE", Angel One data, AI-scored signals, broker execution and a Gemini assistant; created 2026-08-17; visibility private'
+    - 'Devpost, demo and YouTube URLs supplied directly by Parishruthi (Devpost link carried an in-progress marker at the time of writing)'

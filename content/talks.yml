@@ -1,0 +1,5 @@
+# No talks, posters or invited lectures are recorded on the resume or in any
+# supplied source. Adding an entry here publishes it immediately:
+#   npm run portfolio -- validate
+# will check it against the schema in src/lib/schema.ts.
+[]

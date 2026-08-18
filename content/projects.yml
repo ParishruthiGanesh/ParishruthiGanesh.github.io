@@ -1,0 +1,519 @@
+# Projects.
+#
+# Long-form fields are markdown. A field is omitted rather than filled with a
+# plausible guess: an absent "Results" section on this site means results were
+# not available from a verified source, not that there were none.
+
+- id: intent-classification-benchmark
+  name: Zero-Shot Intent Classification Benchmark
+  tagline: >-
+    A systematic zero-shot evaluation of 41 open-weight language models across
+    eight intent-classification datasets.
+  kind: research
+  status: completed
+  year: 2026
+  featured: true
+  order: 10
+  researchAreas: [language-model-evaluation]
+  technologies: [Python, Hugging Face Transformers, PyTorch, vLLM, Statistical Testing]
+  problem: |
+    Choosing an open-weight language model for a zero-shot classification task is
+    normally settled by one accuracy number on one benchmark. That number does
+    not say whether the gap between the top two models is real, whether the
+    model's confidence is trustworthy, whether performance survives a typo, or
+    whether the benchmark still has headroom to measure with.
+  motivation: |
+    The practical question — *which model should I actually deploy?* — needs
+    evidence that a leaderboard does not supply. Selecting a 7B model when a
+    3B instruction-tuned model performs comparably is a recurring and expensive
+    default.
+  experimentalSetup: |
+    - **41 open-weight models**, spanning **15 model families** and the
+      **135M–9B** parameter range.
+    - **Eight English single-label intent-classification datasets**, covering
+      standard academic benchmarks, a large-scale voice-assistant corpus, and
+      production-derived e-commerce datasets.
+    - Evaluation is **zero-shot** throughout — no fine-tuning on the target
+      datasets.
+    - Measured beyond exact-match accuracy: confidence calibration, robustness
+      to realistic input perturbations, statistical reliability of rankings,
+      deployment efficiency, and benchmark saturation.
+  results: |
+    Three findings from the paper, each scoped to this benchmark suite:
+
+    1. **Parameter count is a poor selection criterion.** Instruction-tuned 3B
+       models outperform several of the evaluated 7B base models.
+    2. **Leading models on MASSIVE are statistically indistinguishable.** Under
+       pairwise McNemar tests the differences between the top models do not
+       reach significance — ranking them by raw accuracy overstates the gap.
+    3. **SNIPS has saturated.** It no longer meaningfully discriminates among
+       current open-weight models, which limits what a result reported on it
+       alone can support.
+  limitations: |
+    Scoped to English, single-label intent classification, and to models in the
+    135M–9B range under a fixed zero-shot prompting protocol. Conclusions about
+    benchmark saturation are statements about these datasets and this model pool,
+    not about intent classification in general.
+  futureWork: |
+    Extending the protocol to tasks where label ambiguity is intrinsic, and
+    treating benchmark saturation as a quantity to monitor rather than something
+    discovered retrospectively.
+  relatedPublications: [intent-classification-41-models]
+  links:
+    paper:
+      label: arXiv:2607.27421
+      url: https://arxiv.org/abs/2607.27421
+      verified: true
+  sources:
+    - 'Resume (Publications)'
+    - 'arXiv listing for 2607.27421'
+
+- id: early-violence-detection
+  name: Interaction Representations for Early Violence Detection
+  tagline: >-
+    A controlled ablation isolating how much explicit interaction modelling
+    contributes to early detection in video.
+  kind: research
+  status: active
+  year: 2026
+  featured: true
+  order: 20
+  researchAreas: [video-understanding-safety]
+  technologies: [PyTorch, Computer Vision, Video Understanding, Ablation Studies]
+  problem: |
+    Work on interaction-aware video models generally reports that adding an
+    interaction module improves performance. It rarely separates that
+    improvement from the backbone, the training schedule, or the evaluation
+    protocol — so the size of the contribution attributable to the interaction
+    representation itself is usually unknown.
+  motivation: |
+    This is framed as a measurement study, not a detector. Early detection
+    forces a model to commit before an event has finished, on partial evidence,
+    which makes it a sharp setting in which to ask what a representation is
+    actually contributing. The value of the answer is methodological: it tells
+    you whether the module is doing work, or whether the backbone was.
+  method: |
+    Hold the backbone, the data and the evaluation protocol fixed, and vary only
+    the interaction representation. The reported quantity is the attributable
+    contribution under those fixed conditions — a benchmark-scoped number, not a
+    general capability claim.
+  responsibleUse: |
+    This is empirical research on representation learning conducted on
+    benchmark datasets. It is not a deployable surveillance system and is not
+    presented as one. Systems that classify human behaviour from video carry
+    well-documented risks — distributional bias, error costs that fall unevenly
+    on the people being observed, and function creep once deployed. Any claim
+    from this work is scoped to the benchmarks it was measured on.
+  futureWork: |
+    Characterising attributable contribution as a function of how much of an
+    event has been observed, and identifying the point at which interaction
+    representations stop helping.
+  relatedPublications: [interaction-representations-early-violence]
+  sources:
+    - 'Resume (Publications): title, first authorship, submission to WACV'
+
+- id: sentinel-memory
+  name: Sentinel Memory
+  tagline: >-
+    An incident-response agent whose memory is a transactional database rather
+    than a context window — it remembers consequences, not conversations.
+  kind: hackathon
+  status: prototype
+  year: 2026
+  featured: true
+  order: 30
+  researchAreas: [agentic-memory-systems]
+  repository: ParishruthiGanesh/sentinel-memory
+  relatedHackathons: [cockroachdb-aws-agentic-memory]
+  technologies:
+    - TypeScript
+    - Next.js
+    - React 19
+    - Tailwind CSS
+    - CockroachDB
+    - Amazon Bedrock
+    - Vector Search
+    - Zod
+    - Vitest
+  problem: |
+    During industrial incidents, personnel rotate and agents restart. Each
+    handoff loses the record of what was already attempted and what it caused,
+    so a reasonable-looking action gets repeated — including the one that did
+    damage last time. An agent whose memory is a context window has the same
+    failure mode, and reaches it faster.
+  motivation: |
+    The narrower question behind the project was not "how do we give agents
+    memory?" but **what specifically does an incident agent need to remember?**
+    The answer turned out not to be conversations. It was consequences: what a
+    given action, taken in a given situation, actually caused.
+  architecture: |
+    A three-tier system with no ORM, no separate vector database, no queue and
+    no cache layer:
+
+    - **Client** — Next.js App Router UI (React 19, Tailwind CSS).
+    - **Server** — Node.js API routes holding the orchestration logic.
+    - **Services** — CockroachDB Cloud for persistence, Amazon Bedrock for
+      reasoning and embeddings.
+
+    The agent loop lives in a single file: embed the proposed action → retrieve
+    precedents from CockroachDB by cosine distance → ground the Bedrock call on
+    what came back → validate the structured response with Zod → persist the
+    recommendation together with the memory IDs it cited. Every step writes a
+    durable memory event, including the retrieval itself, so the timeline shows
+    that memory was consulted rather than merely that an answer appeared.
+
+    The one architectural decision that mattered was making `DataStore`,
+    `EmbeddingProvider` and `Reasoner` **interfaces** rather than integrations.
+    Each has a real implementation and a clearly labelled local fallback, which
+    makes the interface previewable without credentials and the transaction
+    logic unit-testable without a live cluster.
+  method: |
+    **Episodic and semantic memory are treated as two problems, not one.**
+    Episodic memory records what happened in an incident, in order; semantic
+    memory records `action_taken → outcome → lesson_learned` as distinct
+    fields. Storing incident summaries and embedding them gets you "similar
+    incidents"; storing the action-outcome triple gets you "this specific action
+    caused this specific damage", which is the question a responder actually has.
+
+    Keeping both in one database means retrieval returns the memory *and* its
+    provenance — incident code, severity, date — in a single query, and the
+    human decision that follows is transactional against the same rows.
+
+    **Safety is enforced after the model, not requested from it.** The prompt
+    states the rules; `enforceSafetyFloor` then runs on every response, forces
+    human approval on any high-risk physical action regardless of what the model
+    returned, and filters citations down to memory IDs that were genuinely
+    retrieved, so a hallucinated reference cannot reach a responder.
+  results: |
+    - **94 tests** covering validation, retrieval, transactions, agents and
+      health checks — none requiring a live cluster or an AWS account.
+    - The approval path commits **four writes in one transaction** with
+      `SELECT … FOR UPDATE` locking and application-owned `40001` retry with
+      exponential backoff and full jitter, with tests proving rollback leaves the
+      store unchanged.
+    - The handoff demonstration reconstructs full incident state from the
+      database alone after the primary agent disconnects — nothing is read from a
+      transcript.
+  errorAnalysis: |
+    Two failure modes documented during development:
+
+    - **Retrieval returned one story instead of three.** Vector search over a
+      corpus where a single past incident contributes four memories returns four
+      angles on that one incident and crowds out every other precedent. Fixed by
+      over-fetching and then capping per source incident in application code.
+    - **The local fallback embedder produces honest but unimpressive scores.**
+      Bag-of-words similarity between a short query and a long document is
+      bounded, landing around 0.4–0.65 where a learned model would give
+      0.85–0.95. The raw cosine is kept and explained rather than rescaled to
+      look better.
+  limitations: |
+    Documented in the repository rather than hidden:
+
+    - **No authentication and no RBAC** — every visitor acts as the configured
+      responder, which is exactly as trustworthy as the audit trail's
+      `decided_by` field then is.
+    - Rate limiting is in-process and therefore not multi-instance safe.
+    - Seeded incidents are **synthetic**, not real incident reports.
+    - The vector index is version-gated (CockroachDB v25.2 preview, GA in
+      v25.3+); where it cannot be created the app degrades to an exact scan and
+      says so in the health endpoint and the UI.
+  responsibleUse: |
+    A prototype built during a hackathon, seeded with synthetic incidents. It is
+    a demonstration of a memory architecture, not an operational safety system,
+    and the repository's limitations section is written to keep that distinction
+    clear. Every fallback — in-memory store, local reasoner, deterministic
+    embeddings — is labelled in the UI, the health endpoint and every API
+    response, so nothing claims to be an integration it isn't.
+  setup: |
+    Runs locally with no credentials, using an in-memory store and local
+    reasoning:
+
+    ```bash
+    git clone https://github.com/ParishruthiGanesh/sentinel-memory.git
+    cd sentinel-memory
+    npm install
+    cp .env.example .env.local
+    npm run dev
+    ```
+
+    To wire up real services, set `DATABASE_URL` and run `npm run db:migrate`
+    and `npm run db:seed`, then set `AWS_REGION` and `BEDROCK_MODEL_ID`.
+    `curl -s localhost:3000/api/health` reports which implementation is actually
+    serving each interface.
+  futureWork: |
+    1. **Close the learning loop** — capture whether an approved action produced
+       its predicted outcome and write that back as a new memory.
+    2. **Authentication and RBAC**, without which `decided_by` cannot be trusted.
+    3. **Database-enforced immutability** for memory and audit events.
+    4. **Real ingestion** from SCADA/historian feeds instead of manual entry.
+    5. **Retrieval evaluation** with a labelled set and precision@k tracking.
+  highlights:
+    - Counterfactual card surfacing the closest historical precedent, its similarity score and what it cost
+    - Retrieval telemetry shown in the UI — cosine distance, latency, index versus exact scan
+    - Four-write atomic approval under SERIALIZABLE isolation with application-owned retry
+    - Agent handoff rebuilding incident state entirely from the database
+  screenshots:
+    - src: /images/projects/sentinel-memory/command-center.webp
+      alt: Sentinel Memory command centre showing an active incident, the proposed action, and a counterfactual memory card describing what the same action caused during a previous incident.
+      caption: The command centre. The counterfactual card renders server-side on load, so the precedent is visible before anything is clicked.
+    - src: /images/projects/sentinel-memory/memory-explorer.webp
+      alt: Memory explorer listing retrieved memories with cosine distance scores, source incident codes and retrieval latency.
+      caption: Memory explorer, showing retrieval telemetry — distance, latency, and whether the vector index or an exact scan served the query.
+    - src: /images/projects/sentinel-memory/timeline.webp
+      alt: Incident timeline reconstructed from durable memory events, showing observations, retrievals, recommendations and human decisions in order.
+      caption: The incident timeline is reconstructed from durable events, including the retrieval steps themselves.
+    - src: /images/projects/sentinel-memory/handoff-briefing-full.webp
+      alt: Agent handoff briefing rebuilt from the database, listing what happened, what was attempted, what must not be repeated and what remains open.
+      caption: After the primary agent disconnects, the backup rebuilds incident state from the database — nothing comes from a transcript.
+    - src: /images/projects/sentinel-memory/architecture.webp
+      alt: Architecture diagram showing the Next.js client, Node.js API routes, and the CockroachDB and Amazon Bedrock services behind the DataStore, EmbeddingProvider and Reasoner interfaces.
+      caption: The architecture page rendered inside the application itself.
+  links:
+    repo:
+      label: GitHub — sentinel-memory
+      url: https://github.com/ParishruthiGanesh/sentinel-memory
+      verified: true
+    demo:
+      label: Live demo
+      url: https://sentinel-memory-git-main-pari19.vercel.app
+      verified: false
+    devpost:
+      label: Devpost submission
+      url: https://devpost.com/software/sentinal-memory
+      verified: false
+    video:
+      label: Demo video
+      url: https://youtu.be/zg6Ys6pP6LA
+      verified: false
+  sources:
+    - 'github.com/ParishruthiGanesh/sentinel-memory — README.md and docs/DEVPOST_SUBMISSION.md'
+    - 'GitHub API repository metadata'
+    - 'Demo, Devpost and YouTube URLs supplied directly by Parishruthi'
+
+- id: astranova
+  name: AstraNova
+  tagline: >-
+    An AI trading copilot for India's options traders — live market data,
+    AI-scored signals, broker execution and a Gemini-powered assistant.
+  kind: hackathon
+  status: prototype
+  year: 2026
+  featured: true
+  order: 40
+  researchAreas: [applied-ai-data-systems]
+  repository: ParishruthiGanesh/astranova-trading-copilot
+  relatedHackathons: [build-with-gemini-xprize]
+  technologies: [Python, Google Gemini, Angel One API, Real-time Market Data]
+  problem: |
+    Retail options traders in India work with fragmented tooling: market data in
+    one place, analysis in another, and execution in a third, with no shared
+    context between them.
+  motivation: |
+    Built for the Build with Gemini XPRIZE hackathon as a single surface joining
+    live market data, model-scored signals and real broker execution.
+  architecture: |
+    Described in the repository as live Angel One market data feeding AI-scored
+    signals, with real broker execution and a Gemini-powered assistant layered
+    on top. Fuller architecture details are not published here because the
+    repository is currently private — see the note below.
+  limitations: |
+    A hackathon prototype handling market data and broker execution. Nothing on
+    this page should be read as financial advice or as a claim about trading
+    performance; no returns, accuracy figures or backtest results are published
+    because none have been verified.
+  responsibleUse: |
+    An automated system that can place real trades carries direct financial
+    risk. The project is presented here as an engineering artefact from a
+    hackathon, not as a product recommendation or an investment tool.
+  links:
+    repo:
+      label: GitHub — astranova-trading-copilot (private)
+      url: https://github.com/ParishruthiGanesh/astranova-trading-copilot
+      verified: false
+    demo:
+      label: Live demo
+      url: https://nifty-research-47875.web.app
+      verified: false
+    devpost:
+      label: Devpost submission
+      url: https://devpost.com/software/astranova-intelligent-trading-copilot
+      verified: false
+    video:
+      label: Demo video
+      url: https://youtu.be/mH3apHH-qnk
+      verified: false
+  sources:
+    - 'GitHub API repository metadata for ParishruthiGanesh/astranova-trading-copilot (description, language, licence, creation date, private visibility)'
+    - 'Demo, Devpost and YouTube URLs supplied directly by Parishruthi'
+
+- id: ausme-faculty-rag
+  name: AUSME Faculty Expertise RAG System
+  tagline: >-
+    Retrieval-augmented search and summarisation over roughly 25,000 research
+    papers, built to surface faculty expertise and collaboration opportunities.
+  kind: research
+  status: active
+  period: '2024 – present'
+  featured: true
+  order: 50
+  researchAreas: [retrieval-augmented-generation]
+  technologies: [Python, LangGraph, Retrieval-Augmented Generation, LLMs, Web Scraping, Embeddings]
+  problem: |
+    Institutional research expertise is real but effectively unsearchable —
+    distributed across thousands of PDFs with inconsistent metadata. Finding
+    "who here works on this, and what have they shown?" is a manual task.
+  architecture: |
+    A LangGraph-orchestrated ingestion pipeline: document parsing, metadata
+    structuring and embedding generation, feeding semantic retrieval over the
+    full corpus, with contextual summarisation grounded in retrieved documents
+    and exposed through a conversational interface.
+  dataset: |
+    Approximately **25,000 research papers**, collected by scraping metadata and
+    full texts, covering **50+ faculty members**.
+  results: |
+    The complete retrieval pipeline processes the entire corpus in about
+    **30 minutes**.
+  futureWork: |
+    A proposed deployment architecture allowing faculty and research groups to
+    query publications in natural language, improving visibility of research
+    domains and supporting interdisciplinary team formation.
+  sources:
+    - 'Resume (Experience → Auburn University → AUSME Faculty Expertise RAG System)'
+
+- id: dema-platform
+  name: DEMA — Digital Engineering Data Management Platform
+  tagline: >-
+    A full-stack desktop application for engineering data lifecycle management,
+    implementing the CIM4DE conceptual information model end to end.
+  kind: application
+  status: active
+  period: '2024 – present'
+  featured: true
+  order: 60
+  researchAreas: [applied-ai-data-systems]
+  technologies: [React, Electron, Vite, Java, Spring Boot, Data Modelling]
+  problem: |
+    Engineering records accumulate across disconnected workflows with
+    inconsistent metadata, which makes traceability and quality assessment
+    manual and unreliable.
+  architecture: |
+    A desktop application built with React, Electron and Vite on the frontend
+    against Java/Spring Boot backend services.
+  method: |
+    Implements the complete **CIM4DE** (Conceptual Information Model for Digital
+    Engineering) specification — data models for entity relationships,
+    classification hierarchies and metadata schemas — plus automated
+    data-quality classification logic that categorises engineering records by
+    completeness and validation criteria.
+  futureWork: |
+    Continued system integration with engineering workflows, enabling
+    traceability and consistency through standardised metadata management.
+  sources:
+    - 'Resume (Experience → Auburn University → DEMA)'
+
+- id: circular-trade-fraud-detection
+  name: Circular Trade Fraud Detection with Graph Learning
+  tagline: >-
+    Detecting circular trading rings in iron-dealer invoice data using cycle
+    detection, Node2Vec embeddings and density-based clustering.
+  kind: research
+  status: completed
+  year: 2024
+  featured: false
+  order: 70
+  researchAreas: [applied-ai-data-systems]
+  repository: ParishruthiGanesh/Circular-trade-Fraud-Detection
+  technologies: [Python, Node2Vec, DBSCAN, Graph Algorithms, Jupyter]
+  problem: |
+    Circular trading — where invoices cycle through a ring of participants to
+    inflate apparent turnover — is invisible to per-transaction rules, because
+    every individual invoice looks ordinary. The signal only exists in the
+    structure of the transaction graph.
+  dataset: |
+    Iron-dealer transaction data, where each row is one invoice recording the
+    seller, the buyer and the transaction value.
+  method: |
+    - Build a multi-graph representation of the invoice data.
+    - Detect **2-cycles and 3-cycles** and compute a suspicion score per node
+      from cycle membership and trading amounts, using hash functions for
+      efficient score storage across cycle nodes.
+    - Generate node embeddings with **Node2Vec** over undirected graphs derived
+      from suspicion scores and cycle frequencies.
+    - Cluster with **DBSCAN** to isolate dense regions of potentially fraudulent
+      nodes.
+  results: |
+    The pipeline identifies dense clusters of nodes exhibiting anomalous trading
+    behaviour consistent with circular trading patterns.
+  limitations: |
+    Cycle detection is limited to 2- and 3-cycles, so longer rings are outside
+    what this construction can surface. Outputs are unsupervised suspicion
+    signals for investigation, not determinations of fraud.
+  links:
+    repo:
+      label: GitHub — Circular-trade-Fraud-Detection
+      url: https://github.com/ParishruthiGanesh/Circular-trade-Fraud-Detection
+      verified: true
+  sources:
+    - 'Resume (Projects → Circular Trade Fraud Detection using Graph Neural Networks)'
+    - 'GitHub repository description and metadata'
+
+- id: bert-sentiment-analysis
+  name: Multi-Class Sentiment Analysis with BERT
+  tagline: >-
+    Fine-tuning bert-base-uncased on the SMILE annotation dataset, as an
+    end-to-end study of transformer transfer learning.
+  kind: coursework
+  status: completed
+  year: 2025
+  featured: false
+  order: 80
+  researchAreas: [language-model-evaluation]
+  repository: ParishruthiGanesh/Sentimental-Analysis
+  technologies: [PyTorch, Hugging Face Transformers, BERT, NLP]
+  problem: |
+    A multi-class sentiment classification task used to work through
+    transformer fine-tuning end to end rather than to establish a new result.
+  method: |
+    Fine-tunes a pre-trained **bert-base-uncased** transformer on the SMILE
+    annotation dataset in PyTorch, with a complete NLP pipeline — tokenisation,
+    encoding into input IDs and attention masks, and DataLoader construction for
+    batched training and evaluation — trained with the AdamW optimiser and a
+    linear learning-rate schedule with warm-up steps.
+  results: |
+    The resume records strong validation accuracy through transfer learning; a
+    specific figure is not published here because none was recorded in a
+    verified source.
+  limitations: |
+    A learning project on a single small dataset. It is included for
+    completeness rather than as a research contribution.
+  links:
+    repo:
+      label: GitHub — Sentimental-Analysis
+      url: https://github.com/ParishruthiGanesh/Sentimental-Analysis
+      verified: true
+  sources:
+    - 'Resume (Projects → Sentiment Analysis with Deep Learning using BERT)'
+    - 'GitHub repository metadata'
+
+- id: rocket-simulation
+  name: Interactive Rocket Simulation for Science Education
+  tagline: >-
+    A Unity simulation letting students change rocket parameters and watch the
+    resulting flight behaviour in real time, across PC and tablet.
+  kind: application
+  status: completed
+  period: '2024'
+  featured: false
+  order: 90
+  researchAreas: []
+  technologies: [Unity, 'C#', Physics Simulation]
+  problem: |
+    Rocket dynamics are hard to build intuition for from equations alone,
+    particularly for students meeting them for the first time.
+  method: |
+    An interactive Unity environment where students modify parameters such as
+    fuel capacity and thrust and observe real-time outcomes, with realistic
+    physics calculations for velocity and altitude tracking and multi-user
+    interaction support across PC and tablet platforms.
+  sources:
+    - 'Resume (Experience → Auburn University → Interactive Rocket Simulation for Science Education)'

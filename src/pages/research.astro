@@ -1,0 +1,257 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Tag from '../components/Tag.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import { RESEARCH_STATUS_LABELS, STATUS_LABELS } from '../lib/format.js';
+
+const { research, publications, projects, researchLinks } = loadContent();
+const pubById = new Map(publications.map((pub) => [pub.id, pub]));
+const projectById = new Map(projects.map((project) => [project.id, project]));
+
+/**
+ * Resolve each theme's papers, projects and code mappings here rather than in
+ * the template: Astro compiles the template body as JSX, so TypeScript type
+ * predicates like `(x): x is T =>` are a syntax error there.
+ */
+const themes = research.map((theme, index) => ({
+  theme,
+  index,
+  publications: theme.publications
+    .map((id) => pubById.get(id))
+    .filter((pub): pub is NonNullable<typeof pub> => Boolean(pub)),
+  projects: theme.projects
+    .map((id) => projectById.get(id))
+    .filter((project): project is NonNullable<typeof project> => Boolean(project)),
+  code: researchLinks.filter((link) => theme.publications.includes(link.paper)),
+}));
+---
+
+<BaseLayout
+  title="Research"
+  description="Research themes: language-model evaluation, video understanding and early detection, retrieval-augmented generation, agentic memory systems, and applied AI for data integration."
+>
+  <PageHeader
+    eyebrow="Research"
+    title="Organised by question, not by chronology"
+    lead="Each theme below states the question it is trying to answer, why the answer matters, and what has actually been established so far. Where a theme has no findings listed yet, that is because nothing has been measured that would survive being written down."
+  >
+    <nav aria-label="Research themes" class="mt-8">
+      <ul class="flex flex-wrap gap-2">
+        {
+          research.map((theme) => (
+            <li>
+              <a
+                href={`#${theme.id}`}
+                class="inline-flex rounded-full border px-3 py-1.5 text-sm no-underline transition-colors hover:border-[var(--border-strong)]"
+                style="border-color: var(--border); color: var(--ink-muted); background: var(--surface-raised)"
+              >
+                {theme.shortTitle}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </PageHeader>
+
+  <div class="container-page py-14 sm:py-16">
+    <div class="space-y-16">
+      {
+        themes.map(({ theme, index, publications: themePublications, projects: themeProjects, code }) => {
+          return (
+            <section id={theme.id} class="scroll-mt-24" aria-labelledby={`${theme.id}-heading`}>
+              <div class="border-t pt-10" style="border-color: var(--border)">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="font-mono text-sm" style="color: var(--ink-subtle)">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <Tag tone={theme.status === 'active' ? 'accent' : 'outline'}>
+                    {RESEARCH_STATUS_LABELS[theme.status]}
+                  </Tag>
+                </div>
+
+                <h2
+                  id={`${theme.id}-heading`}
+                  class="mt-3 text-2xl font-semibold sm:text-3xl"
+                  style="color: var(--ink)"
+                >
+                  {theme.title}
+                </h2>
+
+                <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+                  <div class="space-y-7">
+                    <div>
+                      <h3 class="eyebrow">Research question</h3>
+                      <p
+                        class="mt-2 border-l-2 pl-4 text-lg leading-relaxed"
+                        style="border-color: var(--accent); color: var(--ink)"
+                      >
+                        {theme.question}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 class="eyebrow">Why it matters</h3>
+                      <p class="mt-2 leading-relaxed" style="color: var(--ink-muted)">
+                        {theme.whyItMatters}
+                      </p>
+                    </div>
+
+                    {theme.approach && (
+                      <div>
+                        <h3 class="eyebrow">Approach</h3>
+                        <p class="mt-2 leading-relaxed" style="color: var(--ink-muted)">
+                          {theme.approach}
+                        </p>
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 class="eyebrow">Findings so far</h3>
+                      {theme.findings.length > 0 ? (
+                        <ul class="mt-2 space-y-2.5">
+                          {theme.findings.map((finding) => (
+                            <li class="flex gap-3 leading-relaxed" style="color: var(--ink-muted)">
+                              <span aria-hidden="true" style="color: var(--accent)">—</span>
+                              <span>{finding}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p class="mt-2 text-sm italic leading-relaxed" style="color: var(--ink-subtle)">
+                          Nothing published yet. Results will appear here once the associated
+                          work is public — no provisional numbers are shown.
+                        </p>
+                      )}
+                    </div>
+
+                    {theme.futureDirection && (
+                      <div>
+                        <h3 class="eyebrow">Where it goes next</h3>
+                        <p class="mt-2 leading-relaxed" style="color: var(--ink-muted)">
+                          {theme.futureDirection}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ---- Theme sidebar: papers, code, projects, datasets ---- */}
+                  <aside class="space-y-6">
+                    {themePublications.length > 0 && (
+                      <div class="surface-card p-5">
+                        <h3 class="eyebrow">Papers</h3>
+                        <ul class="mt-3 space-y-3.5">
+                          {themePublications.map((pub) => (
+                            <li>
+                              <a
+                                href={url(`/publications/${pub.id}`)}
+                                class="block text-sm font-medium leading-snug no-underline transition-colors hover:text-[var(--accent)]"
+                                style="color: var(--ink)"
+                              >
+                                {pub.title}
+                              </a>
+                              <p class="mt-1 text-xs" style="color: var(--ink-subtle)">
+                                {STATUS_LABELS[pub.status]} · {pub.year}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {themeProjects.length > 0 && (
+                      <div class="surface-card p-5">
+                        <h3 class="eyebrow">Projects</h3>
+                        <ul class="mt-3 space-y-3.5">
+                          {themeProjects.map((project) => (
+                            <li>
+                              <a
+                                href={url(`/projects/${project.id}`)}
+                                class="block text-sm font-medium leading-snug no-underline transition-colors hover:text-[var(--accent)]"
+                                style="color: var(--ink)"
+                              >
+                                {project.name}
+                              </a>
+                              <p class="mt-1 text-xs leading-relaxed" style="color: var(--ink-subtle)">
+                                {project.tagline}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    <div class="surface-card p-5">
+                      <h3 class="eyebrow">Code</h3>
+                      {code.length > 0 ? (
+                        <ul class="mt-3 space-y-2">
+                          {code.map((link) => (
+                            <li>
+                              <a
+                                href={`https://github.com/${link.repository}`}
+                                rel="noopener"
+                                class="link-underline font-mono text-sm no-underline"
+                                style="color: var(--accent)"
+                              >
+                                {link.repository}
+                              </a>
+                              <span class="ml-1.5 text-xs" style="color: var(--ink-subtle)">
+                                ({link.relationship})
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p class="mt-2 text-xs leading-relaxed" style="color: var(--ink-subtle)">
+                          No repository is mapped to this theme's papers yet. Mappings are
+                          recorded explicitly rather than guessed from names.
+                        </p>
+                      )}
+                    </div>
+
+                    {theme.datasets.length > 0 && (
+                      <div class="surface-card p-5">
+                        <h3 class="eyebrow">Datasets</h3>
+                        <ul class="mt-3 space-y-2 text-sm">
+                          {theme.datasets.map((dataset) => (
+                            <li>
+                              {dataset.url ? (
+                                <a href={dataset.url} rel="noopener" class="link-underline no-underline" style="color: var(--accent)">
+                                  {dataset.name}
+                                </a>
+                              ) : (
+                                <span style="color: var(--ink-muted)">{dataset.name}</span>
+                              )}
+                              {dataset.note && (
+                                <span class="block text-xs" style="color: var(--ink-subtle)">
+                                  {dataset.note}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {theme.keywords.length > 0 && (
+                      <div>
+                        <h3 class="eyebrow">Keywords</h3>
+                        <div class="mt-3 flex flex-wrap gap-1.5">
+                          {theme.keywords.map((keyword) => (
+                            <Tag tone="outline">{keyword}</Tag>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </aside>
+                </div>
+              </div>
+            </section>
+          );
+        })
+      }
+    </div>
+  </div>
+</BaseLayout>
