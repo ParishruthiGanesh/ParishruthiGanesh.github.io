@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-18T23:29:43.747Z",
+  "syncedAt": "2026-08-18T23:37:33.100Z",
   "owner": "ParishruthiGanesh",
   "source": "https://api.github.com/users/ParishruthiGanesh/repos",
   "repositories": [
@@ -155,14 +155,14 @@
       "topics": [],
       "stars": 0,
       "forks": 0,
-      "openIssues": 11,
+      "openIssues": 9,
       "license": "MIT",
       "isFork": false,
       "isArchived": false,
       "isPrivate": false,
       "createdAt": "2026-08-18T18:42:40Z",
-      "updatedAt": "2026-08-18T23:29:28Z",
-      "pushedAt": "2026-08-18T23:29:22Z",
+      "updatedAt": "2026-08-18T23:37:26Z",
+      "pushedAt": "2026-08-18T23:37:25Z",
       "size": 1626,
       "defaultBranch": "main"
     },
