@@ -15,7 +15,7 @@ location: Auburn, Alabama, USA
 # The command converts it to WebP, writes it to public/images/profile/ and
 # fills this field in. While it is unset, neither page shows a placeholder —
 # they simply lay out without a photo.
-# avatar: /images/profile/parishruthi-ganesh.webp
+avatar: /images/profile/portrait.webp
 tagline: "I build and evaluate machine-learning systems for video understanding,
   language-model selection, and retrieval- and memory-grounded agents — with an emphasis
   on measurement that holds up: controlled comparisons, calibration, and honest
