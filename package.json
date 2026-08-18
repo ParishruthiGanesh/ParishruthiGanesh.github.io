@@ -29,7 +29,7 @@
     "astro": "^5.14.1",
     "marked": "^15.0.12",
     "yaml": "^2.8.1",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
