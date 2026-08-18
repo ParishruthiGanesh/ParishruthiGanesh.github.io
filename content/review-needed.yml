@@ -1,0 +1,217 @@
+# Items needing Parishruthi's review. This file is not published as a page; it
+# drives `npm run portfolio -- status` and is summarised in
+# docs/PORTFOLIO_REVIEW.md.
+#
+# Anything that could not be verified lives here rather than being guessed at
+# and published.
+
+- id: astranova-repo-private
+  severity: blocker
+  area: repositories
+  raisedAt: '2026-08-18'
+  summary: >-
+    The GitHub repository ParishruthiGanesh/astranova-trading-copilot is private,
+    so its link is not publicly reachable.
+  detail: >-
+    The GitHub API reports visibility "private" for this repository (created
+    2026-08-17). An anonymous visitor following the link receives a 404. All
+    AstraNova detail on the site is therefore limited to what the repository
+    description states, since the README could not be read.
+  currentBehaviour: >-
+    The Projects, Hackathons and Repositories pages label the repository
+    "Private repository" and do not present it as a browsable link. No
+    architecture, results or setup detail is published for AstraNova.
+  action: >-
+    Make the repository public if the hackathon submission is complete, then run
+    `npm run portfolio -- sync`. The site will pick up the README-derived
+    metadata and drop the private label automatically.
+
+- id: astranova-devpost-in-progress
+  severity: high
+  area: hackathons
+  raisedAt: '2026-08-18'
+  summary: >-
+    The AstraNova Devpost submission was marked in-progress at the time this
+    site was built, and its exact hackathon edition was not independently
+    confirmed.
+  detail: >-
+    The hackathon name "Build with Gemini XPRIZE" comes from the repository's own
+    description. Devpost is unreachable from this build environment, so the
+    submission page, its final status, team members and any placement could not
+    be checked.
+  currentBehaviour: >-
+    The hackathon is shown with submissionStatus "in-progress", no award, and no
+    team list. Its Devpost and demo links are marked as not machine-verified.
+  action: >-
+    Once the submission is final, set `submissionStatus: submitted` (or
+    `judged`) in content/hackathons.yml, add verified team members, and add an
+    award only if one was actually received.
+
+- id: external-links-unverified
+  severity: medium
+  area: links
+  raisedAt: '2026-08-18'
+  summary: >-
+    Devpost, YouTube, Vercel, Firebase and arXiv links could not be reached from
+    the build environment's network, so they are published as supplied but
+    marked unverified.
+  detail: >-
+    The environment used to build this site allows egress to github.com and a
+    search index but blocks devpost.com, youtu.be, arxiv.org and the demo hosts.
+    Every such URL was supplied directly by Parishruthi or read from a repository
+    she wrote, so none is invented — but none was confirmed to resolve.
+  currentBehaviour: >-
+    Links carry `verified: false`, which renders a small "unverified" marker in
+    the link list. `npm run portfolio -- linkcheck` re-checks them from any
+    network that permits it and can flip the flag.
+  action: >-
+    Run `npm run portfolio -- linkcheck --fix` from an unrestricted network to
+    confirm each URL and mark it verified.
+
+- id: sentinel-demo-url-conflict
+  severity: medium
+  area: projects
+  raisedAt: '2026-08-18'
+  summary: >-
+    Two different live-demo URLs exist for Sentinel Memory.
+  detail: >-
+    The repository README and the GitHub `homepage` field both give
+    https://sentinel-memory-lemon.vercel.app. Parishruthi supplied
+    https://sentinel-memory-git-main-pari19.vercel.app as the real URL. The
+    user-supplied value is the more recent, explicitly structured source, so the
+    site uses it.
+  currentBehaviour: >-
+    The site links to sentinel-memory-git-main-pari19.vercel.app. The GitHub
+    homepage field is still synchronised into repositories.json but is not shown
+    as the demo link for the project.
+  action: >-
+    Update the repository's homepage field and README on GitHub so the two agree,
+    then re-run `npm run portfolio -- sync`.
+
+- id: linkedin-url-conflict
+  severity: low
+  area: profile
+  raisedAt: '2026-08-18'
+  summary: >-
+    The resume and the directly supplied LinkedIn URL differ.
+  detail: >-
+    The resume PDF hyperlinks to https://linkedin.com/in/parishruthi-ganesh.
+    Parishruthi supplied
+    https://www.linkedin.com/in/parishruthi-ganesh-85909b188/. The supplied URL
+    is treated as authoritative as the more explicit and more recent source.
+  currentBehaviour: The site uses the supplied URL everywhere.
+  action: >-
+    Confirm which vanity URL is live; if the short form resolves, prefer it in
+    content/profile.yml and on the resume.
+
+- id: phd-title-conflict
+  severity: low
+  area: profile
+  raisedAt: '2026-08-18'
+  summary: >-
+    The resume says "Ph.D. candidate in Computer Science"; the programme listed
+    under Education is "Ph.D. in Computer Science and Software Engineering",
+    begun Fall 2025.
+  detail: >-
+    "Candidate" normally implies qualifying exams have been passed. Given the
+    Fall 2025 start recorded on the same resume, the site uses the more
+    conservative "Ph.D. Student, Computer Science and Software Engineering",
+    matching the department name in the Education section.
+  currentBehaviour: >-
+    "Ph.D. Student, Computer Science and Software Engineering" is used in the
+    hero, the page metadata and the structured data.
+  action: >-
+    If candidacy has been conferred, change `role` in content/profile.yml to
+    "Ph.D. Candidate, Computer Science and Software Engineering".
+
+- id: unverified-publications-excluded
+  severity: high
+  area: publications
+  raisedAt: '2026-08-18'
+  summary: >-
+    Three suggested publications could not be verified and are not published.
+  detail: >-
+    "Vision-Based Livestock Respiratory Monitoring for Smart Agriculture Sensing
+    Systems", "Geometry-Constrained Prototype Learning for Scarce-Data
+    Open-World Detection", and separate LLM-as-judge / RAG papers were suggested
+    as possible work. None appears on the resume, none was found under this
+    author on arXiv, and no repository, preprint or DOI was supplied for any of
+    them.
+  currentBehaviour: >-
+    None of the three is published on the site, and no research theme claiming
+    smart-agriculture vision or LLM-as-judge evaluation exists, because there is
+    no evidence to anchor one to.
+  action: >-
+    If any of these are real, add them with
+    `npm run portfolio -- add-paper` supplying an arXiv ID, a DOI or manual
+    metadata. Adding a paper with a research area that does not yet exist will
+    fail validation, so add the corresponding theme to content/research.yml at
+    the same time.
+
+- id: paper-code-links-missing
+  severity: medium
+  area: publications
+  raisedAt: '2026-08-18'
+  summary: >-
+    Neither published paper has a public code repository mapped to it.
+  detail: >-
+    content/research-links.yml is deliberately empty. No repository under this
+    GitHub account corresponds to the 41-model intent-classification evaluation
+    or to the WACV interaction study, and guessing a mapping by name similarity
+    is exactly what the mapping file exists to prevent.
+  currentBehaviour: >-
+    Publication pages show no "Code" link, and the Research page shows the
+    papers without an associated repository.
+  action: >-
+    When the code is public, run
+    `npm run portfolio -- link-paper-code intent-classification-41-models
+    ParishruthiGanesh/<repo>`.
+
+- id: base44-site-unreachable
+  severity: medium
+  area: design
+  raisedAt: '2026-08-18'
+  summary: >-
+    The existing Base44 site could not be fetched from the build environment.
+  detail: >-
+    parishruthi-ganesh.base44.app is blocked by the network egress policy in this
+    environment, and no export or screenshots were supplied. No content or
+    styling was copied from it, and nothing on this site is attributed to it.
+  currentBehaviour: >-
+    The visual identity was built from the stated design direction — deep navy
+    and slate, restrained cyan/teal accents, a warm amber accent reserved for
+    featured and award context — rather than reproduced from the Base44 page.
+  action: >-
+    If there is content on the Base44 site worth keeping (a bio paragraph, a
+    project write-up, images), paste or export it and it can be merged into
+    content/*.yml. See docs/SOURCE_AUDIT.md.
+
+- id: orcid-missing
+  severity: low
+  area: profile
+  raisedAt: '2026-08-18'
+  summary: No ORCID identifier was supplied.
+  detail: >-
+    ORCID is one of the metadata sources the sync pipeline supports, and it is
+    the most reliable way to keep a publication list current. None was found on
+    the resume or in the supplied links.
+  currentBehaviour: >-
+    No ORCID link appears on the Contact page, and ORCID synchronisation is
+    skipped.
+  action: >-
+    Add `orcid` under `links` in content/profile.yml, then run
+    `npm run portfolio -- sync` to pull publication metadata from it.
+
+- id: talks-and-awards-empty
+  severity: low
+  area: profile
+  raisedAt: '2026-08-18'
+  summary: No talks, posters or awards were found in any source.
+  detail: >-
+    content/talks.yml and content/awards.yml are empty arrays. The Talks and
+    Awards sections do not render at all while they are empty, rather than
+    showing a placeholder.
+  currentBehaviour: Those sections are hidden site-wide.
+  action: >-
+    Add entries to content/talks.yml or content/awards.yml; the sections appear
+    automatically on the next build.

@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadContent } from '../lib/content.js';
+import { NAV_ITEMS } from '../lib/nav.js';
+import { url } from '../lib/url.js';
+
+const { profile } = loadContent();
+---
+<BaseLayout
+  title="Page not found"
+  description="That page does not exist on this site."
+  noindex
+>
+  <div class="container-page flex min-h-[60vh] flex-col justify-center py-20">
+    <p class="eyebrow">404</p>
+    <h1 class="mt-3 text-3xl font-semibold sm:text-4xl" style="color: var(--ink)">
+      That page does not exist
+    </h1>
+    <p class="mt-4 max-w-xl text-lg" style="color: var(--ink-muted)">
+      The link may be out of date, or the page may have moved. Everything on
+      {profile.shortName}'s site is reachable from the sections below — or press
+      <kbd class="rounded border px-1.5 py-0.5 font-mono text-sm" style="border-color: var(--border)">⌘K</kbd>
+      to search.
+    </p>
+    <ul class="mt-8 grid max-w-3xl gap-3 sm:grid-cols-2">
+      {
+        NAV_ITEMS.map((item) => (
+          <li>
+            <a href={url(item.href)} class="surface-card card-interactive block p-4 no-underline">
+              <span class="block font-medium" style="color: var(--ink)">{item.label}</span>
+              <span class="mt-0.5 block text-sm" style="color: var(--ink-subtle)">{item.description}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>

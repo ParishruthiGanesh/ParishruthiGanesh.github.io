@@ -1,0 +1,318 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PublicationCard from '../components/PublicationCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import Tag from '../components/Tag.astro';
+import LinkList from '../components/LinkList.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import {
+  CURRENT_WORK_LABELS,
+  formatShortDate,
+  relativeDate,
+  splitEmail,
+} from '../lib/format.js';
+
+const content = loadContent();
+const { profile, research, publications, projects, hackathons, currentWork, repositories } = content;
+
+const areaLabels = Object.fromEntries(research.map((theme) => [theme.id, theme.shortTitle]));
+const featuredPublications = publications.filter((pub) => pub.featured).slice(0, 2);
+const featuredProjects = projects.filter((project) => project.featured).slice(0, 4);
+const recentHackathons = hackathons.slice(0, 2);
+const featuredThemes = research.filter((theme) => theme.featured);
+
+/** Repositories with real activity, most recently pushed first. */
+const activeRepos = repositories
+  .filter((repo) => !repo.hidden && repo.synced && repo.pushedAt)
+  .sort((a, b) => b.pushedAt.localeCompare(a.pushedAt))
+  .slice(0, 4);
+
+const { user, domain } = splitEmail(profile.email);
+
+const heroLinks = [
+  { label: 'Resume', href: url(profile.resume.path), external: true },
+  profile.links.github && { label: 'GitHub', href: profile.links.github, external: true },
+  profile.links.googleScholar && {
+    label: 'Google Scholar',
+    href: profile.links.googleScholar,
+    external: true,
+  },
+  { label: 'Contact', href: url('/contact'), external: false },
+].filter((item): item is { label: string; href: string; external: boolean } => Boolean(item));
+---
+
+<BaseLayout
+  title="Home"
+  description={profile.shortBio}
+  schema={[
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ProfilePage',
+      name: `${profile.name} — ${profile.headline}`,
+      description: profile.shortBio,
+      about: { '@type': 'Person', name: profile.name },
+    },
+  ]}
+>
+  {/* ---------- Hero ---------- */}
+  <section class="relative overflow-hidden border-b" style="border-color: var(--border)">
+    <div class="bg-grid pointer-events-none absolute inset-0 opacity-40" aria-hidden="true"></div>
+    <div class="container-page relative py-16 sm:py-20 lg:py-24">
+      <div class="animate-rise max-w-4xl">
+        <p class="eyebrow">{profile.role} · {profile.affiliation}</p>
+        <h1 class="mt-4 text-4xl font-semibold leading-[1.1] sm:text-5xl lg:text-6xl" style="color: var(--ink)">
+          {profile.name}
+        </h1>
+        <p class="mt-6 max-w-3xl text-lg leading-relaxed sm:text-xl" style="color: var(--ink-muted)">
+          {profile.tagline}
+        </p>
+
+        <ul class="mt-7 flex flex-wrap gap-2">
+          {profile.researchInterests.map((interest) => <li><Tag tone="accent" size="md">{interest}</Tag></li>)}
+        </ul>
+
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          {
+            heroLinks.map((link, index) => (
+              <a
+                href={link.href}
+                rel={link.external ? 'noopener' : undefined}
+                class="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium no-underline transition-colors"
+                style={
+                  index === 0
+                    ? 'background: var(--ink); color: var(--surface-raised); border-color: var(--ink)'
+                    : 'border-color: var(--border-strong); color: var(--ink-muted); background: var(--surface-raised)'
+                }
+              >
+                {link.label}
+              </a>
+            ))
+          }
+        </div>
+        <p class="mt-4 text-sm" style="color: var(--ink-subtle)">
+          {profile.location} ·
+          <a href={`mailto:${user}@${domain}`} class="link-underline no-underline" style="color: inherit">
+            {user}<span aria-hidden="true">@</span>{domain}
+          </a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Currently working on ---------- */}
+  <section class="border-b py-14 sm:py-16" style="border-color: var(--border); background: var(--surface-sunken)">
+    <div class="container-page">
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 class="text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Currently working on</h2>
+        <p class="text-sm" style="color: var(--ink-subtle)">
+          Updated <time datetime={currentWork.updated}>{currentWork.updated}</time>
+        </p>
+      </div>
+      <ul class="mt-8 grid gap-4 md:grid-cols-2">
+        {
+          currentWork.items.map((item) => (
+            <li class="surface-card p-5">
+              <div class="flex flex-wrap items-center gap-2">
+                <Tag tone="accent">{CURRENT_WORK_LABELS[item.status] ?? item.status}</Tag>
+                {item.since && (
+                  <span class="font-mono text-xs" style="color: var(--ink-subtle)">
+                    since {item.since}
+                  </span>
+                )}
+              </div>
+              <h3 class="mt-3 font-semibold leading-snug" style="color: var(--ink)">
+                {item.title}
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                {item.description}
+              </p>
+              {item.relatedProjects.length > 0 && (
+                <p class="mt-3 text-xs">
+                  <a
+                    href={url(`/projects/${item.relatedProjects[0]}`)}
+                    class="link-underline no-underline"
+                    style="color: var(--accent)"
+                  >
+                    Read the write-up
+                  </a>
+                </p>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------- Research themes ---------- */}
+  <section class="py-16 sm:py-20">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="max-w-2xl">
+          <p class="eyebrow">Research</p>
+          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">
+            Four questions the work keeps returning to
+          </h2>
+        </div>
+        <a href={url('/research')} class="link-underline text-sm no-underline" style="color: var(--accent)">
+          All research themes →
+        </a>
+      </div>
+
+      <ul class="mt-9 grid gap-5 lg:grid-cols-2">
+        {
+          featuredThemes.map((theme) => (
+            <li class="surface-card card-interactive p-6">
+              <h3 class="text-lg font-semibold" style="color: var(--ink)">
+                <a
+                  href={url(`/research#${theme.id}`)}
+                  class="no-underline transition-colors hover:text-[var(--accent)]"
+                  style="color: inherit"
+                >
+                  {theme.title}
+                </a>
+              </h3>
+              <p class="mt-3 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                {theme.question}
+              </p>
+              <div class="mt-4 flex flex-wrap gap-1.5">
+                {theme.keywords.slice(0, 4).map((keyword) => (
+                  <Tag tone="outline">{keyword}</Tag>
+                ))}
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------- Selected publications ---------- */}
+  <section class="border-t py-16 sm:py-20" style="border-color: var(--border); background: var(--surface-sunken)">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Publications</p>
+          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Selected papers</h2>
+        </div>
+        <a href={url('/publications')} class="link-underline text-sm no-underline" style="color: var(--accent)">
+          All publications →
+        </a>
+      </div>
+      <div class="mt-9 grid gap-5 lg:grid-cols-2">
+        {featuredPublications.map((publication) => <PublicationCard publication={publication} areaLabels={areaLabels} />)}
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Featured projects ---------- */}
+  <section class="py-16 sm:py-20">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Projects</p>
+          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Featured work</h2>
+        </div>
+        <a href={url('/projects')} class="link-underline text-sm no-underline" style="color: var(--accent)">
+          All projects →
+        </a>
+      </div>
+      <div class="mt-9 grid gap-6 sm:grid-cols-2">
+        {featuredProjects.map((project) => <ProjectCard project={project} areaLabels={areaLabels} />)}
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Hackathons ---------- */}
+  <section class="border-t py-16 sm:py-20" style="border-color: var(--border); background: var(--surface-sunken)">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">Hackathons</p>
+          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Recent builds</h2>
+        </div>
+        <a href={url('/hackathons')} class="link-underline text-sm no-underline" style="color: var(--accent)">
+          All hackathons →
+        </a>
+      </div>
+      <div class="mt-9 grid gap-6 lg:grid-cols-2">
+        {
+          recentHackathons.map((hackathon) => (
+            <article class="surface-card card-interactive flex flex-col p-6">
+              <div class="flex flex-wrap items-center gap-2">
+                <Tag tone="ember">{hackathon.hackathon}</Tag>
+                <span class="font-mono text-xs" style="color: var(--ink-subtle)">
+                  {hackathon.dateLabel ?? formatShortDate(hackathon.date)}
+                </span>
+              </div>
+              <h3 class="mt-3 text-lg font-semibold" style="color: var(--ink)">
+                <a
+                  href={url(`/hackathons#${hackathon.id}`)}
+                  class="no-underline transition-colors hover:text-[var(--accent)]"
+                  style="color: inherit"
+                >
+                  {hackathon.projectName}
+                </a>
+              </h3>
+              <p class="mt-2 flex-1 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                {hackathon.tagline}
+              </p>
+              <div class="mt-5">
+                <LinkList links={hackathon.links} repositoryPrivate={hackathon.repositoryPrivate} size="sm" />
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- GitHub activity ---------- */}
+  {
+    activeRepos.length > 0 && (
+      <section class="py-16 sm:py-20">
+        <div class="container-page">
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p class="eyebrow">GitHub</p>
+              <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">
+                Recent repository activity
+              </h2>
+            </div>
+            <a href={url('/repositories')} class="link-underline text-sm no-underline" style="color: var(--accent)">
+              All repositories →
+            </a>
+          </div>
+          <ul class="mt-9 grid gap-4 sm:grid-cols-2">
+            {activeRepos.map((repo) => (
+              <li class="surface-card card-interactive p-5">
+                <div class="flex items-baseline justify-between gap-3">
+                  <a
+                    href={repo.url}
+                    rel="noopener"
+                    class="font-mono text-sm font-medium no-underline transition-colors hover:text-[var(--accent)]"
+                    style="color: var(--ink)"
+                  >
+                    {repo.name}
+                  </a>
+                  {repo.language && (
+                    <span class="shrink-0 text-xs" style="color: var(--ink-subtle)">
+                      {repo.language}
+                    </span>
+                  )}
+                </div>
+                <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                  {repo.description}
+                </p>
+                <p class="mt-2 text-xs" style="color: var(--ink-subtle)">
+                  Last push {relativeDate(repo.pushedAt)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

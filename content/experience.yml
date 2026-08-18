@@ -1,0 +1,147 @@
+# Source: Parishruthi_Ganesh_Resume.pdf — "Experience" and "Leadership
+# Experience" sections. Bullet text is condensed from the resume; no
+# responsibility, metric or affiliation has been added that is not on it.
+# Supervisor names and internal project details are intentionally not published.
+
+- id: auburn-gra
+  organization: Auburn University
+  organizationUrl: https://www.eng.auburn.edu/csse/
+  role: Graduate Research & Teaching Assistant
+  type: research
+  location: Auburn, Alabama
+  start: '2024-01'
+  end: present
+  featured: true
+  summary: >-
+    Research assistantship spanning retrieval-augmented systems over scholarly
+    corpora, a digital-engineering data platform, and an interactive simulation
+    for science education, alongside undergraduate lab instruction.
+  responsibilities:
+    - >-
+      Deliver hands-on Python and MATLAB lab sessions to undergraduate students,
+      supporting programming proficiency and analytical problem-solving through
+      mentoring and assignment guidance.
+  technologies:
+    - Python
+    - LangGraph
+    - Retrieval-Augmented Generation
+    - React
+    - Electron
+    - Vite
+    - Java
+    - Spring Boot
+    - Unity
+    - C#
+  workstreams:
+    - name: AUSME Faculty Expertise RAG System
+      stack: [Python, RAG, LangGraph, Web Scraping, LLMs]
+      summary: >-
+        A retrieval-augmented system that generates contextual summaries of
+        faculty research papers and exposes them through a conversational
+        interface for exploring expertise and potential collaborations.
+      highlights:
+        - >-
+          Designed and built a retrieval-augmented generation system generating
+          contextual summaries of faculty research papers, enabling an
+          interactive chatbot-like interface for exploring expertise and
+          potential collaborations across 50+ faculty members.
+        - >-
+          Collected and pre-processed a dataset of roughly 25,000 research
+          papers by scraping metadata and full texts, achieving a complete
+          retrieval pipeline processing time of 30 minutes for the entire corpus.
+        - >-
+          Built the data ingestion and preprocessing pipeline using LangGraph,
+          integrating document parsing, metadata structuring and embedding
+          generation to support semantic retrieval over large-scale research
+          collections.
+        - >-
+          Proposed a deployment architecture allowing faculty and research groups
+          to query publications in natural language, improving visibility of
+          research domains and supporting interdisciplinary team formation.
+      relatedProjects: [ausme-faculty-rag]
+
+    - name: DEMA — Digital Engineering Data Management Platform
+      stack: [React, Electron, Vite, Java, Spring Boot]
+      summary: >-
+        A full-stack desktop application for engineering data lifecycle
+        management, implementing the CIM4DE conceptual information model.
+      highlights:
+        - >-
+          Architecting a full-stack desktop application for engineering data
+          lifecycle management using React, Electron and Vite on the frontend
+          with Java/Spring Boot backend services.
+        - >-
+          Implemented the complete CIM4DE (Conceptual Information Model for
+          Digital Engineering) specification, designing data models for entity
+          relationships, classification hierarchies and metadata schemas.
+        - >-
+          Developed automated data-quality classification logic to identify and
+          categorise engineering records by completeness and validation criteria.
+        - >-
+          Collaborating on system integration with engineering workflows,
+          enabling traceability and consistency across digital engineering
+          processes through standardised metadata management.
+      relatedProjects: [dema-platform]
+
+    - name: Interactive Rocket Simulation for Science Education
+      stack: [Unity, 'C#', Physics Simulation]
+      summary: >-
+        An interactive Unity simulation letting students change rocket
+        parameters and observe the resulting flight behaviour in real time.
+      highlights:
+        - >-
+          Developed an interactive rocket simulation in Unity to enhance science
+          education, enabling students to modify rocket parameters (fuel
+          capacity, thrust) and observe real-time outcomes in a virtual
+          environment.
+        - >-
+          Built multi-user interaction support across PC and tablet platforms,
+          integrating realistic physics calculations for velocity and altitude
+          tracking while refining UI, level generation and environmental
+          interactions.
+      relatedProjects: [rocket-simulation]
+
+- id: emids-associate-developer
+  organization: Emids Technologies Pvt Ltd
+  role: Associate Software Developer
+  type: industry
+  location: Bangalore, India
+  start: '2021-12'
+  end: '2023-07'
+  featured: true
+  summary: >-
+    Full-stack development on an enterprise CRM platform covering marketing,
+    product, customer-service and sales operations.
+  responsibilities:
+    - >-
+      Led development of a comprehensive CRM solution supporting marketing,
+      product development, customer service and sales operations, enabling
+      efficient customer acquisition and relationship management.
+    - >-
+      Designed and developed key modules including Leads, Contacts, Email API,
+      Reports and Accounts, implementing CRUD operations, Spring Boot
+      configurations and RESTful APIs for optimised functionality and system
+      reliability.
+    - >-
+      Built dynamic user interfaces using JSP and JSTL tags, integrated
+      email-sending services, and streamlined server-side functionality with
+      Servlets for a scalable, secure and user-friendly application.
+  technologies:
+    - Java
+    - Spring Boot
+    - RESTful APIs
+    - JSP
+    - JSTL
+    - Servlets
+    - SQL
+
+- id: srai-treasurer
+  organization: The Society for Responsible Artificial Intelligence
+  role: Treasurer
+  type: leadership
+  start: '2024-12'
+  end: present
+  summary: >-
+    Elected treasurer of a student society focused on responsible AI practice.
+  responsibilities:
+    - Serve as treasurer for the society (role recorded on resume under Leadership Experience).

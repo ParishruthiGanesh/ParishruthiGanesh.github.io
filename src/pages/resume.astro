@@ -1,0 +1,249 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Tag from '../components/Tag.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import { formatRange, formatDate, STATUS_LABELS } from '../lib/format.js';
+
+const content = loadContent();
+const { profile, education, experience, skills, publications } = content;
+const resumeHref = url(profile.resume.path);
+---
+
+<BaseLayout
+  title="Resume"
+  description={`Resume for ${profile.name} — ${profile.role} at ${profile.affiliation}. Readable on the page and downloadable as a PDF.`}
+>
+  <PageHeader eyebrow="Resume" title={profile.name} lead={`${profile.role} · ${profile.affiliation} · ${profile.location}`}>
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <a
+        href={resumeHref}
+        download={profile.resume.filename}
+        class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium no-underline"
+        style="background: var(--ink); color: var(--surface-raised); border-color: var(--ink)"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Download PDF
+      </a>
+      <a
+        href={resumeHref}
+        rel="noopener"
+        class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm no-underline"
+        style="border-color: var(--border-strong); color: var(--ink-muted); background: var(--surface-raised)"
+      >
+        Open in a new tab
+      </a>
+      <p class="text-sm" style="color: var(--ink-subtle)">
+        Last updated <time datetime={profile.resume.lastUpdated}>{formatDate(profile.resume.lastUpdated)}</time>
+      </p>
+    </div>
+  </PageHeader>
+
+  <div class="container-page py-12 sm:py-16">
+    {/* ---------- Inline preview ---------- */}
+    <section aria-labelledby="preview-heading">
+      <h2 id="preview-heading" class="eyebrow">PDF preview</h2>
+      <div
+        class="mt-4 overflow-hidden rounded-xl border"
+        style="border-color: var(--border); background: var(--surface-sunken)"
+      >
+        <object data={resumeHref} type="application/pdf" class="block h-[80vh] max-h-[900px] w-full" title={`${profile.name} — resume (PDF)`}>
+          {/* Shown wherever inline PDF viewing is unavailable, which includes most phones. */}
+          <div class="p-10 text-center">
+            <p style="color: var(--ink-muted)">
+              Your browser cannot display the PDF inline.
+            </p>
+            <p class="mt-4">
+              <a
+                href={resumeHref}
+                download={profile.resume.filename}
+                class="inline-flex rounded-lg border px-4 py-2 text-sm font-medium no-underline"
+                style="background: var(--ink); color: var(--surface-raised); border-color: var(--ink)"
+              >
+                Download the PDF
+              </a>
+            </p>
+            <p class="mt-4 text-sm" style="color: var(--ink-subtle)">
+              Everything in it is also on this page as text, below.
+            </p>
+          </div>
+        </object>
+      </div>
+      <p class="mt-3 text-sm" style="color: var(--ink-subtle)">
+        The PDF is not the only way to read this: the full resume is rendered as accessible
+        HTML below, and expanded further on the{' '}
+        <a href={url('/experience')} class="link-underline no-underline" style="color: var(--accent)">experience</a>{' '}
+        and{' '}
+        <a href={url('/publications')} class="link-underline no-underline" style="color: var(--accent)">publications</a>{' '}
+        pages.
+      </p>
+    </section>
+
+    {/* ---------- HTML resume ---------- */}
+    <div class="mt-16 grid gap-12 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+      <div class="space-y-12">
+        <section aria-labelledby="profile-heading">
+          <h2 id="profile-heading" class="text-xl font-semibold" style="color: var(--ink)">Profile</h2>
+          <p class="mt-3 leading-relaxed" style="color: var(--ink-muted)">{profile.shortBio}</p>
+        </section>
+
+        <section aria-labelledby="resume-education">
+          <h2 id="resume-education" class="text-xl font-semibold" style="color: var(--ink)">Education</h2>
+          <ol class="mt-4 space-y-5">
+            {
+              education.map((entry) => (
+                <li>
+                  <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h3 class="font-semibold" style="color: var(--ink)">
+                      {entry.degree}
+                    </h3>
+                    <span class="font-mono text-xs" style="color: var(--ink-subtle)">
+                      {formatRange(entry.start, entry.end)}
+                    </span>
+                  </div>
+                  <p class="mt-0.5 text-sm" style="color: var(--ink-muted)">
+                    {entry.institution}
+                    {entry.location && ` · ${entry.location}`}
+                    {entry.grade && ` · ${entry.grade}`}
+                  </p>
+                  {entry.researchFocus && (
+                    <p class="mt-1.5 text-sm leading-relaxed" style="color: var(--ink-subtle)">
+                      Research focus: {entry.researchFocus}
+                    </p>
+                  )}
+                  {entry.coursework.length > 0 && (
+                    <p class="mt-1.5 text-sm leading-relaxed" style="color: var(--ink-subtle)">
+                      Relevant coursework: {entry.coursework.join(', ')}
+                    </p>
+                  )}
+                </li>
+              ))
+            }
+          </ol>
+        </section>
+
+        <section aria-labelledby="resume-publications">
+          <h2 id="resume-publications" class="text-xl font-semibold" style="color: var(--ink)">Publications</h2>
+          <ol class="mt-4 space-y-4">
+            {
+              publications.map((pub) => (
+                <li>
+                  <p class="text-sm leading-relaxed" style="color: var(--ink-muted)">
+                    {pub.authors.join(', ')}.{' '}
+                    <a
+                      href={url(`/publications/${pub.id}`)}
+                      class="link-underline font-medium no-underline"
+                      style="color: var(--ink)"
+                    >
+                      “{pub.title}”
+                    </a>
+                    {pub.statusNote ? ` ${pub.statusNote}` : ` ${STATUS_LABELS[pub.status]}.`}
+                    {pub.arxivId && (
+                      <>
+                        {' '}
+                        <a
+                          href={`https://arxiv.org/abs/${pub.arxivId}`}
+                          rel="noopener"
+                          class="link-underline no-underline"
+                          style="color: var(--accent)"
+                        >
+                          arXiv:{pub.arxivId}
+                        </a>
+                      </>
+                    )}
+                  </p>
+                </li>
+              ))
+            }
+          </ol>
+        </section>
+
+        <section aria-labelledby="resume-experience">
+          <h2 id="resume-experience" class="text-xl font-semibold" style="color: var(--ink)">Experience</h2>
+          <ol class="mt-4 space-y-7">
+            {
+              experience.map((entry) => (
+                <li>
+                  <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h3 class="font-semibold" style="color: var(--ink)">
+                      {entry.role}, {entry.organization}
+                    </h3>
+                    <span class="font-mono text-xs" style="color: var(--ink-subtle)">
+                      {formatRange(entry.start, entry.end)}
+                    </span>
+                  </div>
+                  {entry.location && (
+                    <p class="mt-0.5 text-sm" style="color: var(--ink-subtle)">
+                      {entry.location}
+                    </p>
+                  )}
+                  {entry.responsibilities.length > 0 && (
+                    <ul class="mt-2.5 space-y-2">
+                      {entry.responsibilities.map((item) => (
+                        <li class="flex gap-2.5 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                          <span aria-hidden="true" style="color: var(--ink-subtle)">·</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {entry.workstreams.length > 0 && (
+                    <ul class="mt-3 space-y-1.5">
+                      {entry.workstreams.map((stream) => (
+                        <li class="text-sm" style="color: var(--ink-muted)">
+                          <span class="font-medium" style="color: var(--ink)">
+                            {stream.name}
+                          </span>
+                          {stream.stack.length > 0 && (
+                            <span class="font-mono text-xs" style="color: var(--ink-subtle)">
+                              {' '}
+                              — {stream.stack.join(', ')}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))
+            }
+          </ol>
+          <p class="mt-5 text-sm">
+            <a href={url('/experience')} class="link-underline no-underline" style="color: var(--accent)">
+              Full experience with technical contributions →
+            </a>
+          </p>
+        </section>
+      </div>
+
+      <aside>
+        <section aria-labelledby="resume-skills">
+          <h2 id="resume-skills" class="text-xl font-semibold" style="color: var(--ink)">Technical skills</h2>
+          <dl class="mt-4 space-y-5">
+            {
+              skills.map((group) => (
+                <div>
+                  <dt class="text-sm font-semibold" style="color: var(--ink)">
+                    {group.label}
+                  </dt>
+                  <dd class="mt-2">
+                    <ul class="flex flex-wrap gap-1.5">
+                      {group.items.map((item) => (
+                        <li>
+                          <Tag tone="outline">{item}</Tag>
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>

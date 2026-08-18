@@ -1,0 +1,213 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PublicationCard from '../../components/PublicationCard.astro';
+import { loadContent } from '../../lib/content.js';
+import { STATUS_LABELS } from '../../lib/format.js';
+
+const { publications, research } = loadContent();
+const areaLabels = Object.fromEntries(research.map((theme) => [theme.id, theme.shortTitle]));
+
+const years = [...new Set(publications.map((pub) => pub.year))].sort((a, b) => b - a);
+const statuses = [...new Set(publications.map((pub) => pub.status))];
+const areas = [...new Set(publications.flatMap((pub) => pub.researchAreas))];
+
+/** One BibTeX file for everything that has an entry. */
+const allBibtex = publications
+  .filter((pub) => pub.bibtex)
+  .map((pub) => pub.bibtex!.trim())
+  .join('\n\n');
+---
+
+<BaseLayout
+  title="Publications"
+  description="Papers and preprints by Parishruthi Ganesh, with abstracts, BibTeX, and links to code, data and demos where they exist."
+  schema={publications.map((pub) => ({
+    '@context': 'https://schema.org',
+    '@type': 'ScholarlyArticle',
+    headline: pub.title,
+    name: pub.title,
+    author: pub.authors.map((name) => ({ '@type': 'Person', name })),
+    datePublished: String(pub.year),
+    ...(pub.abstract ? { abstract: pub.abstract } : {}),
+    ...(pub.paperUrl ? { url: pub.paperUrl } : {}),
+    ...(pub.doi ? { identifier: `https://doi.org/${pub.doi}` } : {}),
+    ...(pub.venue ? { publication: pub.venue } : {}),
+    creativeWorkStatus: STATUS_LABELS[pub.status],
+  }))}
+>
+  <PageHeader
+    eyebrow="Publications"
+    title="Papers and preprints"
+    lead="Status is recorded from an explicit source and never inferred from a venue name. Citation counts are shown only when retrieved from a supported API and labelled with a retrieval date — none currently are."
+  />
+
+  <div class="container-page py-12">
+    {/* ---------- Filters ---------- */}
+    <form
+      id="publication-filters"
+      class="surface-card p-5 sm:p-6"
+      aria-label="Filter publications"
+      novalidate
+    >
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <label for="filter-search" class="eyebrow block">Search</label>
+          <input
+            id="filter-search"
+            type="search"
+            name="search"
+            placeholder="Title or author…"
+            class="mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+            style="border-color: var(--border); color: var(--ink)"
+          />
+        </div>
+        <div>
+          <label for="filter-year" class="eyebrow block">Year</label>
+          <select
+            id="filter-year"
+            name="year"
+            class="mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+            style="border-color: var(--border); color: var(--ink)"
+          >
+            <option value="">All years</option>
+            {years.map((year) => <option value={year}>{year}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="filter-area" class="eyebrow block">Research area</label>
+          <select
+            id="filter-area"
+            name="area"
+            class="mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+            style="border-color: var(--border); color: var(--ink)"
+          >
+            <option value="">All areas</option>
+            {areas.map((area) => <option value={area}>{areaLabels[area] ?? area}</option>)}
+          </select>
+        </div>
+        <div>
+          <label for="filter-status" class="eyebrow block">Status</label>
+          <select
+            id="filter-status"
+            name="status"
+            class="mt-2 w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+            style="border-color: var(--border); color: var(--ink)"
+          >
+            <option value="">All statuses</option>
+            {statuses.map((status) => <option value={status}>{STATUS_LABELS[status]}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <p id="publication-count" class="text-sm" style="color: var(--ink-subtle)" aria-live="polite">
+          Showing {publications.length} of {publications.length} publications
+        </p>
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            type="reset"
+            class="rounded-lg border px-3 py-1.5 text-sm transition-colors hover:border-[var(--border-strong)]"
+            style="border-color: var(--border); color: var(--ink-muted)"
+          >
+            Clear filters
+          </button>
+          {
+            allBibtex && (
+              <button
+                type="button"
+                id="copy-all-bibtex"
+                data-bibtex={allBibtex}
+                class="rounded-lg border px-3 py-1.5 text-sm transition-colors hover:border-[var(--border-strong)]"
+                style="border-color: var(--border); color: var(--ink-muted)"
+              >
+                Copy all BibTeX
+              </button>
+            )
+          }
+        </div>
+      </div>
+    </form>
+
+    {/* ---------- Results ---------- */}
+    <div id="publication-list" class="mt-8 grid gap-6">
+      {publications.map((publication) => <PublicationCard publication={publication} areaLabels={areaLabels} />)}
+    </div>
+
+    <p
+      id="publication-empty"
+      hidden
+      class="surface-card mt-8 p-10 text-center text-sm"
+      style="color: var(--ink-subtle)"
+    >
+      No publications match these filters.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('publication-filters') as HTMLFormElement | null;
+  const list = document.getElementById('publication-list');
+  const count = document.getElementById('publication-count');
+  const empty = document.getElementById('publication-empty');
+  if (!form || !list || !count || !empty) throw new Error('publication filter markup missing');
+
+  const cards = Array.from(list.querySelectorAll<HTMLElement>('article'));
+  const total = cards.length;
+
+  function apply(): void {
+    const data = new FormData(form!);
+    const search = String(data.get('search') ?? '').trim().toLowerCase();
+    const year = String(data.get('year') ?? '');
+    const area = String(data.get('area') ?? '');
+    const status = String(data.get('status') ?? '');
+
+    let visible = 0;
+    for (const card of cards) {
+      const haystack = `${card.dataset.title ?? ''} ${card.textContent?.toLowerCase() ?? ''}`;
+      const matches =
+        (!search || haystack.includes(search)) &&
+        (!year || card.dataset.year === year) &&
+        (!status || card.dataset.status === status) &&
+        (!area || (card.dataset.areas ?? '').split(' ').includes(area));
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    }
+
+    count!.textContent = `Showing ${visible} of ${total} publications`;
+    empty!.hidden = visible > 0;
+  }
+
+  form.addEventListener('input', apply);
+  form.addEventListener('change', apply);
+  form.addEventListener('reset', () => window.setTimeout(apply, 0));
+  form.addEventListener('submit', (event) => event.preventDefault());
+
+  // Deep links such as /publications?area=language-model-evaluation work.
+  const params = new URLSearchParams(window.location.search);
+  for (const key of ['search', 'year', 'area', 'status']) {
+    const value = params.get(key);
+    const field = form.elements.namedItem(key) as HTMLInputElement | HTMLSelectElement | null;
+    if (value && field) field.value = value;
+  }
+  apply();
+
+  const copyButton = document.getElementById('copy-all-bibtex');
+  copyButton?.addEventListener('click', async () => {
+    const bibtex = copyButton.getAttribute('data-bibtex') ?? '';
+    try {
+      await navigator.clipboard.writeText(bibtex);
+      const original = copyButton.textContent;
+      copyButton.textContent = 'Copied';
+      window.setTimeout(() => (copyButton.textContent = original), 1800);
+    } catch {
+      // Clipboard can be blocked; fall back to a download so the action still works.
+      const blob = new Blob([bibtex], { type: 'application/x-bibtex' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'publications.bib';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+  });
+</script>

@@ -1,0 +1,137 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { loadContent } from '../../lib/content.js';
+
+const { projects, research } = loadContent();
+const areaLabels = Object.fromEntries(research.map((theme) => [theme.id, theme.shortTitle]));
+
+const KIND_LABELS: Record<string, string> = {
+  research: 'Research',
+  application: 'Applications',
+  hackathon: 'Hackathons',
+  tooling: 'Tooling',
+  coursework: 'Coursework & labs',
+};
+const kinds = [...new Set(projects.map((project) => project.kind))];
+const areas = [...new Set(projects.flatMap((project) => project.researchAreas))];
+---
+
+<BaseLayout
+  title="Projects"
+  description="Research systems, applied engineering and hackathon builds by Parishruthi Ganesh — each written up with its problem, method, results and limitations."
+>
+  <PageHeader
+    eyebrow="Projects"
+    title="Systems and studies, written up properly"
+    lead="Each project page carries the sections a reader actually needs: the problem, the method, the experimental setup, what the results were, and what the work does not support. A missing section means no verified source for it — not that it went unmeasured in silence."
+  />
+
+  <div class="container-page py-12">
+    <div
+      class="flex flex-wrap items-center gap-x-6 gap-y-3 border-b pb-5"
+      style="border-color: var(--border)"
+      role="group"
+      aria-label="Filter projects"
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="eyebrow">Type</span>
+        <button
+          type="button"
+          class="filter-kind rounded-full border px-3 py-1 text-sm transition-colors"
+          data-value=""
+          aria-pressed="true"
+          style="border-color: var(--border-strong); color: var(--ink); background: var(--surface-sunken)"
+        >
+          All
+        </button>
+        {
+          kinds.map((kind) => (
+            <button
+              type="button"
+              class="filter-kind rounded-full border px-3 py-1 text-sm transition-colors"
+              data-value={kind}
+              aria-pressed="false"
+              style="border-color: var(--border); color: var(--ink-muted)"
+            >
+              {KIND_LABELS[kind] ?? kind}
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <label for="project-area" class="eyebrow">Research area</label>
+        <select
+          id="project-area"
+          class="rounded-lg border bg-transparent px-3 py-1.5 text-sm outline-none"
+          style="border-color: var(--border); color: var(--ink)"
+        >
+          <option value="">All areas</option>
+          {areas.map((area) => <option value={area}>{areaLabels[area] ?? area}</option>)}
+        </select>
+      </div>
+
+      <p id="project-count" class="ml-auto text-sm" style="color: var(--ink-subtle)" aria-live="polite">
+        {projects.length} projects
+      </p>
+    </div>
+
+    <div id="project-list" class="mt-9 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {projects.map((project) => <ProjectCard project={project} areaLabels={areaLabels} />)}
+    </div>
+
+    <p
+      id="project-empty"
+      hidden
+      class="surface-card mt-8 p-10 text-center text-sm"
+      style="color: var(--ink-subtle)"
+    >
+      No projects match these filters.
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  const list = document.getElementById('project-list');
+  const count = document.getElementById('project-count');
+  const empty = document.getElementById('project-empty');
+  const areaSelect = document.getElementById('project-area') as HTMLSelectElement | null;
+  const kindButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('.filter-kind'));
+  if (!list || !count || !empty || !areaSelect) throw new Error('project filter markup missing');
+
+  const cards = Array.from(list.querySelectorAll<HTMLElement>('article'));
+  let kind = '';
+
+  function apply(): void {
+    const area = areaSelect!.value;
+    let visible = 0;
+    for (const card of cards) {
+      const matches =
+        (!kind || card.dataset.kind === kind) &&
+        (!area || (card.dataset.areas ?? '').split(' ').includes(area));
+      card.hidden = !matches;
+      if (matches) visible += 1;
+    }
+    count!.textContent = `${visible} project${visible === 1 ? '' : 's'}`;
+    empty!.hidden = visible > 0;
+  }
+
+  for (const button of kindButtons) {
+    button.addEventListener('click', () => {
+      kind = button.dataset.value ?? '';
+      for (const other of kindButtons) {
+        const active = other === button;
+        other.setAttribute('aria-pressed', String(active));
+        other.style.borderColor = active ? 'var(--border-strong)' : 'var(--border)';
+        other.style.color = active ? 'var(--ink)' : 'var(--ink-muted)';
+        other.style.background = active ? 'var(--surface-sunken)' : 'transparent';
+      }
+      apply();
+    });
+  }
+
+  areaSelect.addEventListener('change', apply);
+  apply();
+</script>

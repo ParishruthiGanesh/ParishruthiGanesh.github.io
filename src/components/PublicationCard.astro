@@ -1,0 +1,140 @@
+---
+import type { Publication } from '../lib/schema.js';
+import { STATUS_LABELS } from '../lib/format.js';
+import { url } from '../lib/url.js';
+import Tag from './Tag.astro';
+
+interface Props {
+  publication: Publication;
+  /** Research theme ids → display labels, for the area chips. */
+  areaLabels: Record<string, string>;
+  compact?: boolean;
+}
+const { publication, areaLabels, compact = false } = Astro.props;
+
+const statusTone =
+  publication.status === 'published' || publication.status === 'accepted'
+    ? 'ember'
+    : publication.status === 'preprint'
+      ? 'accent'
+      : 'outline';
+
+const quickLinks = [
+  publication.arxivId && { label: `arXiv:${publication.arxivId}`, href: `https://arxiv.org/abs/${publication.arxivId}` },
+  publication.doi && { label: 'DOI', href: `https://doi.org/${publication.doi}` },
+  publication.codeUrl && { label: 'Code', href: publication.codeUrl },
+  publication.datasetUrl && { label: 'Dataset', href: publication.datasetUrl },
+  publication.videoUrl && { label: 'Video', href: publication.videoUrl },
+  publication.slidesUrl && { label: 'Slides', href: publication.slidesUrl },
+  publication.posterUrl && { label: 'Poster', href: publication.posterUrl },
+].filter((item): item is { label: string; href: string } => Boolean(item));
+---
+
+<article
+  class="surface-card card-interactive p-6 sm:p-7"
+  data-year={publication.year}
+  data-status={publication.status}
+  data-areas={publication.researchAreas.join(' ')}
+  data-title={publication.title.toLowerCase()}
+>
+  <div class="flex flex-wrap items-center gap-2">
+    <Tag tone={statusTone}>{STATUS_LABELS[publication.status]}</Tag>
+    <span class="font-mono text-xs" style="color: var(--ink-subtle)">{publication.year}</span>
+    {
+      publication.venue && (
+        <span class="text-xs" style="color: var(--ink-subtle)">
+          · {publication.venue}
+        </span>
+      )
+    }
+  </div>
+
+  <h3 class="mt-3 text-lg font-semibold leading-snug sm:text-xl">
+    <a
+      href={url(`/publications/${publication.id}`)}
+      class="no-underline transition-colors hover:text-[var(--accent)]"
+      style="color: var(--ink)"
+    >
+      {publication.title}
+    </a>
+  </h3>
+
+  <p class="mt-2 text-sm" style="color: var(--ink-muted)">
+    {
+      publication.authors.map((author, index) => (
+        <>
+          {index > 0 && ', '}
+          <span style={author === publication.highlightAuthor ? 'color: var(--ink); font-weight: 600' : ''}>
+            {author}
+          </span>
+        </>
+      ))
+    }
+  </p>
+
+  {
+    publication.statusNote && (
+      <p class="mt-2 text-sm italic" style="color: var(--ink-subtle)">
+        {publication.statusNote}
+      </p>
+    )
+  }
+
+  {
+    !compact && publication.abstract && (
+      <p class="mt-4 line-clamp-4 text-sm leading-relaxed" style="color: var(--ink-muted)">
+        {publication.abstract}
+      </p>
+    )
+  }
+
+  {
+    publication.researchAreas.length > 0 && (
+      <div class="mt-4 flex flex-wrap gap-1.5">
+        {publication.researchAreas.map((area) => (
+          <Tag tone="accent" href={url(`/research#${area}`)}>
+            {areaLabels[area] ?? area}
+          </Tag>
+        ))}
+      </div>
+    )
+  }
+
+  <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+    <a
+      href={url(`/publications/${publication.id}`)}
+      class="font-medium no-underline link-underline"
+      style="color: var(--accent)"
+    >
+      Details
+    </a>
+    {
+      quickLinks.map((link) => (
+        <a href={link.href} rel="noopener" class="no-underline link-underline" style="color: var(--ink-muted)">
+          {link.label}
+        </a>
+      ))
+    }
+  </div>
+
+  {
+    publication.citations !== undefined &&
+      publication.citationsRetrievedFrom &&
+      publication.citationsRetrievedAt && (
+        <p class="mt-3 text-xs" style="color: var(--ink-subtle)">
+          {publication.citations} citations · {publication.citationsRetrievedFrom}, retrieved{' '}
+          {publication.citationsRetrievedAt}
+        </p>
+      )
+  }
+</article>
+
+<style>
+  .line-clamp-4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>

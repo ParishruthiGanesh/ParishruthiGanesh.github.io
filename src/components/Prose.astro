@@ -1,0 +1,16 @@
+---
+/**
+ * Renders a markdown string from a content file.
+ *
+ * Content YAML lives in this repository and is reviewed through pull requests,
+ * so it is trusted; text arriving from external APIs is escaped instead.
+ */
+import { md } from '../lib/format.js';
+interface Props {
+  content: string | undefined | null;
+  class?: string;
+}
+const { content, class: className = '' } = Astro.props;
+const html = md(content);
+---
+{html && <div class:list={['prose-research', className]} set:html={html} />}

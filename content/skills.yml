@@ -1,0 +1,80 @@
+# Source: Parishruthi_Ganesh_Resume.pdf — "Technical Skills" section, verbatim.
+# Deliberately a flat list: no invented proficiency percentages or progress bars.
+
+- id: languages
+  label: Languages
+  order: 10
+  items: [Python, Java, 'C++', SQL, JavaScript, HTML5/CSS3]
+
+- id: ml-frameworks
+  label: ML / DL Frameworks
+  order: 20
+  items:
+    - PyTorch
+    - Scikit-learn
+    - Hugging Face Transformers
+    - XGBoost
+    - LightGBM
+    - Deep Graph Library (DGL)
+    - Graph Neural Networks (GNNs)
+    - TensorFlow
+
+- id: deep-learning
+  label: Deep Learning
+  order: 30
+  items:
+    - CNNs
+    - RNNs
+    - LSTMs
+    - Transformer Architectures
+    - Attention Mechanisms
+    - Graph Neural Networks (GNNs)
+    - Optimisation (Adam, SGD, LR Scheduling)
+    - Fine-tuning & Transfer Learning
+
+- id: llm-agents
+  label: LLMs & AI Agents
+  order: 40
+  items:
+    - LangGraph
+    - Retrieval-Augmented Generation (RAG)
+    - Agentic Orchestration
+    - LLM Code Generation
+    - Multi-turn Conversational Systems
+    - Tool-Augmented LLMs
+    - vLLM
+    - LangFuse
+    - LiteLLM
+
+- id: cloud-infra
+  label: Cloud & Infrastructure
+  order: 50
+  items: ['AWS (S3, Athena, EKS, EC2)', Docker, Kubernetes, Jenkins, Airflow, Ray, DeepSpeed]
+
+- id: databases
+  label: Databases
+  order: 60
+  items: [PostgreSQL/pgvector, MongoDB, MySQL, Oracle, SQL Server, OpenSearch, SQLite]
+
+- id: visualization
+  label: Visualisation & Tools
+  order: 70
+  items: [Matplotlib, Seaborn, Tableau, Grafana, Streamlit, Gradio, Weights & Biases, Jupyter Notebook]
+
+- id: web-frameworks
+  label: Web Frameworks
+  order: 80
+  items: [Django, Flask, Spring Boot, React.js, Bootstrap, RESTful APIs, 'Git/GitHub (CI/CD)']
+
+- id: core-competencies
+  label: Core Competencies
+  order: 90
+  items:
+    - Natural Language Processing
+    - Computer Vision
+    - Predictive Analytics
+    - Data Modelling
+    - System Design
+    - Statistical Analysis
+    - Object-Oriented Programming
+    - Data Structures & Algorithms

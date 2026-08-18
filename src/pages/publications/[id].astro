@@ -1,0 +1,354 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Tag from '../../components/Tag.astro';
+import RelatedContent from '../../components/RelatedContent.astro';
+import { loadContent } from '../../lib/content.js';
+import { url } from '../../lib/url.js';
+import { STATUS_LABELS, citationLine } from '../../lib/format.js';
+
+export function getStaticPaths() {
+  const { publications } = loadContent();
+  return publications.map((publication) => ({
+    params: { id: publication.id },
+    props: { publicationId: publication.id },
+  }));
+}
+
+interface Props {
+  publicationId: string;
+}
+const { publicationId } = Astro.props;
+const content = loadContent();
+const publication = content.publications.find((pub) => pub.id === publicationId)!;
+
+const areaLabels = Object.fromEntries(content.research.map((theme) => [theme.id, theme.shortTitle]));
+const codeLinks = content.researchLinks.filter((link) => link.paper === publication.id);
+const relatedProjects = content.projects.filter((project) =>
+  project.relatedPublications.includes(publication.id),
+);
+const metadata = content.publicationMetadata.find((entry) => entry.id === publication.id);
+
+const resourceLinks = [
+  publication.paperUrl && { label: 'Paper', href: publication.paperUrl },
+  publication.arxivId && { label: `arXiv:${publication.arxivId}`, href: `https://arxiv.org/abs/${publication.arxivId}` },
+  publication.doi && { label: `DOI ${publication.doi}`, href: `https://doi.org/${publication.doi}` },
+  publication.codeUrl && { label: 'Code', href: publication.codeUrl },
+  publication.projectUrl && { label: 'Project page', href: publication.projectUrl },
+  publication.datasetUrl && { label: 'Dataset', href: publication.datasetUrl },
+  publication.slidesUrl && { label: 'Slides', href: publication.slidesUrl },
+  publication.posterUrl && { label: 'Poster', href: publication.posterUrl },
+  publication.videoUrl && { label: 'Video', href: publication.videoUrl },
+].filter((item): item is { label: string; href: string } => Boolean(item));
+
+const related = [
+  ...codeLinks.map((link) => ({
+    kind: 'Related code',
+    title: link.repository,
+    href: `https://github.com/${link.repository}`,
+    note: link.relationship,
+    external: true,
+  })),
+  ...relatedProjects.map((project) => ({
+    kind: 'Related project',
+    title: project.name,
+    href: `/projects/${project.id}`,
+    note: project.tagline,
+  })),
+  ...publication.researchAreas.map((area) => ({
+    kind: 'Research theme',
+    title: areaLabels[area] ?? area,
+    href: `/research#${area}`,
+  })),
+];
+---
+
+<BaseLayout
+  title={publication.title}
+  description={publication.abstract?.slice(0, 200) ?? `${publication.title} — ${publication.authors.join(', ')}`}
+  ogType="article"
+  schema={[
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ScholarlyArticle',
+      headline: publication.title,
+      name: publication.title,
+      author: publication.authors.map((name) => ({ '@type': 'Person', name })),
+      datePublished: String(publication.year),
+      ...(publication.abstract ? { abstract: publication.abstract } : {}),
+      ...(publication.paperUrl ? { url: publication.paperUrl } : {}),
+      ...(publication.doi ? { sameAs: `https://doi.org/${publication.doi}` } : {}),
+      creativeWorkStatus: STATUS_LABELS[publication.status],
+    },
+  ]}
+>
+  <article>
+    <header class="border-b py-12 sm:py-16" style="border-color: var(--border)">
+      <div class="container-page">
+        <nav aria-label="Breadcrumb" class="mb-6 text-sm">
+          <a href={url('/publications')} class="link-underline no-underline" style="color: var(--ink-subtle)">
+            ← All publications
+          </a>
+        </nav>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <Tag tone={publication.status === 'preprint' ? 'accent' : 'outline'} size="md">
+            {STATUS_LABELS[publication.status]}
+          </Tag>
+          <span class="font-mono text-sm" style="color: var(--ink-subtle)">{publication.year}</span>
+          {publication.venue && <span class="text-sm" style="color: var(--ink-subtle)">· {publication.venue}</span>}
+        </div>
+
+        <h1 class="mt-4 max-w-4xl text-3xl font-semibold leading-tight sm:text-4xl" style="color: var(--ink)">
+          {publication.title}
+        </h1>
+
+        <p class="mt-4 max-w-3xl" style="color: var(--ink-muted)">
+          {
+            publication.authors.map((author, index) => (
+              <>
+                {index > 0 && ', '}
+                <span style={author === publication.highlightAuthor ? 'color: var(--ink); font-weight: 600' : ''}>
+                  {author}
+                </span>
+              </>
+            ))
+          }
+        </p>
+
+        {
+          publication.statusNote && (
+            <p class="mt-3 max-w-2xl text-sm italic" style="color: var(--ink-subtle)">
+              {publication.statusNote}
+            </p>
+          )
+        }
+
+        {
+          resourceLinks.length > 0 && (
+            <ul class="mt-7 flex flex-wrap gap-2">
+              {resourceLinks.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    rel="noopener"
+                    class="inline-flex rounded-lg border px-3 py-1.5 text-sm no-underline transition-colors hover:border-[var(--border-strong)]"
+                    style="border-color: var(--border); color: var(--ink-muted); background: var(--surface-raised)"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="container-page py-12 sm:py-14">
+      <div class="grid gap-12 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+        <div>
+          {
+            publication.abstract && (
+              <section aria-labelledby="abstract-heading">
+                <h2 id="abstract-heading" class="text-xl font-semibold" style="color: var(--ink)">
+                  Abstract
+                </h2>
+                <p class="mt-3 text-[1.0625rem] leading-relaxed" style="color: var(--ink-muted)">
+                  {publication.abstract}
+                </p>
+              </section>
+            )
+          }
+
+          {
+            publication.researchAreas.length > 0 && (
+              <section class="mt-10" aria-labelledby="areas-heading">
+                <h2 id="areas-heading" class="eyebrow">
+                  Research areas
+                </h2>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  {publication.researchAreas.map((area) => (
+                    <Tag tone="accent" size="md" href={url(`/research#${area}`)}>
+                      {areaLabels[area] ?? area}
+                    </Tag>
+                  ))}
+                </div>
+              </section>
+            )
+          }
+
+          {
+            publication.bibtex && (
+              <section class="mt-10" aria-labelledby="bibtex-heading">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <h2 id="bibtex-heading" class="text-xl font-semibold" style="color: var(--ink)">
+                    BibTeX
+                  </h2>
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      class="copy-bibtex rounded-lg border px-3 py-1.5 text-sm transition-colors hover:border-[var(--border-strong)]"
+                      style="border-color: var(--border); color: var(--ink-muted)"
+                      data-bibtex={publication.bibtex}
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      class="download-bibtex rounded-lg border px-3 py-1.5 text-sm transition-colors hover:border-[var(--border-strong)]"
+                      style="border-color: var(--border); color: var(--ink-muted)"
+                      data-bibtex={publication.bibtex}
+                      data-filename={`${publication.id}.bib`}
+                    >
+                      Download .bib
+                    </button>
+                  </div>
+                </div>
+                <pre
+                  class="scroll-x mt-4 rounded-xl border p-4 font-mono text-xs leading-relaxed"
+                  style="border-color: var(--border); background: var(--surface-sunken); color: var(--ink-muted)"
+                ><code>{publication.bibtex.trim()}</code></pre>
+              </section>
+            )
+          }
+
+          <RelatedContent items={related} />
+        </div>
+
+        {/* ---------- Provenance sidebar ---------- */}
+        <aside class="space-y-6">
+          <div class="surface-card p-5">
+            <h2 class="eyebrow">Citation</h2>
+            <p class="mt-3 text-sm leading-relaxed" style="color: var(--ink-muted)">
+              {citationLine(publication)}
+            </p>
+          </div>
+
+          <div class="surface-card p-5">
+            <h2 class="eyebrow">Provenance</h2>
+            <dl class="mt-3 space-y-3 text-sm">
+              <div>
+                <dt class="font-medium" style="color: var(--ink)">Status</dt>
+                <dd style="color: var(--ink-muted)">{STATUS_LABELS[publication.status]}</dd>
+              </div>
+              {
+                publication.lastVerified && (
+                  <div>
+                    <dt class="font-medium" style="color: var(--ink)">
+                      Last verified
+                    </dt>
+                    <dd style="color: var(--ink-muted)">
+                      <time datetime={publication.lastVerified}>{publication.lastVerified}</time>
+                    </dd>
+                  </div>
+                )
+              }
+              {
+                publication.sources.length > 0 && (
+                  <div>
+                    <dt class="font-medium" style="color: var(--ink)">
+                      Metadata sources
+                    </dt>
+                    <dd>
+                      <ul class="mt-1 space-y-1.5" style="color: var(--ink-subtle)">
+                        {publication.sources.map((source) => (
+                          <li class="leading-relaxed">{source}</li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </div>
+                )
+              }
+              {
+                metadata && (
+                  <div>
+                    <dt class="font-medium" style="color: var(--ink)">
+                      Automated sync
+                    </dt>
+                    <dd style="color: var(--ink-muted)">
+                      {metadata.source}, retrieved {metadata.retrievedAt.slice(0, 10)}
+                    </dd>
+                  </div>
+                )
+              }
+            </dl>
+            {
+              metadata && metadata.conflicts.length > 0 && (
+                <div class="mt-4 rounded-lg border p-3" style="border-color: var(--ember); background: var(--ember-soft)">
+                  <p class="text-xs font-medium" style="color: var(--ember)">
+                    Upstream metadata differs
+                  </p>
+                  <ul class="mt-1.5 space-y-1 text-xs" style="color: var(--ink-muted)">
+                    {metadata.conflicts.map((conflict) => (
+                      <li>{conflict}</li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            }
+          </div>
+
+          <div class="surface-card p-5">
+            <h2 class="eyebrow">Code</h2>
+            {
+              codeLinks.length > 0 ? (
+                <ul class="mt-3 space-y-2">
+                  {codeLinks.map((link) => (
+                    <li class="text-sm">
+                      <a
+                        href={`https://github.com/${link.repository}`}
+                        rel="noopener"
+                        class="link-underline font-mono no-underline"
+                        style="color: var(--accent)"
+                      >
+                        {link.repository}
+                      </a>
+                      <span class="ml-1.5 text-xs" style="color: var(--ink-subtle)">
+                        ({link.relationship}
+                        {!link.verified && ', unverified'})
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p class="mt-2 text-xs leading-relaxed" style="color: var(--ink-subtle)">
+                  No public repository is mapped to this paper. Mappings are recorded
+                  explicitly with the <code class="font-mono">link-paper-code</code> command
+                  rather than inferred from repository names.
+                </p>
+              )
+            }
+          </div>
+        </aside>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  function attach(selector: string, handler: (button: HTMLElement, text: string) => void): void {
+    for (const button of document.querySelectorAll<HTMLElement>(selector)) {
+      button.addEventListener('click', () => handler(button, button.dataset.bibtex ?? ''));
+    }
+  }
+
+  attach('.copy-bibtex', async (button, text) => {
+    try {
+      await navigator.clipboard.writeText(text.trim());
+      const original = button.textContent;
+      button.textContent = 'Copied';
+      window.setTimeout(() => (button.textContent = original), 1800);
+    } catch {
+      button.textContent = 'Press ⌘C';
+    }
+  });
+
+  attach('.download-bibtex', (button, text) => {
+    const blob = new Blob([text.trim()], { type: 'application/x-bibtex' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = button.dataset.filename ?? 'citation.bib';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+</script>

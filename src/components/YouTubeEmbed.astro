@@ -1,0 +1,88 @@
+---
+/**
+ * Privacy-enhanced, click-to-load YouTube embed.
+ *
+ * The facade is drawn entirely locally — no thumbnail is fetched from
+ * i.ytimg.com — so opening a page with three demos on it makes *zero* requests
+ * to any Google host. The iframe (youtube-nocookie.com) is only inserted once
+ * the visitor presses play, which is also the first moment any cookie could be
+ * set. Using YouTube's own thumbnail CDN for the poster would have leaked an IP
+ * address and a Referer on page load, which is exactly the thing the
+ * privacy-enhanced domain is meant to avoid.
+ */
+import { youtubeEmbedUrl, youtubeWatchUrl } from '../lib/format.js';
+
+interface Props {
+  videoId: string;
+  title: string;
+  /** Shown under the play button, e.g. "2:45 walkthrough". */
+  caption?: string;
+}
+const { videoId, title, caption } = Astro.props;
+const embed = youtubeEmbedUrl(videoId);
+const watch = youtubeWatchUrl(videoId);
+---
+
+<div
+  class="youtube-facade relative w-full overflow-hidden rounded-xl border"
+  style="border-color: var(--border); aspect-ratio: 16 / 9"
+  data-embed={embed}
+  data-title={title}
+>
+  {/* Local, decorative backdrop — no external asset. */}
+  <div
+    class="absolute inset-0"
+    style="background:
+      radial-gradient(ellipse 80% 70% at 50% 0%, color-mix(in oklab, var(--accent) 14%, transparent), transparent 70%),
+      var(--surface-sunken)"
+    aria-hidden="true"
+  >
+  </div>
+
+  <button
+    type="button"
+    class="group absolute inset-0 flex h-full w-full cursor-pointer flex-col items-center justify-center gap-3 border-0 bg-transparent"
+    aria-label={`Play video: ${title}`}
+  >
+    <span
+      class="flex h-14 w-20 items-center justify-center rounded-xl transition-transform group-hover:scale-105"
+      style="background: var(--ink); box-shadow: 0 8px 24px -12px rgb(6 11 24 / 0.5)"
+    >
+      <svg class="h-6 w-6 translate-x-[1px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M8 5.5v13l11-6.5-11-6.5Z" fill="var(--surface-raised)" />
+      </svg>
+    </span>
+    <span class="px-6 text-center text-sm font-medium" style="color: var(--ink)">{title}</span>
+    <span class="px-6 text-center text-xs" style="color: var(--ink-subtle)">
+      {caption ?? 'Loads from youtube-nocookie.com only when you press play'}
+    </span>
+  </button>
+
+  <noscript>
+    <a
+      href={watch}
+      rel="noopener"
+      class="absolute inset-0 flex items-center justify-center text-sm font-medium no-underline"
+      style="color: var(--accent)"
+    >
+      Watch “{title}” on YouTube
+    </a>
+  </noscript>
+</div>
+
+<script>
+  for (const facade of document.querySelectorAll<HTMLElement>('.youtube-facade')) {
+    facade.querySelector('button')?.addEventListener('click', () => {
+      const iframe = document.createElement('iframe');
+      iframe.src = `${facade.dataset.embed}&autoplay=1`;
+      iframe.title = facade.dataset.title ?? 'Demo video';
+      iframe.loading = 'lazy';
+      iframe.allow =
+        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+      iframe.allowFullscreen = true;
+      iframe.className = 'absolute inset-0 h-full w-full border-0';
+      facade.replaceChildren(iframe);
+    });
+  }
+</script>

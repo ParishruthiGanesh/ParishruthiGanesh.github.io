@@ -1,0 +1,210 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Prose from '../components/Prose.astro';
+import Tag from '../components/Tag.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import { formatRange } from '../lib/format.js';
+
+const { profile, education, research, skills } = loadContent();
+---
+
+<BaseLayout title="About" description={profile.shortBio}>
+  <PageHeader
+    eyebrow="About"
+    title={`${profile.role} at ${profile.affiliation}`}
+    lead={profile.headline}
+  />
+
+  <div class="container-page py-14 sm:py-16">
+    <div class="grid gap-14 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-16">
+      <div>
+        <section aria-labelledby="bio-heading">
+          <h2 id="bio-heading" class="sr-only">Biography</h2>
+          <Prose content={profile.bio} class="text-[1.0625rem]" />
+        </section>
+
+        <section class="mt-14" aria-labelledby="philosophy-heading">
+          <h2 id="philosophy-heading" class="text-2xl font-semibold" style="color: var(--ink)">
+            How I approach research
+          </h2>
+          <div class="prose-research mt-4">
+            <p>
+              My working assumption is that <strong>the measurement is the
+              contribution</strong>. A new architecture that improves a number is only
+              interesting once you can say which part of it did the work, and whether the
+              improvement would survive a different dataset, a perturbed input or a
+              significance test. Both of my first-author papers are structured around that
+              question rather than around a leaderboard position.
+            </p>
+            <p>
+              That leads to three habits. I prefer <strong>controlled comparisons</strong> to
+              broad claims — hold everything fixed and vary one thing, then report the result
+              scoped to the conditions it was measured under. I try to make systems
+              <strong>honest about their own limits</strong>: labelling which implementation is
+              actually running, keeping a raw similarity score rather than rescaling it to look
+              impressive, and writing the limitations section before the abstract. And I treat
+              <strong>negative and deflationary results as findings</strong> — a benchmark that
+              has saturated, or two models that turn out to be statistically
+              indistinguishable, is worth reporting precisely because it changes what other
+              people should do next.
+            </p>
+            <p>
+              The applied side of my work exists for the same reason. Building a retrieval
+              pipeline over 25,000 papers, or an agent whose memory is a transactional
+              database, surfaces constraints that do not appear in an offline evaluation —
+              and those constraints are usually where the interesting research questions are.
+            </p>
+          </div>
+        </section>
+
+        <section class="mt-14" aria-labelledby="goals-heading">
+          <h2 id="goals-heading" class="text-2xl font-semibold" style="color: var(--ink)">
+            Current goals
+          </h2>
+          <ul class="prose-research mt-4 space-y-3">
+            <li>
+              Take the evaluation protocol from the 41-model study beyond single-label intent
+              classification, into tasks where label ambiguity is intrinsic rather than
+              accidental.
+            </li>
+            <li>
+              Report the contribution of interaction representations as a function of how much
+              of an event has been observed, rather than as a single number at a single
+              observation ratio.
+            </li>
+            <li>
+              Move the AUSME retrieval system from a working pipeline to something faculty and
+              research groups actually query.
+            </li>
+            <li>
+              Keep building systems where the memory, the retrieval and the human decision are
+              part of one auditable path.
+            </li>
+          </ul>
+        </section>
+
+        <section class="mt-14" aria-labelledby="collab-heading">
+          <h2 id="collab-heading" class="text-2xl font-semibold" style="color: var(--ink)">
+            Collaboration
+          </h2>
+          <p class="prose-research mt-4">
+            I am glad to hear from people working on evaluation methodology, video
+            understanding, retrieval-grounded systems, or applications where a model's
+            reliability matters more than its peak score. I am currently open to:
+          </p>
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {profile.openTo.map((item) => <li><Tag tone="accent" size="md">{item}</Tag></li>)}
+          </ul>
+          <p class="mt-6">
+            <a
+              href={url('/contact')}
+              class="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium no-underline"
+              style="background: var(--ink); color: var(--surface-raised); border-color: var(--ink)"
+            >
+              Get in touch
+            </a>
+          </p>
+        </section>
+      </div>
+
+      {/* ---------- Sidebar ---------- */}
+      <aside class="space-y-10">
+        <section aria-labelledby="education-heading">
+          <h2 id="education-heading" class="eyebrow">Education</h2>
+          <ol class="mt-4 space-y-5">
+            {
+              education.map((entry) => (
+                <li class="surface-card p-5">
+                  <p class="font-mono text-xs" style="color: var(--ink-subtle)">
+                    {formatRange(entry.start, entry.end)}
+                  </p>
+                  <h3 class="mt-2 text-base font-semibold leading-snug" style="color: var(--ink)">
+                    {entry.degree}
+                  </h3>
+                  <p class="mt-1 text-sm" style="color: var(--ink-muted)">
+                    {entry.institutionUrl ? (
+                      <a href={entry.institutionUrl} rel="noopener" class="link-underline no-underline" style="color: inherit">
+                        {entry.institution}
+                      </a>
+                    ) : (
+                      entry.institution
+                    )}
+                    {entry.location && ` · ${entry.location}`}
+                  </p>
+                  {entry.grade && (
+                    <p class="mt-1.5 font-mono text-xs" style="color: var(--ink-subtle)">
+                      {entry.grade}
+                    </p>
+                  )}
+                  {entry.researchFocus && (
+                    <p class="mt-2.5 text-sm leading-relaxed" style="color: var(--ink-muted)">
+                      <span class="font-medium" style="color: var(--ink)">Focus:</span> {entry.researchFocus}
+                    </p>
+                  )}
+                  {entry.coursework.length > 0 && (
+                    <p class="mt-2.5 text-xs leading-relaxed" style="color: var(--ink-subtle)">
+                      {entry.coursework.join(' · ')}
+                    </p>
+                  )}
+                </li>
+              ))
+            }
+          </ol>
+        </section>
+
+        <section aria-labelledby="interests-heading">
+          <h2 id="interests-heading" class="eyebrow">Research interests</h2>
+          <ul class="mt-4 space-y-2.5">
+            {
+              research.map((theme) => (
+                <li>
+                  <a
+                    href={url(`/research#${theme.id}`)}
+                    class="link-underline text-sm no-underline"
+                    style="color: var(--ink-muted)"
+                  >
+                    {theme.title}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+
+        <section aria-labelledby="skills-heading">
+          <h2 id="skills-heading" class="eyebrow">Technical focus</h2>
+          <dl class="mt-4 space-y-4">
+            {
+              skills.map((group) => (
+                <div>
+                  <dt class="text-sm font-medium" style="color: var(--ink)">
+                    {group.label}
+                  </dt>
+                  <dd class="mt-1 text-sm leading-relaxed" style="color: var(--ink-subtle)">
+                    {group.items.join(' · ')}
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+        </section>
+      </aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+</style>

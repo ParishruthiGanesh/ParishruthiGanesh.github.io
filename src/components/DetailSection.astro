@@ -1,0 +1,26 @@
+---
+/**
+ * One labelled long-form section on a detail page (Problem, Method, Results…).
+ * Renders nothing when the field is absent — an omitted section means "no
+ * verified source", which is more honest than a placeholder.
+ */
+import Prose from './Prose.astro';
+interface Props {
+  title: string;
+  content?: string | null;
+  id?: string;
+}
+const { title, content, id } = Astro.props;
+---
+{
+  content && (
+    <section id={id} class="mt-10 scroll-mt-24">
+      <h2 class="text-xl font-semibold" style="color: var(--ink)">
+        {title}
+      </h2>
+      <div class="mt-3">
+        <Prose content={content} />
+      </div>
+    </section>
+  )
+}

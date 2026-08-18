@@ -1,0 +1,29 @@
+---
+interface Props {
+  /** Visual weight: `accent` for research areas, `ember` for featured/awards. */
+  tone?: 'neutral' | 'accent' | 'ember' | 'outline';
+  size?: 'sm' | 'md';
+  href?: string;
+  class?: string;
+}
+const { tone = 'neutral', size = 'sm', href, class: className = '' } = Astro.props;
+
+const tones: Record<string, string> = {
+  neutral: 'bg-[var(--surface-sunken)] text-[var(--ink-muted)] border-transparent',
+  accent: 'bg-[var(--accent-soft)] text-[var(--accent)] border-transparent',
+  ember: 'bg-[var(--ember-soft)] text-[var(--ember)] border-transparent',
+  outline: 'bg-transparent text-[var(--ink-subtle)] border-[var(--border)]',
+};
+const sizes: Record<string, string> = {
+  sm: 'text-[0.7rem] px-2 py-0.5',
+  md: 'text-xs px-2.5 py-1',
+};
+const base = `inline-flex items-center gap-1 rounded-full border font-medium leading-tight ${tones[tone]} ${sizes[size]} ${className}`;
+const Tag = href ? 'a' : 'span';
+---
+<Tag
+  class:list={[base, href && 'transition-colors hover:text-[var(--ink)]']}
+  href={href}
+>
+  <slot />
+</Tag>

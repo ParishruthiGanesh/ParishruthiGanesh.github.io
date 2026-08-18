@@ -1,0 +1,187 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Tag from '../components/Tag.astro';
+import LinkList from '../components/LinkList.astro';
+import YouTubeEmbed from '../components/YouTubeEmbed.astro';
+import Screenshot from '../components/Screenshot.astro';
+import { loadContent } from '../lib/content.js';
+import { url } from '../lib/url.js';
+import { formatDate } from '../lib/format.js';
+
+const { hackathons, profile } = loadContent();
+
+const SUBMISSION_LABELS: Record<string, string> = {
+  submitted: 'Submitted',
+  'in-progress': 'Submission in progress',
+  judged: 'Judged',
+  unknown: 'Status not recorded',
+};
+---
+
+<BaseLayout
+  title="Hackathons"
+  description="Hackathon projects by Parishruthi Ganesh, each with its problem, architecture, source code, live demo, Devpost submission and video walkthrough."
+  schema={hackathons.map((hackathon) => ({
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: hackathon.projectName,
+    description: hackathon.tagline,
+    dateCreated: hackathon.date,
+    author: { '@type': 'Person', name: profile.name },
+    isPartOf: { '@type': 'Event', name: hackathon.hackathon },
+  }))}
+>
+  <PageHeader
+    eyebrow="Hackathons"
+    title="Built under a deadline, documented afterwards"
+    lead="Every entry links its source, its running demo, its Devpost submission and its video. Placements appear only where an award was actually confirmed — an entry with no award badge did not receive one, or has not been judged yet."
+  />
+
+  <div class="container-page py-12 sm:py-16">
+    <div class="space-y-20">
+      {
+        hackathons.map((hackathon) => (
+          <section id={hackathon.id} class="scroll-mt-24" aria-labelledby={`${hackathon.id}-heading`}>
+            <div class="border-t pt-10" style="border-color: var(--border)">
+              <div class="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-12">
+                {/* ---- Left: narrative ---- */}
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <Tag tone="ember" size="md">
+                      {hackathon.hackathon}
+                    </Tag>
+                    <span class="font-mono text-xs" style="color: var(--ink-subtle)">
+                      {hackathon.dateLabel ?? formatDate(hackathon.date)}
+                    </span>
+                    <Tag tone="outline">{SUBMISSION_LABELS[hackathon.submissionStatus]}</Tag>
+                  </div>
+
+                  <h2
+                    id={`${hackathon.id}-heading`}
+                    class="mt-4 text-2xl font-semibold sm:text-3xl"
+                    style="color: var(--ink)"
+                  >
+                    {hackathon.projectName}
+                  </h2>
+                  <p class="mt-2 text-lg" style="color: var(--ink-muted)">
+                    {hackathon.tagline}
+                  </p>
+
+                  {hackathon.award && hackathon.awardVerified && (
+                    <p
+                      class="mt-4 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium"
+                      style="border-color: var(--ember); background: var(--ember-soft); color: var(--ember)"
+                    >
+                      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <circle cx="12" cy="9" r="5" />
+                        <path d="m8.5 13.5-1.5 7 5-2.5 5 2.5-1.5-7" stroke-linejoin="round" />
+                      </svg>
+                      {hackathon.award}
+                    </p>
+                  )}
+
+                  <div class="mt-7 space-y-6">
+                    <div>
+                      <h3 class="eyebrow">The problem</h3>
+                      <p class="mt-2 leading-relaxed" style="color: var(--ink-muted)">
+                        {hackathon.problem}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 class="eyebrow">What it does</h3>
+                      <p class="mt-2 leading-relaxed" style="color: var(--ink-muted)">
+                        {hackathon.whatItDoes}
+                      </p>
+                    </div>
+                    {hackathon.architecture && (
+                      <div>
+                        <h3 class="eyebrow">Architecture</h3>
+                        <p class="mt-2 leading-relaxed" style="color: var(--ink-muted)">
+                          {hackathon.architecture}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {hackathon.technologies.length > 0 && (
+                    <div class="mt-7">
+                      <h3 class="eyebrow">Built with</h3>
+                      <ul class="mt-3 flex flex-wrap gap-1.5">
+                        {hackathon.technologies.map((tech) => (
+                          <li>
+                            <Tag tone="outline">{tech}</Tag>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {hackathon.team.length > 0 && hackathon.teamVerified && (
+                    <div class="mt-7">
+                      <h3 class="eyebrow">Team</h3>
+                      <p class="mt-2 text-sm" style="color: var(--ink-muted)">
+                        {hackathon.team.join(', ')}
+                      </p>
+                    </div>
+                  )}
+
+                  <div class="mt-8">
+                    <LinkList links={hackathon.links} repositoryPrivate={hackathon.repositoryPrivate} />
+                  </div>
+
+                  {hackathon.repositoryPrivate && (
+                    <p class="mt-3 max-w-xl text-sm" style="color: var(--ink-subtle)">
+                      The source repository is private on GitHub. The description above comes from
+                      the project's own repository summary rather than from a public README.
+                    </p>
+                  )}
+
+                  {hackathon.relatedProjects.length > 0 && (
+                    <p class="mt-6 text-sm">
+                      <a
+                        href={url(`/projects/${hackathon.relatedProjects[0]}`)}
+                        class="link-underline font-medium no-underline"
+                        style="color: var(--accent)"
+                      >
+                        Read the full project write-up →
+                      </a>
+                    </p>
+                  )}
+                </div>
+
+                {/* ---- Right: demo video and screenshots ---- */}
+                <div class="min-w-0 space-y-6">
+                  {hackathon.youtubeId && (
+                    <YouTubeEmbed
+                      videoId={hackathon.youtubeId}
+                      title={`${hackathon.projectName} — demo video`}
+                    />
+                  )}
+
+                  {hackathon.screenshots.map((shot) => (
+                    <Screenshot src={shot.src} alt={shot.alt} caption={shot.caption} />
+                  ))}
+                </div>
+              </div>
+
+              {hackathon.lessons.length > 0 && (
+                <div class="mt-10 rounded-xl border p-6" style="border-color: var(--border); background: var(--surface-sunken)">
+                  <h3 class="eyebrow">What it taught</h3>
+                  <ul class="mt-4 space-y-3">
+                    {hackathon.lessons.map((lesson) => (
+                      <li class="flex gap-3 leading-relaxed" style="color: var(--ink-muted)">
+                        <span aria-hidden="true" style="color: var(--accent)">—</span>
+                        <span>{lesson}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,53 @@
+# "Currently working on" — drives the homepage section.
+# Keep this short and current; `updated` is shown next to the heading, so a
+# stale date is visible rather than hidden.
+updated: '2026-08-18'
+items:
+  - id: wacv-interaction-study
+    title: Interaction representations for early violence detection
+    status: reviewing
+    since: '2026-01'
+    order: 10
+    description: >-
+      A controlled study isolating how much explicitly modelling person-to-person
+      interaction contributes to early detection in video, currently under review
+      at WACV.
+    researchAreas: [video-understanding-safety]
+    relatedPublications: [interaction-representations-early-violence]
+    relatedProjects: [early-violence-detection]
+
+  - id: intent-benchmark-extension
+    title: Model selection under statistical scrutiny
+    status: experiments
+    since: '2026-03'
+    order: 20
+    description: >-
+      Following the 41-model zero-shot evaluation, extending the protocol beyond
+      single-label intent classification and treating benchmark saturation as a
+      quantity to monitor rather than discover after the fact.
+    researchAreas: [language-model-evaluation]
+    relatedPublications: [intent-classification-41-models]
+    relatedProjects: [intent-classification-benchmark]
+
+  - id: ausme-rag-deployment
+    title: Faculty expertise retrieval at institutional scale
+    status: building
+    since: '2024-01'
+    order: 30
+    description: >-
+      Extending the AUSME retrieval pipeline over roughly 25,000 papers toward a
+      deployment that lets faculty and research groups query publications in
+      natural language.
+    researchAreas: [retrieval-augmented-generation]
+    relatedProjects: [ausme-faculty-rag]
+
+  - id: dema-cim4de
+    title: CIM4DE data models for digital engineering
+    status: building
+    since: '2024-06'
+    order: 40
+    description: >-
+      Building out entity relationships, classification hierarchies and
+      automated data-quality classification inside the DEMA desktop platform.
+    researchAreas: [applied-ai-data-systems]
+    relatedProjects: [dema-platform]

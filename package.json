@@ -1,0 +1,47 @@
+{
+  "name": "parishruthiganesh-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Research and engineering portfolio for Parishruthi Ganesh (parishruthiganesh.github.io)",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "portfolio": "tsx scripts/portfolio/index.ts",
+    "validate": "tsx scripts/portfolio/index.ts validate",
+    "sync": "tsx scripts/portfolio/index.ts sync",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "check": "astro check",
+    "linkcheck": "tsx scripts/portfolio/index.ts linkcheck"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.6",
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.14.1",
+    "marked": "^15.0.12",
+    "yaml": "^2.8.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/node": "^22.18.6",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "vite": "^6.4.3"
+  },
+  "overrides": {
+    "vite": "^6.4.3"
+  }
+}

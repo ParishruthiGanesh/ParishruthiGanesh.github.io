@@ -1,0 +1,40 @@
+# Source: Parishruthi_Ganesh_Resume.pdf — "Education" section, verbatim.
+- id: auburn-phd
+  institution: Auburn University
+  institutionUrl: https://www.eng.auburn.edu/csse/
+  degree: Ph.D. in Computer Science and Software Engineering
+  location: Auburn, Alabama
+  start: '2025-08'
+  end: present
+  researchFocus: >-
+    Artificial Intelligence, Large Language Models, Natural Language Processing,
+    Machine Learning, Computer Vision
+  notes: Resume records this programme as beginning in Fall 2025.
+
+- id: auburn-ms
+  institution: Auburn University
+  institutionUrl: https://www.eng.auburn.edu/csse/
+  degree: Master of Science in Computer Science and Software Engineering
+  location: Auburn, Alabama
+  start: '2023-08'
+  end: '2025-08'
+  grade: 'GPA 3.82 / 4.00'
+  coursework:
+    - Advanced Topics in Algorithms
+    - Advanced Topics in Operating Systems
+    - Artificial Intelligence
+    - Data Mining
+
+- id: vtu-be
+  institution: Visvesvaraya Technological University
+  degree: Bachelor of Engineering in Computer Science
+  location: Karnataka, India
+  start: '2017-08'
+  end: '2021-08'
+  grade: 'CGPA 7.7 / 10'
+  coursework:
+    - Data Structures and Algorithms
+    - Java Programming
+    - Python Programming
+    - Operating Systems
+    - Database Management Systems
