@@ -495,6 +495,14 @@ export function checkIntegrity(content: PortfolioContent): IntegrityProblem[] {
     }
   }
 
+  /* -- a configured portrait must actually be on disk -- */
+  if (content.profile.avatar) {
+    const avatarPath = path.join(publicDir, content.profile.avatar.replace(/^\//, ''));
+    if (!existsSync(avatarPath)) {
+      add('profile.yml', 'avatar', `portrait file not found: public${content.profile.avatar}`);
+    }
+  }
+
   /* -- the resume must actually be on disk -- */
   const resumePath = path.join(publicDir, content.profile.resume.path.replace(/^\//, ''));
   if (!existsSync(resumePath)) {

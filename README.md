@@ -118,6 +118,8 @@ npm run portfolio -- <command>
 | `feature-repo <repository>` | Mark a repository as featured |
 | `hide-repo <repository>` | Hide a repository, keeping its synced metadata |
 | `update-resume <path.pdf>` | Install a new resume and record the date |
+| `set-photo <path.jpg>` | Install your portrait (home hero + About page) |
+| `add-image <project-id> <path> ["alt"]` | Add an image to a project |
 | `build [--no-sync]` | Sync, validate, test, build |
 | `publish` | Build, then show the diff and confirm before committing and pushing |
 | `ask "<request>"` | Map plain English onto one of the above (works offline, no API key) |
@@ -203,6 +205,16 @@ npm run portfolio -- link-paper-code intent-classification-41-models Parishruthi
 Checks that the paper id exists and that the repository is real and public
 before writing to `content/research-links.yml`. Mappings are never inferred from
 name similarity.
+
+### Add your photo, or an image to a project
+
+```bash
+npm run portfolio -- set-photo ~/Pictures/headshot.jpg
+npm run portfolio -- add-image astranova ~/Pictures/astranova.png "Alt text describing it"
+```
+
+Both convert to WebP, resize sensibly and wire the file into the right content
+file. Alt text is required on project images and must actually describe them.
 
 ### Add a hackathon video
 

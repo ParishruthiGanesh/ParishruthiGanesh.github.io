@@ -325,6 +325,8 @@
     An automated system that can place real trades carries direct financial
     risk. The project is presented here as an engineering artefact from a
     hackathon, not as a product recommendation or an investment tool.
+  # Add the title card with:
+  #   npm run portfolio -- add-image astranova ~/path/to/astranova.png "alt text"
   links:
     repo:
       label: GitHub — astranova-trading-copilot (private)

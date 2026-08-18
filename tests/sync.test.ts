@@ -9,6 +9,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { normaliseRepository, fetchAllRepositories } from '../scripts/portfolio/github-sync.js';
 import { normaliseTitle } from '../scripts/portfolio/publication-sync.js';
 import { extractYouTubeId, interpret, collectUrls } from '../scripts/portfolio/commands.js';
+import { profileSchema, projectsSchema } from '../src/lib/schema.js';
 import { syncedRepositorySchema } from '../src/lib/schema.js';
 import { loadContent } from '../src/lib/content.js';
 
@@ -207,6 +208,50 @@ describe('CLI natural-language shortcuts', () => {
 
   it('returns null rather than guessing at an unrecognised request', () => {
     expect(interpret('make me a sandwich')).toBeNull();
+  });
+});
+
+describe('image installation', () => {
+  const content = loadContent();
+
+  it('a portrait is optional — the schema accepts a profile without one', () => {
+    const withoutAvatar = { ...JSON.parse(JSON.stringify(content.profile)) };
+    delete withoutAvatar.avatar;
+    expect(profileSchema.safeParse(withoutAvatar).success).toBe(true);
+  });
+
+  it('a portrait path must live under public/images/', () => {
+    if (!content.profile.avatar) return;
+    expect(content.profile.avatar.startsWith('/images/')).toBe(true);
+  });
+
+  it('every project image has alt text long enough to be useful', () => {
+    // `add-image` refuses anything shorter; this guards a hand edit too.
+    for (const project of content.projects) {
+      for (const shot of project.screenshots) {
+        expect(shot.alt.length, `${project.id}: ${shot.src}`).toBeGreaterThan(25);
+      }
+    }
+  });
+
+  it('a project screenshot entry validates with and without a caption', () => {
+    const sample = JSON.parse(JSON.stringify(content.projects));
+    sample[0].screenshots = [
+      { src: '/images/projects/x/cover.webp', alt: 'A description long enough to be genuinely useful.' },
+      { src: '/images/projects/x/two.webp', alt: 'Another description that is also long enough.', caption: 'Caption.' },
+    ];
+    expect(projectsSchema.safeParse(sample).success).toBe(true);
+  });
+});
+
+describe('CLI image shortcuts', () => {
+  it('maps photo requests onto set-photo', () => {
+    expect(interpret('add my headshot')?.command).toBe('set-photo');
+    expect(interpret('set my profile picture')?.command).toBe('set-photo');
+  });
+
+  it('maps project-image requests onto add-image', () => {
+    expect(interpret('add a screenshot to the project')?.command).toBe('add-image');
   });
 });
 

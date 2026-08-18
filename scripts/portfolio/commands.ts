@@ -745,6 +745,165 @@ export async function cmdUpdateResume(argv: string[]): Promise<number> {
 }
 
 /* ------------------------------------------------------------------ */
+/* set-photo / add-image                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Convert an image to WebP, capped at `maxWidth`, and write it under public/.
+ *
+ * Sharp ships with Astro, so there is no extra dependency. WebP at quality 82
+ * is typically a fifth of the size of the PNG a screenshot tool produces, which
+ * matters because these files are committed to the repository.
+ */
+async function installImage(
+  sourcePath: string,
+  destinationRelative: string,
+  maxWidth: number,
+): Promise<{ width: number; height: number; bytes: number }> {
+  const { default: sharp } = await import('sharp');
+  const destination = path.join(publicDir, destinationRelative.replace(/^\//, ''));
+  mkdirSync(path.dirname(destination), { recursive: true });
+
+  const source = sharp(sourcePath);
+  const meta = await source.metadata();
+  await sharp(sourcePath)
+    .rotate() // honour EXIF orientation, so a phone photo is not sideways
+    .resize({ width: Math.min(meta.width ?? maxWidth, maxWidth), withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toFile(destination);
+
+  const written = await sharp(destination).metadata();
+  return {
+    width: written.width ?? 0,
+    height: written.height ?? 0,
+    bytes: statSync(destination).size,
+  };
+}
+
+const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.tiff', '.gif']);
+
+function checkImageSource(sourcePath: string): string | null {
+  if (!existsSync(sourcePath)) return `No file at ${sourcePath}`;
+  if (!IMAGE_EXTENSIONS.has(path.extname(sourcePath).toLowerCase())) {
+    return `${path.extname(sourcePath) || 'That file'} is not a supported image format ` +
+      `(${[...IMAGE_EXTENSIONS].join(', ')})`;
+  }
+  return null;
+}
+
+/** Install the profile portrait and record it in profile.yml. */
+export async function cmdSetPhoto(argv: string[]): Promise<number> {
+  const source = argv.find((arg) => !arg.startsWith('--'));
+  if (!source) {
+    console.log('Usage: npm run portfolio -- set-photo <path-to-image>');
+    console.log(c.dim('  Any JPEG, PNG or WebP. A portrait crop works best (roughly 4:5).'));
+    return 1;
+  }
+  const absolute = path.resolve(source);
+  const problem = checkImageSource(absolute);
+  if (problem) {
+    console.log(`${symbols.fail} ${problem}`);
+    return 1;
+  }
+
+  const relative = '/images/profile/parishruthi-ganesh.webp';
+  const result = await installImage(absolute, relative, 960);
+
+  const raw = readContentFile<Record<string, any>>('profile.yml');
+  const next = { ...raw, avatar: relative };
+  const parsed = profileSchema.safeParse(next);
+  if (!parsed.success) {
+    console.log(`${symbols.fail} profile.yml would become invalid; the image was written but not recorded.`);
+    for (const issue of parsed.error.issues) console.log(`  • ${issue.path.join('.')}: ${issue.message}`);
+    return 1;
+  }
+  writeContentFile('profile.yml', next);
+
+  console.log(`${symbols.ok} Installed public${relative} ` +
+    `(${result.width}×${result.height}, ${Math.round(result.bytes / 1024)} KB).`);
+  console.log(`${symbols.ok} profile.yml avatar set.`);
+  console.log(c.dim('  It now appears on the home hero and in the About sidebar.'));
+  if (result.width / result.height > 1.1) {
+    console.log(
+      `  ${symbols.warn} That image is wider than it is tall. Both slots crop to 4:5, so a ` +
+        `portrait-shaped photo will look better.`,
+    );
+  }
+  return 0;
+}
+
+/** Install an image for a project and append it to that project's screenshots. */
+export async function cmdAddImage(argv: string[]): Promise<number> {
+  const positional = argv.filter((arg) => !arg.startsWith('--'));
+  const [projectId, source, ...rest] = positional;
+  if (!projectId || !source) {
+    console.log('Usage: npm run portfolio -- add-image <project-id> <path-to-image> ["alt text"]');
+    console.log(c.dim('  Alt text is required — it is prompted for if you do not pass it.'));
+    return 1;
+  }
+
+  const content = loadContent();
+  const project = content.projects.find((entry) => entry.id === projectId);
+  if (!project) {
+    console.log(`${symbols.fail} No project with id "${projectId}".`);
+    console.log(c.dim(`  Known ids: ${content.projects.map((p) => p.id).join(', ')}`));
+    return 1;
+  }
+
+  const absolute = path.resolve(source);
+  const problem = checkImageSource(absolute);
+  if (problem) {
+    console.log(`${symbols.fail} ${problem}`);
+    return 1;
+  }
+
+  // Alt text is not optional: a screenshot with no description is unusable for
+  // anyone reading with a screen reader, and the schema rejects a short one.
+  let alt = rest.join(' ').trim();
+  if (!alt) {
+    alt = await ask('Describe the image for a screen reader', { required: true });
+  }
+  if (alt.length <= 25) {
+    console.log(`${symbols.fail} Alt text must describe what is in the image (more than 25 characters).`);
+    return 1;
+  }
+  const caption = await ask('Caption (optional, shown under the image)', { fallback: '' });
+
+  const existing = readContentFile<any[]>('projects.yml') ?? [];
+  const target = existing.find((entry) => entry.id === projectId);
+  if (!target) {
+    console.log(`${symbols.fail} Could not locate "${projectId}" in content/projects.yml.`);
+    return 1;
+  }
+
+  const index = (target.screenshots?.length ?? 0) + 1;
+  const slot = index === 1 ? 'cover' : `image-${index}`;
+  const relative = `/images/projects/${projectId}/${slot}.webp`;
+  const result = await installImage(absolute, relative, 1600);
+
+  target.screenshots = [
+    ...(target.screenshots ?? []),
+    { src: relative, alt, ...(caption ? { caption } : {}) },
+  ];
+
+  const parsed = projectsSchema.safeParse(existing);
+  if (!parsed.success) {
+    console.log(`${symbols.fail} projects.yml would become invalid; the image was written but not recorded.`);
+    for (const issue of parsed.error.issues) console.log(`  • ${issue.path.join('.')}: ${issue.message}`);
+    return 1;
+  }
+  writeContentFile('projects.yml', existing);
+
+  console.log(`${symbols.ok} Installed public${relative} ` +
+    `(${result.width}×${result.height}, ${Math.round(result.bytes / 1024)} KB).`);
+  console.log(`${symbols.ok} Added to "${project.name}".`);
+  if (index === 1) {
+    console.log(c.dim('  As the first image it also becomes the card thumbnail on /projects.'));
+  }
+  return 0;
+}
+
+/* ------------------------------------------------------------------ */
 /* linkcheck                                                           */
 /* ------------------------------------------------------------------ */
 
@@ -952,6 +1111,15 @@ export function interpret(request: string): { command: string; argv: string[] } 
   }
   if (/\b(validate|check content|schema)\b/.test(text)) return { command: 'validate', argv: [] };
   if (/\b(check|verify|test).*(link|url)/.test(text)) return { command: 'linkcheck', argv: [] };
+  // Image rules come first: "add a screenshot to the project" is about an
+  // image, not about creating a new project, and `add-project` would otherwise
+  // swallow it.
+  if (/\b(image|screenshot|figure|cover|thumbnail)\b/.test(text)) {
+    return { command: 'add-image', argv: [] };
+  }
+  if (/\b(photo|portrait|headshot|avatar|profile picture|my picture)\b/.test(text)) {
+    return { command: 'set-photo', argv: [] };
+  }
   if (/\badd\b.*\b(paper|publication|preprint)\b/.test(text)) {
     return { command: 'add-paper', argv: [] };
   }
