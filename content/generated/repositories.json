@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-08-18T23:43:38.221Z",
+  "syncedAt": "2026-08-22T07:01:00.296Z",
   "owner": "ParishruthiGanesh",
   "source": "https://api.github.com/users/ParishruthiGanesh/repos",
   "repositories": [
@@ -140,6 +140,28 @@
       "defaultBranch": "main"
     },
     {
+      "name": "nanochat",
+      "fullName": "ParishruthiGanesh/nanochat",
+      "githubDescription": "The best ChatGPT that $100 can buy.",
+      "url": "https://github.com/ParishruthiGanesh/nanochat",
+      "homepage": null,
+      "language": null,
+      "languages": {},
+      "topics": [],
+      "stars": 0,
+      "forks": 0,
+      "openIssues": 0,
+      "license": "MIT",
+      "isFork": true,
+      "isArchived": false,
+      "isPrivate": false,
+      "createdAt": "2026-08-20T22:10:25Z",
+      "updatedAt": "2026-08-20T22:10:26Z",
+      "pushedAt": "2026-08-21T01:39:30Z",
+      "size": 2307,
+      "defaultBranch": "master"
+    },
+    {
       "name": "ParishruthiGanesh.github.io",
       "fullName": "ParishruthiGanesh/ParishruthiGanesh.github.io",
       "githubDescription": null,
@@ -155,15 +177,15 @@
       "topics": [],
       "stars": 0,
       "forks": 0,
-      "openIssues": 9,
+      "openIssues": 1,
       "license": "MIT",
       "isFork": false,
       "isArchived": false,
       "isPrivate": false,
       "createdAt": "2026-08-18T18:42:40Z",
-      "updatedAt": "2026-08-18T23:43:22Z",
-      "pushedAt": "2026-08-18T23:43:16Z",
-      "size": 1626,
+      "updatedAt": "2026-08-18T23:45:56Z",
+      "pushedAt": "2026-08-21T07:09:37Z",
+      "size": 1575,
       "defaultBranch": "main"
     },
     {
@@ -215,6 +237,34 @@
       "pushedAt": "2026-08-18T04:36:35Z",
       "size": 5171,
       "defaultBranch": "main"
+    },
+    {
+      "name": "SplitShield",
+      "fullName": "ParishruthiGanesh/SplitShield",
+      "githubDescription": null,
+      "url": "https://github.com/ParishruthiGanesh/SplitShield",
+      "homepage": null,
+      "language": "Python",
+      "languages": {
+        "CSS": 1287,
+        "Dockerfile": 1463,
+        "JavaScript": 605,
+        "Python": 195487,
+        "TypeScript": 96307
+      },
+      "topics": [],
+      "stars": 0,
+      "forks": 0,
+      "openIssues": 0,
+      "license": null,
+      "isFork": false,
+      "isArchived": false,
+      "isPrivate": false,
+      "createdAt": "2026-08-22T03:20:00Z",
+      "updatedAt": "2026-08-22T05:26:18Z",
+      "pushedAt": "2026-08-22T05:26:07Z",
+      "size": 178,
+      "defaultBranch": "claude/splitshield-repo-selection-7mb1cn"
     },
     {
       "name": "To-Do-List-Application",
