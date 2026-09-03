@@ -222,7 +222,7 @@
   date: '2026-08-29'
   dateLabel: August 2026
   projectName: LabGuard AI
-  featured: false
+  featured: true
   order: 30
   submissionStatus: in-progress
   tagline: >-
@@ -235,9 +235,47 @@
     repairing the runs that fail for incidental reasons, and keeping enough of a
     record that someone else can see how the conclusion was reached.
   whatItDoes: >-
-    LabGuard AI takes a scientific claim, designs and runs the experiments that
-    could disprove it, repairs runs that break, and returns an evidence-backed
-    verdict with every check it performed shown alongside it.
+    LabGuard AI takes a research claim, finds the scientific loopholes that could
+    explain the result away, runs the smallest experiments that would settle
+    them, watches every run for failures and repairs what it safely can, then
+    issues an evidence-backed verdict. Two loops run over one shared state: a
+    Scientific Skeptic loop asking whether the evidence actually supports the
+    conclusion even when every run succeeded, and an Experiment Guardian loop
+    asking whether each run is executing correctly and repairing what policy
+    allows. It was built for the hackathon's Taskmaster track as a complete
+    workflow run to completion rather than a chat interface.
+  architecture: >-
+    A Next.js dashboard on Cloud Run submits claims to a FastAPI service, which
+    drives an orchestrator holding the claim state machine. Seven agents —
+    Claim Analyst, Scientific Skeptic, Experiment Planner, Run Manager, RunMedic,
+    Evidence Auditor and Verdict Agent — run on Gemini via the Google Agent
+    Development Kit, sharing state through the store rather than talking to each
+    other, so the ledger stays a complete account of the run. Approved jobs go
+    over Pub/Sub to a Cloud Run experiment worker; state lives in Firestore and
+    reports and curves in Cloud Storage.
+
+    The model proposes and validated code disposes: the LLM agents are given a
+    strict output schema and no tools, so a response may only name an action
+    from a typed registry within the candidate set the planner already validated
+    against budget. Parameters are bound-checked with pydantic twice, at
+    planning and again in the worker before execution, and the model cannot
+    produce a number — every metric, interval, per-class figure, health
+    detection and reliability score is computed in Python.
+  technologies:
+    - Python
+    - FastAPI
+    - Pydantic
+    - NumPy
+    - scikit-learn
+    - Google Agent Development Kit
+    - Gemini
+    - TypeScript
+    - Next.js
+    - React
+    - Firestore
+    - Pub/Sub
+    - Cloud Run
+    - Cloud Storage
   links:
     devpost:
       label: Devpost submission
@@ -259,6 +297,7 @@
   repositoryPrivate: false
   sources:
     - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
+    - 'Repository branch claude/labguard-ai-platform-4vgw8p README: what it does, architecture, the seven agents, safety properties, technologies'
     - 'Repository git history: first commit 2026-08-29, used as the project date'
 
 - id: proof-of-possible-2026-splitshield

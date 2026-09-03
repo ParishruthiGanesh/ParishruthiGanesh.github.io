@@ -216,27 +216,29 @@
     Add entries to content/talks.yml or content/awards.yml; the sections appear
     automatically on the next build.
 
-- id: labguard-repository-has-no-code
+- id: labguard-code-not-on-default-branch
   severity: high
   area: hackathons
   raisedAt: '2026-09-03'
   summary: >-
-    ParishruthiGanesh/LabGuard-AI is public but contains no project code — a
-    single commit holding a LICENSE and a one-line README.
+    LabGuard AI's code lives on the branch claude/labguard-ai-platform-4vgw8p.
+    The default branch is effectively empty, so the repository link on the
+    Hackathons page opens a page with nothing on it.
   detail: >-
-    The repository was cloned on 2026-09-03 to source the project date. It holds
-    one commit dated 2026-08-29 with two files: LICENSE and a README whose
-    entire content is the heading "LabGuard-AI". A visitor following the
-    repository link from the Hackathons page therefore finds nothing that
-    describes or demonstrates the project, even though the link resolves.
+    The default branch holds one commit dated 2026-08-29 containing a LICENSE
+    and a README whose entire content is the heading "LabGuard-AI". The working
+    project — 20 commits, a FastAPI backend, a Next.js dashboard, deployment
+    configuration and architecture documentation — is on
+    claude/labguard-ai-platform-4vgw8p, fetched on 2026-09-03 to source the
+    entry's architecture and technologies.
   currentBehaviour: >-
-    The LabGuard AI entry links the repository as public, because it is. No
-    architecture or technologies are published, since none could be read from
-    the repository, and the entry is not featured.
+    The entry publishes the architecture and technologies read from that branch,
+    and links the repository at its root. A visitor following the link lands on
+    the default branch and sees no code. The link is not pointed at the branch,
+    because a branch URL breaks as soon as the branch is merged or deleted.
   action: >-
-    Push the project code, or remove the repository link so the Devpost page,
-    demo and video carry the entry on their own. Then run
-    `npm run portfolio -- sync`.
+    Merge claude/labguard-ai-platform-4vgw8p into the default branch. The
+    repository link then shows the project and no site change is needed.
 
 - id: labguard-submission-status-unconfirmed
   severity: medium
