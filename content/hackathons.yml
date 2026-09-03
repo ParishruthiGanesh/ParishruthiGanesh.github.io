@@ -158,3 +158,177 @@
   sources:
     - 'GitHub API metadata for ParishruthiGanesh/astranova-trading-copilot — description names "Build with Gemini XPRIZE", Angel One data, AI-scored signals, broker execution and a Gemini assistant; created 2026-08-17; visibility private'
     - 'Devpost, demo and YouTube URLs supplied directly by Parishruthi (Devpost link carried an in-progress marker at the time of writing)'
+
+- id: speed-august-ai-thinktrace
+  hackathon: SPEED August AI Challenge
+  date: '2026-08-29'
+  dateLabel: August 2026
+  projectName: ThinkTrace AI
+  featured: true
+  order: 20
+  submissionStatus: submitted
+  tagline: >-
+    Don't just mark the wrong answer. ThinkTrace AI reads each student's written
+    reasoning, groups the class by how it is confused, and keeps teaching until
+    the misconception is demonstrably gone.
+  problem: >-
+    Marking an answer wrong records that a student failed without recording why.
+    A teacher sees a score distribution, not the shape of the class's confusion,
+    and a student sees a cross, not the specific belief that produced it. The
+    two views are usually handled by separate tools — a quiz grader, a polling
+    app, a tutor — so neither the class-level pattern nor the individual
+    diagnosis informs the other.
+  whatItDoes: >-
+    ThinkTrace AI shows a teacher how their whole class is confused, diagnoses
+    why each individual student is confused, and keeps teaching until the
+    misconception is demonstrably gone. Class-level confusion and
+    individual-level diagnosis run as one loop — LecturePulse reads how the
+    class is confused, ConceptLens reads why a given student is confused, and a
+    prerequisite check identifies what is actually missing. The loop does not
+    close until the student can explain the concept in their own words without
+    the original misconception in it.
+  technologies:
+    - TypeScript
+    - Next.js
+    - React
+    - Supabase
+  links:
+    devpost:
+      label: Devpost submission
+      verified: false
+      url: https://devpost.com/software/thinktrace-ai
+    repo:
+      label: GitHub repository
+      url: https://github.com/ParishruthiGanesh/AhaLoop
+    demo:
+      label: Live demo
+      verified: false
+      url: https://aha-loop-orcin.vercel.app
+    video:
+      label: Demo video
+      verified: false
+      url: https://youtu.be/fBVTkciluL4
+  youtubeId: fBVTkciluL4
+  repository: ParishruthiGanesh/AhaLoop
+  repositoryPrivate: false
+  sources:
+    - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
+    - 'Repository README (ParishruthiGanesh/AhaLoop): problem framing, loop description'
+    - 'Repository package.json: technologies'
+    - 'Repository git history: first commit 2026-08-29, used as the project date'
+
+- id: all-things-agentic-labguard
+  hackathon: All Things Agentic Hackathon
+  date: '2026-08-29'
+  dateLabel: August 2026
+  projectName: LabGuard AI
+  featured: false
+  order: 30
+  submissionStatus: in-progress
+  tagline: >-
+    An autonomous research agent that challenges a scientific claim, runs the
+    experiments that could disprove it, repairs the runs that break, and returns
+    an evidence-backed verdict with every check shown.
+  problem: >-
+    A scientific claim is easy to state and expensive to check. Verifying one
+    means designing the experiments that could disprove it, running them,
+    repairing the runs that fail for incidental reasons, and keeping enough of a
+    record that someone else can see how the conclusion was reached.
+  whatItDoes: >-
+    LabGuard AI takes a scientific claim, designs and runs the experiments that
+    could disprove it, repairs runs that break, and returns an evidence-backed
+    verdict with every check it performed shown alongside it.
+  links:
+    devpost:
+      label: Devpost submission
+      verified: false
+      url: https://devpost.com/software/labguard-ai
+    repo:
+      label: GitHub repository
+      url: https://github.com/ParishruthiGanesh/LabGuard-AI
+    demo:
+      label: Live dashboard
+      verified: false
+      url: https://labguard-dashboard-nlpoi32vfq-uc.a.run.app
+    video:
+      label: Demo video
+      verified: false
+      url: https://youtu.be/cX4lt5k9Q5o
+  youtubeId: cX4lt5k9Q5o
+  repository: ParishruthiGanesh/LabGuard-AI
+  repositoryPrivate: false
+  sources:
+    - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
+    - 'Repository git history: first commit 2026-08-29, used as the project date'
+
+- id: proof-of-possible-2026-splitshield
+  hackathon: Proof of Possible 2026
+  date: '2026-08-22'
+  dateLabel: August 2026
+  projectName: SplitShield
+  featured: true
+  order: 40
+  submissionStatus: submitted
+  tagline: >-
+    Duplicate images leaking between train and test make model accuracy look
+    better than it is. SplitShield finds the leakage, shows the evidence,
+    repairs the split, and measures the difference.
+  problem: >-
+    Duplicate and near-duplicate images that cross the train/validation/test
+    boundary quietly inflate reported model performance: the model is graded on
+    samples it has effectively already seen. This data leakage is common in
+    scraped and merged datasets, hard to spot by eye, and rarely quantified.
+  whatItDoes: >-
+    SplitShield audits an image-classification dataset for leakage across its
+    splits, shows the evidence behind each finding, repairs the split, and
+    quantifies how much the reported number changes as a result. It is aimed at
+    computer-vision researchers, students and ML engineers who need to know
+    whether their splits are trustworthy before quoting a number.
+  architecture: >-
+    A Next.js frontend talks over JSON HTTP to a FastAPI backend that runs the
+    audit as a staged pipeline — ingest, index, exact-match, perceptual hash,
+    embeddings, classify, score, repair, evaluation, report. Jobs run in a
+    bounded thread pool and every stage transition is persisted to SQLite, so
+    the UI polls rather than blocking. Storage is a local directory abstraction
+    using random internal identifiers rather than user paths, behind an
+    interface an S3-compatible layer can replace. Embeddings are pluggable:
+    MobileNetV3-Small when torch and weights are available, otherwise a
+    documented classical appearance descriptor built from structure,
+    chromaticity and gradient histograms — and the active backend is reported in
+    both the UI and the report rather than assumed.
+  technologies:
+    - Python
+    - FastAPI
+    - SQLite
+    - PyTorch
+    - MobileNetV3-Small
+    - TypeScript
+    - Next.js
+    - React
+    - Tailwind CSS
+    - Recharts
+    - Docker
+  links:
+    devpost:
+      label: Devpost submission
+      verified: false
+      url: https://devpost.com/software/splitshield
+    repo:
+      label: GitHub repository
+      url: https://github.com/ParishruthiGanesh/SplitShield
+    demo:
+      label: Live demo
+      verified: false
+      url: https://splitshield-web.onrender.com
+    video:
+      label: Demo video
+      verified: false
+      url: https://youtu.be/18fT3k8UI8Y
+  youtubeId: 18fT3k8UI8Y
+  repository: ParishruthiGanesh/SplitShield
+  repositoryPrivate: false
+  sources:
+    - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
+    - 'Repository README and ARCHITECTURE.md (ParishruthiGanesh/SplitShield): problem statement, intended users, architecture, technologies'
+    - 'Repository git history: first commit 2026-08-22, used as the project date'
+

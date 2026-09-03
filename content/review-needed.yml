@@ -215,3 +215,46 @@
   action: >-
     Add entries to content/talks.yml or content/awards.yml; the sections appear
     automatically on the next build.
+
+- id: labguard-repository-has-no-code
+  severity: high
+  area: hackathons
+  raisedAt: '2026-09-03'
+  summary: >-
+    ParishruthiGanesh/LabGuard-AI is public but contains no project code — a
+    single commit holding a LICENSE and a one-line README.
+  detail: >-
+    The repository was cloned on 2026-09-03 to source the project date. It holds
+    one commit dated 2026-08-29 with two files: LICENSE and a README whose
+    entire content is the heading "LabGuard-AI". A visitor following the
+    repository link from the Hackathons page therefore finds nothing that
+    describes or demonstrates the project, even though the link resolves.
+  currentBehaviour: >-
+    The LabGuard AI entry links the repository as public, because it is. No
+    architecture or technologies are published, since none could be read from
+    the repository, and the entry is not featured.
+  action: >-
+    Push the project code, or remove the repository link so the Devpost page,
+    demo and video carry the entry on their own. Then run
+    `npm run portfolio -- sync`.
+
+- id: labguard-submission-status-unconfirmed
+  severity: medium
+  area: hackathons
+  raisedAt: '2026-09-03'
+  summary: >-
+    LabGuard AI is recorded as submissionStatus "in-progress" from a hint in the
+    supplied Devpost URL, not from a confirmed source.
+  detail: >-
+    The Devpost link supplied on 2026-09-03 carried the query parameter
+    ref_feature=in_progress, which suggests the submission was still a draft.
+    Devpost is not reachable from the environment used to make this change, so
+    the state could not be confirmed. "in-progress" was chosen because it is the
+    reading that cannot overstate a result.
+  currentBehaviour: >-
+    The Hackathons page shows LabGuard AI as an in-progress submission rather
+    than a completed one.
+  action: >-
+    Confirm whether the Devpost submission is finished. If it is, change
+    submissionStatus to "submitted" in content/hackathons.yml.
+
