@@ -181,12 +181,17 @@
   whatItDoes: >-
     ThinkTrace AI shows a teacher how their whole class is confused, diagnoses
     why each individual student is confused, and keeps teaching until the
-    misconception is demonstrably gone. Class-level confusion and
-    individual-level diagnosis run as one loop — LecturePulse reads how the
-    class is confused, ConceptLens reads why a given student is confused, and a
-    prerequisite check identifies what is actually missing. The loop does not
-    close until the student can explain the concept in their own words without
-    the original misconception in it.
+    misconception is demonstrably gone. It runs as one connected cycle of five
+    stages: LecturePulse groups every written answer by the kind of reasoning
+    behind it rather than by which option was ticked; ConceptLens identifies the
+    specific belief that produced the answer and the counterexample that breaks
+    it; prerequisite repair finds the shortest path back through the concept
+    graph; ErrorTwin re-tests the same reasoning pattern in contexts the student
+    has never seen; and Teach-back closes the loop only when the student can
+    explain the concept themselves, not when a video finishes. Where most tools
+    measure whether an answer was submitted and whether it was right, this
+    measures why it was wrong, which prerequisite caused it, whether the same
+    reasoning error appears elsewhere, and whether it has actually disappeared.
   technologies:
     - TypeScript
     - Next.js
@@ -215,6 +220,7 @@
     - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
     - 'Repository README (ParishruthiGanesh/AhaLoop): problem framing, loop description'
     - 'Repository package.json: technologies'
+    - 'Screenshot of the live application supplied by Parishruthi, 2026-09-03: the five-stage cycle and its stage descriptions'
     - 'Repository git history: first commit 2026-08-29, used as the project date'
 
 - id: all-things-agentic-labguard
@@ -260,7 +266,13 @@
     against budget. Parameters are bound-checked with pydantic twice, at
     planning and again in the worker before execution, and the model cannot
     produce a number — every metric, interval, per-class figure, health
-    detection and reliability score is computed in Python.
+    detection and reliability score is computed in Python. The safe action
+    registry holds fourteen typed actions with validated parameters — an agent
+    may name one, it can never issue a command — and the operator sets both an
+    autonomy policy (observe only, safe repair, or managed autonomy, where
+    inexpensive diagnostics and in-bounds parameter changes run without asking
+    while expensive experiments still need approval) and a compute budget above
+    which work requires explicit approval.
   technologies:
     - Python
     - FastAPI
@@ -298,6 +310,7 @@
   sources:
     - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
     - 'Repository branch claude/labguard-ai-platform-4vgw8p README: what it does, architecture, the seven agents, safety properties, technologies'
+    - 'Screenshot of the live dashboard supplied by Parishruthi, 2026-09-03: autonomy policy levels, compute budget approval threshold, fourteen typed actions in the safe action registry'
     - 'Repository git history: first commit 2026-08-29, used as the project date'
 
 - id: proof-of-possible-2026-splitshield
@@ -322,7 +335,14 @@
     splits, shows the evidence behind each finding, repairs the split, and
     quantifies how much the reported number changes as a result. It is aimed at
     computer-vision researchers, students and ML engineers who need to know
-    whether their splits are trustworthy before quoting a number.
+    whether their splits are trustworthy before quoting a number. Duplicate and
+    near-duplicate pairs are surfaced by SHA-256 exact matching, perceptual
+    hashing and appearance-embedding search, ranked by severity with
+    side-by-side evidence. The repair is judged by an Observed Evaluation Gap:
+    how much a diagnostic classifier's test accuracy moves once the leaked
+    samples are quarantined. Uploads are analysed on the server, never shared or
+    used for training, and deleted after a retention window or immediately on
+    request.
   architecture: >-
     A Next.js frontend talks over JSON HTTP to a FastAPI backend that runs the
     audit as a staged pipeline — ingest, index, exact-match, perceptual hash,
@@ -369,5 +389,6 @@
   sources:
     - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
     - 'Repository README and ARCHITECTURE.md (ParishruthiGanesh/SplitShield): problem statement, intended users, architecture, technologies'
+    - 'Screenshot of the live application supplied by Parishruthi, 2026-09-03: detection methods, the Observed Evaluation Gap metric, upload retention behaviour'
     - 'Repository git history: first commit 2026-08-22, used as the project date'
 
