@@ -54,7 +54,7 @@ ${c.bold('Curate')}
   hide-repo <repository>       Hide a repository without deleting its synced metadata
   update-resume <path.pdf>     Install a new resume PDF and record the date
   set-photo <path.jpg>         Install your portrait (home hero + About page)
-  add-image <project-id> <path> ["alt"]
+  add-image <project-or-hackathon-id> <path> ["alt"]
                                Add an image to a project (first one is the card thumbnail)
 
 ${c.bold('Ship')}

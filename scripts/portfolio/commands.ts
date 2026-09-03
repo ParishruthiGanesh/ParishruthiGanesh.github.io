@@ -837,18 +837,31 @@ export async function cmdAddImage(argv: string[]): Promise<number> {
   const positional = argv.filter((arg) => !arg.startsWith('--'));
   const [projectId, source, ...rest] = positional;
   if (!projectId || !source) {
-    console.log('Usage: npm run portfolio -- add-image <project-id> <path-to-image> ["alt text"]');
+    console.log('Usage: npm run portfolio -- add-image <project-or-hackathon-id> <path-to-image> ["alt text"]');
     console.log(c.dim('  Alt text is required — it is prompted for if you do not pass it.'));
     return 1;
   }
 
+  // Screenshots belong to hackathon entries as often as to projects, and both
+  // carry the same `screenshots` shape, so accept an id from either file.
   const content = loadContent();
   const project = content.projects.find((entry) => entry.id === projectId);
-  if (!project) {
-    console.log(`${symbols.fail} No project with id "${projectId}".`);
-    console.log(c.dim(`  Known ids: ${content.projects.map((p) => p.id).join(', ')}`));
+  const hackathon = project
+    ? undefined
+    : content.hackathons.find((entry) => entry.id === projectId);
+  if (!project && !hackathon) {
+    console.log(`${symbols.fail} No project or hackathon with id "${projectId}".`);
+    console.log(c.dim(`  Projects:   ${content.projects.map((p) => p.id).join(', ')}`));
+    console.log(c.dim(`  Hackathons: ${content.hackathons.map((h) => h.id).join(', ')}`));
     return 1;
   }
+  const displayName = project ? project.name : hackathon!.projectName;
+  const contentFile = project ? 'projects.yml' : 'hackathons.yml';
+  // Hackathon images sit under the project-name slug, matching how the existing
+  // Sentinel Memory screenshots are laid out.
+  const imageDir = project
+    ? projectId
+    : hackathon!.projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
   const absolute = path.resolve(source);
   const problem = checkImageSource(absolute);
@@ -869,16 +882,16 @@ export async function cmdAddImage(argv: string[]): Promise<number> {
   }
   const caption = await ask('Caption (optional, shown under the image)', { fallback: '' });
 
-  const existing = readContentFile<any[]>('projects.yml') ?? [];
+  const existing = readContentFile<any[]>(contentFile) ?? [];
   const target = existing.find((entry) => entry.id === projectId);
   if (!target) {
-    console.log(`${symbols.fail} Could not locate "${projectId}" in content/projects.yml.`);
+    console.log(`${symbols.fail} Could not locate "${projectId}" in content/${contentFile}.`);
     return 1;
   }
 
   const index = (target.screenshots?.length ?? 0) + 1;
   const slot = index === 1 ? 'cover' : `image-${index}`;
-  const relative = `/images/projects/${projectId}/${slot}.webp`;
+  const relative = `/images/projects/${imageDir}/${slot}.webp`;
   const result = await installImage(absolute, relative, 1600);
 
   target.screenshots = [
@@ -886,18 +899,20 @@ export async function cmdAddImage(argv: string[]): Promise<number> {
     { src: relative, alt, ...(caption ? { caption } : {}) },
   ];
 
-  const parsed = projectsSchema.safeParse(existing);
+  const parsed = project
+    ? projectsSchema.safeParse(existing)
+    : hackathonsSchema.safeParse(existing);
   if (!parsed.success) {
-    console.log(`${symbols.fail} projects.yml would become invalid; the image was written but not recorded.`);
+    console.log(`${symbols.fail} ${contentFile} would become invalid; the image was written but not recorded.`);
     for (const issue of parsed.error.issues) console.log(`  • ${issue.path.join('.')}: ${issue.message}`);
     return 1;
   }
-  writeContentFile('projects.yml', existing);
+  writeContentFile(contentFile, existing);
 
   console.log(`${symbols.ok} Installed public${relative} ` +
     `(${result.width}×${result.height}, ${Math.round(result.bytes / 1024)} KB).`);
-  console.log(`${symbols.ok} Added to "${project.name}".`);
-  if (index === 1) {
+  console.log(`${symbols.ok} Added to "${displayName}".`);
+  if (index === 1 && project) {
     console.log(c.dim('  As the first image it also becomes the card thumbnail on /projects.'));
   }
   return 0;
