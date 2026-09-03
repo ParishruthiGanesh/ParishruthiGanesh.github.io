@@ -8,37 +8,32 @@
 - id: cockroachdb-aws-agentic-memory
   hackathon: CockroachDB × AWS — Build with Agentic Memory
   organizer: CockroachDB and AWS
-  date: '2026-08-17'
+  date: 2026-08-17
   dateLabel: August 2026
   projectName: Sentinel Memory
   featured: true
   order: 10
   submissionStatus: submitted
   tagline: An incident-response agent that remembers consequences.
-  problem: >-
-    During industrial emergencies, personnel rotate and agents restart, losing
-    the record of what was already attempted and what it caused. The same
-    reasonable-looking action gets taken again — including the one that did
-    damage last time — because the consequence history is not available at the
-    moment the decision is being made. An agent whose memory is a context window
-    reproduces that failure faster.
-  whatItDoes: >-
-    Sentinel Memory is an incident-response command centre where a database, not
-    a context window, is the memory. When a responder proposes an action, the
-    system embeds it, searches CockroachDB's distributed vector index for
-    precedents, and surfaces what that exact action cost during a previous
-    incident — with the incident code, date and damage — before recommending a
-    safer sequence and citing the memory it drew that from. Approval commits the
-    decision, the recommendation status, the incident state and the audit event
-    in a single transaction. When the primary agent disconnects, a backup agent
-    reconstructs the whole incident from the database alone.
-  architecture: >-
-    Next.js App Router with React 19 and TypeScript on the client; Node.js API
-    routes holding the agent loop; CockroachDB Cloud for episodic and semantic
-    memory with a VECTOR column and cosine-distance index; Amazon Bedrock via
-    the Converse API for reasoning and embeddings. DataStore, EmbeddingProvider
-    and Reasoner are interfaces with labelled local fallbacks, so the whole
-    system is previewable and testable without credentials.
+  problem: During industrial emergencies, personnel rotate and agents restart, losing the
+    record of what was already attempted and what it caused. The same reasonable-looking
+    action gets taken again — including the one that did damage last time — because the
+    consequence history is not available at the moment the decision is being made. An
+    agent whose memory is a context window reproduces that failure faster.
+  whatItDoes: Sentinel Memory is an incident-response command centre where a database, not
+    a context window, is the memory. When a responder proposes an action, the system
+    embeds it, searches CockroachDB's distributed vector index for precedents, and
+    surfaces what that exact action cost during a previous incident — with the incident
+    code, date and damage — before recommending a safer sequence and citing the memory
+    it drew that from. Approval commits the decision, the recommendation status, the
+    incident state and the audit event in a single transaction. When the primary agent
+    disconnects, a backup agent reconstructs the whole incident from the database alone.
+  architecture: Next.js App Router with React 19 and TypeScript on the client; Node.js API
+    routes holding the agent loop; CockroachDB Cloud for episodic and semantic memory
+    with a VECTOR column and cosine-distance index; Amazon Bedrock via the Converse API
+    for reasoning and embeddings. DataStore, EmbeddingProvider and Reasoner are
+    interfaces with labelled local fallbacks, so the whole system is previewable and
+    testable without credentials.
   technologies:
     - TypeScript
     - Next.js
@@ -51,41 +46,40 @@
     - Vitest
     - Vercel
   lessons:
-    - >-
-      Agent memory is two problems, not one. Episodic memory (what happened, in
-      order) and semantic memory (what past actions caused) have different
-      shapes and different consumers; conflating them yields a system that can
-      replay a timeline or find similar text, but cannot answer "someone is
-      about to do X — has X hurt us before?"
-    - >-
-      Keeping both in one database is the actual advantage, and the reason is
-      the join: retrieval returns the memory together with its incident code,
-      severity and date in a single query, and the human decision that follows
-      is transactional against the same rows.
-    - >-
-      Structure memory around the action. Embedding incident summaries gets you
-      "similar incidents"; storing action → outcome → lesson as distinct fields
-      gets you "this specific action caused this specific damage".
-    - >-
-      Constraints beat prompts for safety. The prompt is necessary and not
-      sufficient — schema CHECK constraints, Zod validation and a post-model
-      safety floor are what make the guarantee real.
-    - >-
-      Honest degradation turned out to be a feature rather than a compliance
-      chore: labelling exactly which implementation is running makes the
-      architecture legible in a way a demo claiming everything works is not.
+    - Agent memory is two problems, not one. Episodic memory (what happened, in order)
+      and semantic memory (what past actions caused) have different shapes and different
+      consumers; conflating them yields a system that can replay a timeline or find
+      similar text, but cannot answer "someone is about to do X — has X hurt us before?"
+    - "Keeping both in one database is the actual advantage, and the reason is the join:
+      retrieval returns the memory together with its incident code, severity and date in
+      a single query, and the human decision that follows is transactional against the
+      same rows."
+    - Structure memory around the action. Embedding incident summaries gets you "similar
+      incidents"; storing action → outcome → lesson as distinct fields gets you "this
+      specific action caused this specific damage".
+    - Constraints beat prompts for safety. The prompt is necessary and not sufficient —
+      schema CHECK constraints, Zod validation and a post-model safety floor are what
+      make the guarantee real.
+    - "Honest degradation turned out to be a feature rather than a compliance chore:
+      labelling exactly which implementation is running makes the architecture legible
+      in a way a demo claiming everything works is not."
   repository: ParishruthiGanesh/sentinel-memory
   youtubeId: zg6Ys6pP6LA
-  relatedProjects: [sentinel-memory]
+  relatedProjects:
+    - sentinel-memory
   screenshots:
     - src: /images/projects/sentinel-memory/command-center.webp
-      alt: Sentinel Memory command centre showing an active incident alongside a counterfactual memory card describing what the same proposed action caused during an earlier incident.
+      alt: Sentinel Memory command centre showing an active incident alongside a
+        counterfactual memory card describing what the same proposed action caused
+        during an earlier incident.
       caption: The counterfactual moment — the whole pitch in one screen.
     - src: /images/projects/sentinel-memory/handoff-before.webp
-      alt: Agent handoff view immediately after the primary agent disconnects, before the backup agent has rebuilt state.
+      alt: Agent handoff view immediately after the primary agent disconnects, before the
+        backup agent has rebuilt state.
       caption: The primary agent disconnects.
     - src: /images/projects/sentinel-memory/handoff-after.webp
-      alt: Agent handoff view after the backup agent has reconstructed the incident entirely from database records.
+      alt: Agent handoff view after the backup agent has reconstructed the incident entirely
+        from database records.
       caption: The backup rebuilds the incident from the database — not from a transcript.
   links:
     repo:
@@ -105,30 +99,28 @@
       url: https://youtu.be/zg6Ys6pP6LA
       verified: false
   sources:
-    - 'github.com/ParishruthiGanesh/sentinel-memory — README.md, docs/DEVPOST_SUBMISSION.md (hackathon name, problem, architecture, lessons)'
-    - 'GitHub API repository metadata (creation date 2026-08-17)'
-    - 'Demo, Devpost and YouTube URLs supplied directly by Parishruthi'
-
+    - github.com/ParishruthiGanesh/sentinel-memory — README.md,
+      docs/DEVPOST_SUBMISSION.md (hackathon name, problem, architecture, lessons)
+    - GitHub API repository metadata (creation date 2026-08-17)
+    - Demo, Devpost and YouTube URLs supplied directly by Parishruthi
 - id: build-with-gemini-xprize
   hackathon: Build with Gemini XPRIZE
   organizer: Google & XPRIZE
   hackathonUrl: https://xprize.devpost.com/
-  date: '2026-08-17'
+  date: 2026-08-17
   dateLabel: August 2026
   projectName: AstraNova
   featured: true
   order: 20
   submissionStatus: in-progress
   tagline: An AI trading copilot for India's options traders.
-  problem: >-
-    Retail options traders in India work across fragmented tools — market data
-    in one place, analysis in another, execution in a third — with no shared
-    context carried between them.
-  whatItDoes: >-
-    AstraNova joins live Angel One market data, AI-scored trading signals, real
+  problem: Retail options traders in India work across fragmented tools — market data in
+    one place, analysis in another, execution in a third — with no shared context
+    carried between them.
+  whatItDoes: AstraNova joins live Angel One market data, AI-scored trading signals, real
     broker execution and a Gemini-powered assistant into a single surface. This
-    description is taken from the project's own repository summary; a fuller
-    write-up is not published here because the repository is currently private.
+    description is taken from the project's own repository summary; a fuller write-up is
+    not published here because the repository is currently private.
   technologies:
     - Python
     - Google Gemini
@@ -137,7 +129,8 @@
   repository: ParishruthiGanesh/astranova-trading-copilot
   repositoryPrivate: true
   youtubeId: mH3apHH-qnk
-  relatedProjects: [astranova]
+  relatedProjects:
+    - astranova
   links:
     repo:
       label: GitHub — astranova-trading-copilot (private repository)
@@ -156,42 +149,39 @@
       url: https://youtu.be/mH3apHH-qnk
       verified: false
   sources:
-    - 'GitHub API metadata for ParishruthiGanesh/astranova-trading-copilot — description names "Build with Gemini XPRIZE", Angel One data, AI-scored signals, broker execution and a Gemini assistant; created 2026-08-17; visibility private'
-    - 'Devpost, demo and YouTube URLs supplied directly by Parishruthi (Devpost link carried an in-progress marker at the time of writing)'
-
+    - GitHub API metadata for ParishruthiGanesh/astranova-trading-copilot — description
+      names "Build with Gemini XPRIZE", Angel One data, AI-scored signals, broker
+      execution and a Gemini assistant; created 2026-08-17; visibility private
+    - Devpost, demo and YouTube URLs supplied directly by Parishruthi (Devpost link
+      carried an in-progress marker at the time of writing)
 - id: speed-august-ai-thinktrace
   hackathon: SPEED August AI Challenge
-  date: '2026-08-29'
+  date: 2026-08-29
   dateLabel: August 2026
   projectName: ThinkTrace AI
   featured: true
   order: 20
   submissionStatus: submitted
-  tagline: >-
-    Don't just mark the wrong answer. ThinkTrace AI reads each student's written
-    reasoning, groups the class by how it is confused, and keeps teaching until
-    the misconception is demonstrably gone.
-  problem: >-
-    Marking an answer wrong records that a student failed without recording why.
-    A teacher sees a score distribution, not the shape of the class's confusion,
-    and a student sees a cross, not the specific belief that produced it. The
-    two views are usually handled by separate tools — a quiz grader, a polling
-    app, a tutor — so neither the class-level pattern nor the individual
-    diagnosis informs the other.
-  whatItDoes: >-
-    ThinkTrace AI shows a teacher how their whole class is confused, diagnoses
-    why each individual student is confused, and keeps teaching until the
-    misconception is demonstrably gone. It runs as one connected cycle of five
-    stages: LecturePulse groups every written answer by the kind of reasoning
-    behind it rather than by which option was ticked; ConceptLens identifies the
-    specific belief that produced the answer and the counterexample that breaks
-    it; prerequisite repair finds the shortest path back through the concept
-    graph; ErrorTwin re-tests the same reasoning pattern in contexts the student
-    has never seen; and Teach-back closes the loop only when the student can
-    explain the concept themselves, not when a video finishes. Where most tools
-    measure whether an answer was submitted and whether it was right, this
-    measures why it was wrong, which prerequisite caused it, whether the same
-    reasoning error appears elsewhere, and whether it has actually disappeared.
+  tagline: Don't just mark the wrong answer. ThinkTrace AI reads each student's written
+    reasoning, groups the class by how it is confused, and keeps teaching until the
+    misconception is demonstrably gone.
+  problem: Marking an answer wrong records that a student failed without recording why. A
+    teacher sees a score distribution, not the shape of the class's confusion, and a
+    student sees a cross, not the specific belief that produced it. The two views are
+    usually handled by separate tools — a quiz grader, a polling app, a tutor — so
+    neither the class-level pattern nor the individual diagnosis informs the other.
+  whatItDoes: "ThinkTrace AI shows a teacher how their whole class is confused, diagnoses
+    why each individual student is confused, and keeps teaching until the misconception
+    is demonstrably gone. It runs as one connected cycle of five stages: LecturePulse
+    groups every written answer by the kind of reasoning behind it rather than by which
+    option was ticked; ConceptLens identifies the specific belief that produced the
+    answer and the counterexample that breaks it; prerequisite repair finds the shortest
+    path back through the concept graph; ErrorTwin re-tests the same reasoning pattern
+    in contexts the student has never seen; and Teach-back closes the loop only when the
+    student can explain the concept themselves, not when a video finishes. Where most
+    tools measure whether an answer was submitted and whether it was right, this
+    measures why it was wrong, which prerequisite caused it, whether the same reasoning
+    error appears elsewhere, and whether it has actually disappeared."
   technologies:
     - TypeScript
     - Next.js
@@ -217,62 +207,62 @@
   repository: ParishruthiGanesh/AhaLoop
   repositoryPrivate: false
   sources:
-    - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
-    - 'Repository README (ParishruthiGanesh/AhaLoop): problem framing, loop description'
-    - 'Repository package.json: technologies'
-    - 'Screenshot of the live application supplied by Parishruthi, 2026-09-03: the five-stage cycle and its stage descriptions'
-    - 'Repository git history: first commit 2026-08-29, used as the project date'
-
+    - "Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository
+      visibility and links"
+    - "Repository README (ParishruthiGanesh/AhaLoop): problem framing, loop description"
+    - "Repository package.json: technologies"
+    - "Screenshot of the live application supplied by Parishruthi, 2026-09-03: the
+      five-stage cycle and its stage descriptions"
+    - "Repository git history: first commit 2026-08-29, used as the project date"
+  screenshots:
+    - src: /images/projects/thinktrace-ai/cover.webp
+      alt: "ThinkTrace AI landing page showing the five-stage cycle: LecturePulse,
+        ConceptLens, prerequisite repair, ErrorTwin and Teach-back."
 - id: all-things-agentic-labguard
   hackathon: All Things Agentic Hackathon
-  date: '2026-08-29'
+  date: 2026-08-29
   dateLabel: August 2026
   projectName: LabGuard AI
   featured: true
   order: 30
   submissionStatus: in-progress
-  tagline: >-
-    An autonomous research agent that challenges a scientific claim, runs the
-    experiments that could disprove it, repairs the runs that break, and returns
-    an evidence-backed verdict with every check shown.
-  problem: >-
-    A scientific claim is easy to state and expensive to check. Verifying one
-    means designing the experiments that could disprove it, running them,
-    repairing the runs that fail for incidental reasons, and keeping enough of a
-    record that someone else can see how the conclusion was reached.
-  whatItDoes: >-
-    LabGuard AI takes a research claim, finds the scientific loopholes that could
-    explain the result away, runs the smallest experiments that would settle
-    them, watches every run for failures and repairs what it safely can, then
-    issues an evidence-backed verdict. Two loops run over one shared state: a
-    Scientific Skeptic loop asking whether the evidence actually supports the
-    conclusion even when every run succeeded, and an Experiment Guardian loop
-    asking whether each run is executing correctly and repairing what policy
-    allows. It was built for the hackathon's Taskmaster track as a complete
-    workflow run to completion rather than a chat interface.
+  tagline: An autonomous research agent that challenges a scientific claim, runs the
+    experiments that could disprove it, repairs the runs that break, and returns an
+    evidence-backed verdict with every check shown.
+  problem: A scientific claim is easy to state and expensive to check. Verifying one means
+    designing the experiments that could disprove it, running them, repairing the runs
+    that fail for incidental reasons, and keeping enough of a record that someone else
+    can see how the conclusion was reached.
+  whatItDoes: "LabGuard AI takes a research claim, finds the scientific loopholes that
+    could explain the result away, runs the smallest experiments that would settle them,
+    watches every run for failures and repairs what it safely can, then issues an
+    evidence-backed verdict. Two loops run over one shared state: a Scientific Skeptic
+    loop asking whether the evidence actually supports the conclusion even when every
+    run succeeded, and an Experiment Guardian loop asking whether each run is executing
+    correctly and repairing what policy allows. It was built for the hackathon's
+    Taskmaster track as a complete workflow run to completion rather than a chat
+    interface."
   architecture: >-
-    A Next.js dashboard on Cloud Run submits claims to a FastAPI service, which
-    drives an orchestrator holding the claim state machine. Seven agents —
-    Claim Analyst, Scientific Skeptic, Experiment Planner, Run Manager, RunMedic,
-    Evidence Auditor and Verdict Agent — run on Gemini via the Google Agent
-    Development Kit, sharing state through the store rather than talking to each
-    other, so the ledger stays a complete account of the run. Approved jobs go
-    over Pub/Sub to a Cloud Run experiment worker; state lives in Firestore and
-    reports and curves in Cloud Storage.
+    A Next.js dashboard on Cloud Run submits claims to a FastAPI service, which drives
+    an orchestrator holding the claim state machine. Seven agents — Claim Analyst,
+    Scientific Skeptic, Experiment Planner, Run Manager, RunMedic, Evidence Auditor and
+    Verdict Agent — run on Gemini via the Google Agent Development Kit, sharing state
+    through the store rather than talking to each other, so the ledger stays a complete
+    account of the run. Approved jobs go over Pub/Sub to a Cloud Run experiment worker;
+    state lives in Firestore and reports and curves in Cloud Storage.
 
-    The model proposes and validated code disposes: the LLM agents are given a
-    strict output schema and no tools, so a response may only name an action
-    from a typed registry within the candidate set the planner already validated
-    against budget. Parameters are bound-checked with pydantic twice, at
-    planning and again in the worker before execution, and the model cannot
-    produce a number — every metric, interval, per-class figure, health
-    detection and reliability score is computed in Python. The safe action
-    registry holds fourteen typed actions with validated parameters — an agent
-    may name one, it can never issue a command — and the operator sets both an
-    autonomy policy (observe only, safe repair, or managed autonomy, where
-    inexpensive diagnostics and in-bounds parameter changes run without asking
-    while expensive experiments still need approval) and a compute budget above
-    which work requires explicit approval.
+    The model proposes and validated code disposes: the LLM agents are given a strict
+    output schema and no tools, so a response may only name an action from a typed
+    registry within the candidate set the planner already validated against budget.
+    Parameters are bound-checked with pydantic twice, at planning and again in the
+    worker before execution, and the model cannot produce a number — every metric,
+    interval, per-class figure, health detection and reliability score is computed in
+    Python. The safe action registry holds fourteen typed actions with validated
+    parameters — an agent may name one, it can never issue a command — and the operator
+    sets both an autonomy policy (observe only, safe repair, or managed autonomy, where
+    inexpensive diagnostics and in-bounds parameter changes run without asking while
+    expensive experiments still need approval) and a compute budget above which work
+    requires explicit approval.
   technologies:
     - Python
     - FastAPI
@@ -308,53 +298,53 @@
   repository: ParishruthiGanesh/LabGuard-AI
   repositoryPrivate: false
   sources:
-    - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
-    - 'Repository branch claude/labguard-ai-platform-4vgw8p README: what it does, architecture, the seven agents, safety properties, technologies'
-    - 'Screenshot of the live dashboard supplied by Parishruthi, 2026-09-03: autonomy policy levels, compute budget approval threshold, fourteen typed actions in the safe action registry'
-    - 'Repository git history: first commit 2026-08-29, used as the project date'
-
+    - "Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository
+      visibility and links"
+    - "Repository branch claude/labguard-ai-platform-4vgw8p README: what it does,
+      architecture, the seven agents, safety properties, technologies"
+    - "Screenshot of the live dashboard supplied by Parishruthi, 2026-09-03: autonomy
+      policy levels, compute budget approval threshold, fourteen typed actions in the
+      safe action registry"
+    - "Repository git history: first commit 2026-08-29, used as the project date"
+  screenshots:
+    - src: /images/projects/labguard-ai/cover.webp
+      alt: LabGuard AI launcher showing the bundled scenario, the three autonomy policy levels
+        and the compute budget slider.
 - id: proof-of-possible-2026-splitshield
   hackathon: Proof of Possible 2026
-  date: '2026-08-22'
+  date: 2026-08-22
   dateLabel: August 2026
   projectName: SplitShield
   featured: true
   order: 40
   submissionStatus: submitted
-  tagline: >-
-    Duplicate images leaking between train and test make model accuracy look
-    better than it is. SplitShield finds the leakage, shows the evidence,
-    repairs the split, and measures the difference.
-  problem: >-
-    Duplicate and near-duplicate images that cross the train/validation/test
-    boundary quietly inflate reported model performance: the model is graded on
-    samples it has effectively already seen. This data leakage is common in
-    scraped and merged datasets, hard to spot by eye, and rarely quantified.
-  whatItDoes: >-
-    SplitShield audits an image-classification dataset for leakage across its
-    splits, shows the evidence behind each finding, repairs the split, and
-    quantifies how much the reported number changes as a result. It is aimed at
-    computer-vision researchers, students and ML engineers who need to know
-    whether their splits are trustworthy before quoting a number. Duplicate and
-    near-duplicate pairs are surfaced by SHA-256 exact matching, perceptual
-    hashing and appearance-embedding search, ranked by severity with
-    side-by-side evidence. The repair is judged by an Observed Evaluation Gap:
-    how much a diagnostic classifier's test accuracy moves once the leaked
-    samples are quarantined. Uploads are analysed on the server, never shared or
-    used for training, and deleted after a retention window or immediately on
-    request.
-  architecture: >-
-    A Next.js frontend talks over JSON HTTP to a FastAPI backend that runs the
-    audit as a staged pipeline — ingest, index, exact-match, perceptual hash,
-    embeddings, classify, score, repair, evaluation, report. Jobs run in a
-    bounded thread pool and every stage transition is persisted to SQLite, so
-    the UI polls rather than blocking. Storage is a local directory abstraction
-    using random internal identifiers rather than user paths, behind an
-    interface an S3-compatible layer can replace. Embeddings are pluggable:
-    MobileNetV3-Small when torch and weights are available, otherwise a
-    documented classical appearance descriptor built from structure,
-    chromaticity and gradient histograms — and the active backend is reported in
-    both the UI and the report rather than assumed.
+  tagline: Duplicate images leaking between train and test make model accuracy look better
+    than it is. SplitShield finds the leakage, shows the evidence, repairs the split,
+    and measures the difference.
+  problem: "Duplicate and near-duplicate images that cross the train/validation/test
+    boundary quietly inflate reported model performance: the model is graded on samples
+    it has effectively already seen. This data leakage is common in scraped and merged
+    datasets, hard to spot by eye, and rarely quantified."
+  whatItDoes: "SplitShield audits an image-classification dataset for leakage across its
+    splits, shows the evidence behind each finding, repairs the split, and quantifies
+    how much the reported number changes as a result. It is aimed at computer-vision
+    researchers, students and ML engineers who need to know whether their splits are
+    trustworthy before quoting a number. Duplicate and near-duplicate pairs are surfaced
+    by SHA-256 exact matching, perceptual hashing and appearance-embedding search,
+    ranked by severity with side-by-side evidence. The repair is judged by an Observed
+    Evaluation Gap: how much a diagnostic classifier's test accuracy moves once the
+    leaked samples are quarantined. Uploads are analysed on the server, never shared or
+    used for training, and deleted after a retention window or immediately on request."
+  architecture: "A Next.js frontend talks over JSON HTTP to a FastAPI backend that runs
+    the audit as a staged pipeline — ingest, index, exact-match, perceptual hash,
+    embeddings, classify, score, repair, evaluation, report. Jobs run in a bounded
+    thread pool and every stage transition is persisted to SQLite, so the UI polls
+    rather than blocking. Storage is a local directory abstraction using random internal
+    identifiers rather than user paths, behind an interface an S3-compatible layer can
+    replace. Embeddings are pluggable: MobileNetV3-Small when torch and weights are
+    available, otherwise a documented classical appearance descriptor built from
+    structure, chromaticity and gradient histograms — and the active backend is reported
+    in both the UI and the report rather than assumed."
   technologies:
     - Python
     - FastAPI
@@ -387,8 +377,14 @@
   repository: ParishruthiGanesh/SplitShield
   repositoryPrivate: false
   sources:
-    - 'Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository visibility and links'
-    - 'Repository README and ARCHITECTURE.md (ParishruthiGanesh/SplitShield): problem statement, intended users, architecture, technologies'
-    - 'Screenshot of the live application supplied by Parishruthi, 2026-09-03: detection methods, the Observed Evaluation Gap metric, upload retention behaviour'
-    - 'Repository git history: first commit 2026-08-22, used as the project date'
-
+    - "Parishruthi, 2026-09-03: hackathon name, project name, tagline, repository
+      visibility and links"
+    - "Repository README and ARCHITECTURE.md (ParishruthiGanesh/SplitShield): problem
+      statement, intended users, architecture, technologies"
+    - "Screenshot of the live application supplied by Parishruthi, 2026-09-03: detection
+      methods, the Observed Evaluation Gap metric, upload retention behaviour"
+    - "Repository git history: first commit 2026-08-22, used as the project date"
+  screenshots:
+    - src: /images/projects/splitshield/cover.webp
+      alt: SplitShield landing page showing the dataset integrity auditing headline and the
+        upload, inspect, repair and verify steps.
