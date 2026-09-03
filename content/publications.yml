@@ -55,17 +55,19 @@
 
 - id: interaction-representations-early-violence
   title: >-
-    How Much Do Interaction Representations Contribute? A Controlled Study
-    Through Early Violence Detection
+    What Do Interaction Representations Actually Measure? Pre-Event Separability
+    in Weakly-Supervised Violence Detection
   authors:
     - Parishruthi Ganesh
     - 'et al.'
   highlightAuthor: Parishruthi Ganesh
+  venue: arXiv preprint
+  venueShort: arXiv
   year: 2026
-  status: under-review
+  status: preprint
   statusNote: >-
-    Submitted to WACV. The resume records the submission but not the review
-    outcome, so no acceptance is claimed and no venue year is asserted.
+    Preprint available on arXiv; submitted to WACV. arXiv posting is not peer
+    review, so no acceptance is claimed and no venue year is asserted.
   featured: true
   order: 20
   abstract: >-
@@ -75,13 +77,18 @@
     framing is deliberately narrow: the goal is an attributable, benchmark-scoped
     measurement of one design choice rather than a general detection claim.
   researchAreas: [video-understanding-safety]
-  lastVerified: '2026-08-18'
+  arxivId: '2608.27879'
+  paperUrl: https://arxiv.org/abs/2608.27879
+  lastVerified: '2026-09-03'
   sources:
-    - 'Resume (Publications section): title, first author, "Submitted to WACV"'
+    - 'Resume (Publications section): first author, "Submitted to WACV"'
+    - 'Parishruthi, 2026-09-03: revised title and arXiv identifier 2608.27879'
   bibtex: |
-    @unpublished{ganesh2026interaction,
-      title  = {How Much Do Interaction Representations Contribute? A Controlled Study Through Early Violence Detection},
-      author = {Ganesh, Parishruthi and others},
-      year   = {2026},
-      note   = {Submitted to WACV}
+    @misc{ganesh2026interaction,
+      title        = {What Do Interaction Representations Actually Measure? Pre-Event Separability in Weakly-Supervised Violence Detection},
+      author       = {Ganesh, Parishruthi and others},
+      year         = {2026},
+      eprint       = {2608.27879},
+      archivePrefix= {arXiv},
+      note         = {Submitted to WACV}
     }

@@ -215,3 +215,31 @@
   action: >-
     Add entries to content/talks.yml or content/awards.yml; the sections appear
     automatically on the next build.
+
+- id: violence-paper-abstract-predates-retitle
+  severity: high
+  area: publications
+  raisedAt: '2026-09-03'
+  summary: >-
+    The abstract for interaction-representations-early-violence was written for
+    the paper's previous title and does not mention pre-event separability or
+    the weakly-supervised setting.
+  detail: >-
+    The paper was retitled to "What Do Interaction Representations Actually
+    Measure? Pre-Event Separability in Weakly-Supervised Violence Detection" and
+    posted to arXiv as 2608.27879. The title, arXiv identifier and status were
+    updated from Parishruthi's message on 2026-09-03, but the abstract on file
+    still describes the earlier framing ("how much explicitly modelling the
+    interaction between people contributes"). The arXiv listing could not be
+    read to replace it, so the existing text was left in place rather than
+    rewritten from the title alone.
+  currentBehaviour: >-
+    The publication page shows the new title, the arXiv link and preprint
+    status, alongside an abstract that describes the earlier framing. The author
+    list is still "Parishruthi Ganesh, et al." because the full list has not
+    been supplied.
+  action: >-
+    Paste the abstract and full author list from https://arxiv.org/abs/2608.27879
+    so both can be replaced with the published text, then run
+    `npm run portfolio -- validate`.
+
