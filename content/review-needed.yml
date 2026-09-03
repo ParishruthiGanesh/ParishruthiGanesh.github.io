@@ -216,47 +216,26 @@
     Add entries to content/talks.yml or content/awards.yml; the sections appear
     automatically on the next build.
 
-- id: labguard-code-not-on-default-branch
-  severity: high
-  area: hackathons
-  raisedAt: '2026-09-03'
-  summary: >-
-    LabGuard AI's code lives on the branch claude/labguard-ai-platform-4vgw8p.
-    The default branch is effectively empty, so the repository link on the
-    Hackathons page opens a page with nothing on it.
-  detail: >-
-    The default branch holds one commit dated 2026-08-29 containing a LICENSE
-    and a README whose entire content is the heading "LabGuard-AI". The working
-    project — 20 commits, a FastAPI backend, a Next.js dashboard, deployment
-    configuration and architecture documentation — is on
-    claude/labguard-ai-platform-4vgw8p, fetched on 2026-09-03 to source the
-    entry's architecture and technologies.
-  currentBehaviour: >-
-    The entry publishes the architecture and technologies read from that branch,
-    and links the repository at its root. A visitor following the link lands on
-    the default branch and sees no code. The link is not pointed at the branch,
-    because a branch URL breaks as soon as the branch is merged or deleted.
-  action: >-
-    Merge claude/labguard-ai-platform-4vgw8p into the default branch. The
-    repository link then shows the project and no site change is needed.
-
-- id: labguard-submission-status-unconfirmed
+- id: labguard-repo-link-pins-a-branch
   severity: medium
   area: hackathons
   raisedAt: '2026-09-03'
   summary: >-
-    LabGuard AI is recorded as submissionStatus "in-progress" from a hint in the
-    supplied Devpost URL, not from a confirmed source.
+    LabGuard AI's repository link points at the branch
+    claude/labguard-ai-platform-4vgw8p rather than the repository root, matching
+    the URL submitted to Devpost.
   detail: >-
-    The Devpost link supplied on 2026-09-03 carried the query parameter
-    ref_feature=in_progress, which suggests the submission was still a draft.
-    Devpost is not reachable from the environment used to make this change, so
-    the state could not be confirmed. "in-progress" was chosen because it is the
-    reading that cannot overstate a result.
+    The default branch holds only a LICENSE and a one-line README; the working
+    project is on claude/labguard-ai-platform-4vgw8p, and that is the URL given
+    to Devpost. Linking the branch keeps the site and the submission pointing at
+    the same code, which is why the root link was replaced on 2026-09-03 at
+    Parishruthi's request.
   currentBehaviour: >-
-    The Hackathons page shows LabGuard AI as an in-progress submission rather
-    than a completed one.
+    The Hackathons page links "GitHub repository (submitted branch)" directly to
+    the branch tree, so a visitor lands on the code rather than an empty
+    default branch.
   action: >-
-    Confirm whether the Devpost submission is finished. If it is, change
-    submissionStatus to "submitted" in content/hackathons.yml.
+    Keep the branch. If it is ever merged into the default branch or deleted,
+    this link and the Devpost submission link both break together — update both
+    at that point, and the site link can go back to the repository root.
 

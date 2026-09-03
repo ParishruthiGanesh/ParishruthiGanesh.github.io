@@ -225,7 +225,7 @@
   projectName: LabGuard AI
   featured: true
   order: 30
-  submissionStatus: in-progress
+  submissionStatus: submitted
   tagline: An autonomous research agent that challenges a scientific claim, runs the
     experiments that could disprove it, repairs the runs that break, and returns an
     evidence-backed verdict with every check shown.
@@ -284,8 +284,8 @@
       verified: false
       url: https://devpost.com/software/labguard-ai
     repo:
-      label: GitHub repository
-      url: https://github.com/ParishruthiGanesh/LabGuard-AI
+      label: GitHub repository (submitted branch)
+      url: https://github.com/ParishruthiGanesh/LabGuard-AI/tree/claude/labguard-ai-platform-4vgw8p
     demo:
       label: Live dashboard
       verified: false
