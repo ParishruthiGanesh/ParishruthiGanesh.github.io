@@ -1,347 +1,459 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import PublicationCard from '../components/PublicationCard.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import Tag from '../components/Tag.astro';
-import LinkList from '../components/LinkList.astro';
+/**
+ * The single-page academic site.
+ *
+ * Everything a reader needs is on one scroll — masthead, research list,
+ * experience, miscellaneous — in the layout the research-portfolio format has
+ * converged on. Detail pages still exist and are linked per entry, the way a
+ * paper links its own project page.
+ *
+ * All assembly happens here in the frontmatter, because the template body is
+ * compiled as JSX and cannot carry TypeScript type predicates.
+ */
+import AcademicLayout from '../layouts/AcademicLayout.astro';
+import EntryRow from '../components/EntryRow.astro';
+import type { EntryLink } from '../components/EntryRow.astro';
+import ProfileIcons from '../components/ProfileIcons.astro';
 import { loadContent } from '../lib/content.js';
 import { url } from '../lib/url.js';
-import {
-  CURRENT_WORK_LABELS,
-  formatShortDate,
-  relativeDate,
-  splitEmail,
-} from '../lib/format.js';
+import { CURRENT_WORK_LABELS, formatDate, formatMonth, formatRange, STATUS_LABELS, splitEmail } from '../lib/format.js';
+import type { Project, Hackathon, Publication } from '../lib/schema.js';
 
 const content = loadContent();
-const { profile, research, publications, projects, hackathons, currentWork, repositories } = content;
+const {
+  profile,
+  publications,
+  projects,
+  hackathons,
+  experience,
+  education,
+  research,
+  talks,
+  awards,
+  currentWork,
+} = content;
 
+const hackathonByProject = new Map<string, Hackathon>();
+for (const hackathon of hackathons) {
+  for (const id of hackathon.relatedProjects) hackathonByProject.set(id, hackathon);
+}
 const areaLabels = Object.fromEntries(research.map((theme) => [theme.id, theme.shortTitle]));
-const featuredPublications = publications.filter((pub) => pub.featured).slice(0, 2);
-const featuredProjects = projects.filter((project) => project.featured).slice(0, 4);
-const recentHackathons = hackathons.slice(0, 2);
-const featuredThemes = research.filter((theme) => theme.featured);
 
-/** Repositories with real activity, most recently pushed first. */
-const activeRepos = repositories
-  .filter((repo) => !repo.hidden && repo.synced && repo.pushedAt)
-  .sort((a, b) => b.pushedAt.localeCompare(a.pushedAt))
-  .slice(0, 4);
+/** Schematic thumbnails generated for entries that have no figure of their own. */
+const THUMBS = new Set(
+  Object.keys(import.meta.glob('/public/images/thumbs/*.svg')).map((file) =>
+    file.replace('/public/images/thumbs/', '').replace('.svg', ''),
+  ),
+);
 
+/** A real screenshot where one exists, otherwise a schematic thumbnail. */
+function thumbFor(project: Project | undefined, ...ids: string[]): string | undefined {
+  const shot = project?.screenshots[0]?.src;
+  if (shot) return shot;
+  const match = ids.find((id) => THUMBS.has(id));
+  return match ? `/images/thumbs/${match}.svg` : undefined;
+}
+
+/**
+ * Terse venue line, in the form this format expects — "arXiv'26 · Submitted to
+ * AAAI". Any longer caveat on the record (that an arXiv posting is not peer
+ * review, for instance) belongs on the publication's own page, where there is
+ * room to state it properly, rather than as three red lines in a list.
+ */
+function venueLine(pub: Publication): string {
+  const where = `${pub.venueShort ?? pub.venue ?? ''}'${String(pub.year).slice(2)}`.trim();
+  const submitted = pub.statusNote?.match(/submitted to ([A-Za-z][A-Za-z0-9 ]*?)(?:[.,;]|$)/i);
+  const status = submitted ? `Submitted to ${submitted[1].trim()}` : (STATUS_LABELS[pub.status] ?? pub.status);
+  return where ? `${where} · ${status}` : status;
+}
+
+const link = (label: string, href: string | undefined, unverified = false): EntryLink | null =>
+  href ? { label, href, unverified } : null;
+
+const keep = (items: Array<EntryLink | null>): EntryLink[] =>
+  items.filter((item): item is EntryLink => item !== null);
+
+/* ---------------- Research list ---------------- */
+
+interface Row {
+  key: string;
+  title: string;
+  titleHref?: string;
+  authors?: string[];
+  venue?: string;
+  blurb?: string;
+  links: EntryLink[];
+  tags: string[];
+  image: string;
+  imageAlt: string;
+}
+
+const paperRows: Row[] = publications.map((pub) => {
+  const project = projects.find((entry) => entry.relatedPublications.includes(pub.id));
+  const mapped = content.researchLinks.filter((entry) => entry.paper === pub.id);
+  return {
+    key: `pub-${pub.id}`,
+    title: pub.title,
+    titleHref: `/publications/${pub.id}`,
+    authors: pub.authors,
+    venue: venueLine(pub),
+    links: keep([
+      link('Paper', pub.paperUrl),
+      link('Arxiv', pub.arxivId ? `https://arxiv.org/abs/${pub.arxivId}` : undefined),
+      ...mapped.map((entry) => link('Code', `https://github.com/${entry.repository}`)),
+      link('Dataset', pub.datasetUrl),
+      link('Video', pub.videoUrl),
+      link('Project Page', project ? url(`/projects/${project.id}`) : undefined),
+    ]),
+    tags: pub.researchAreas.map((area) => areaLabels[area] ?? area),
+    image: thumbFor(project, project?.id ?? '', pub.id),
+    imageAlt: '',
+  };
+});
+
+/* Systems next, in the curated order already set in projects.yml. Anything
+   already represented by a paper above is not repeated; coursework moves to
+   Miscellaneous. */
+const projectRows: Row[] = projects
+  .filter((project) => project.kind !== 'coursework' && project.relatedPublications.length === 0)
+  .map((project) => {
+    const hackathon = hackathonByProject.get(project.id);
+    const repoPrivate = content.repositories.find(
+      (repo) => repo.fullName === project.repository,
+    )?.isPrivate;
+
+    const venue = hackathon
+      ? `${hackathon.hackathon}${hackathon.dateLabel ? ` · ${hackathon.dateLabel}` : ''}`
+      : (project.period ?? (project.year ? String(project.year) : undefined));
+
+    const links = keep([
+      project.links.paper ? { label: 'Paper', href: project.links.paper.url } : null,
+      { label: 'Project Page', href: url(`/projects/${project.id}`) },
+      project.links.repo
+        ? repoPrivate
+          ? { label: 'Code (private)', href: project.links.repo.url, disabled: true }
+          : { label: 'Code', href: project.links.repo.url, unverified: !project.links.repo.verified }
+        : null,
+      project.links.demo
+        ? { label: 'Demo', href: project.links.demo.url, unverified: !project.links.demo.verified }
+        : null,
+      project.links.devpost
+        ? { label: 'Devpost', href: project.links.devpost.url, unverified: !project.links.devpost.verified }
+        : null,
+      project.links.video
+        ? { label: 'Video', href: project.links.video.url, unverified: !project.links.video.verified }
+        : null,
+    ]);
+
+    return {
+      key: `project-${project.id}`,
+      title: project.name,
+      titleHref: `/projects/${project.id}`,
+      venue,
+      blurb: project.tagline,
+      links,
+      tags: [
+        ...project.researchAreas.map((area) => areaLabels[area] ?? area),
+        ...project.technologies.slice(0, 3),
+      ],
+      image: thumbFor(project, project.id),
+      imageAlt: project.screenshots[0]?.alt ?? '',
+    };
+  });
+
+const researchRows = [...paperRows, ...projectRows];
+
+/* ---------------- Currently ---------------- */
+
+const currentRows = [...currentWork.items]
+  .sort((a, b) => a.order - b.order)
+  .map((item) => ({
+    ...item,
+    label: CURRENT_WORK_LABELS[item.status] ?? item.status,
+    sinceLabel: formatMonth(item.since),
+    href:
+      item.relatedPublications[0] !== undefined
+        ? `/publications/${item.relatedPublications[0]}`
+        : item.relatedProjects[0] !== undefined
+          ? `/projects/${item.relatedProjects[0]}`
+          : undefined,
+  }));
+
+/* ---------------- Experience ---------------- */
+
+const roles = experience
+  .filter((entry) => entry.type !== 'leadership')
+  .map((entry) => ({ entry, highlights: entry.workstreams.map((stream) => stream.name) }));
+
+/* ---------------- Miscellaneous ---------------- */
+
+const serviceItems = [
+  ...experience
+    .filter((entry) => entry.type === 'leadership')
+    .map((entry) => `${entry.role}, ${entry.organization} (${formatRange(entry.start, entry.end)})`),
+  ...talks.map(
+    (talk) => `${talk.type === 'poster' ? 'Poster' : 'Talk'}, ${talk.event} (${talk.date.slice(0, 4)})`,
+  ),
+  ...awards.map((award) => `${award.title}, ${award.organization} (${award.date.slice(0, 4)})`),
+];
+
+const educationRows = education.map((entry) => ({
+  degree: entry.degree,
+  institution: entry.institution,
+  institutionUrl: entry.institutionUrl,
+  detail: `(${formatRange(entry.start, entry.end)}${entry.grade ? `, ${entry.grade}` : ''})`,
+}));
+
+const courseworkProjects = projects.filter((project) => project.kind === 'coursework');
 const { user, domain } = splitEmail(profile.email);
+const year = new Date().getFullYear();
 
-const heroLinks = [
-  { label: 'Resume', href: url(profile.resume.path), external: true },
-  profile.links.github && { label: 'GitHub', href: profile.links.github, external: true },
-  profile.links.googleScholar && {
-    label: 'Google Scholar',
-    href: profile.links.googleScholar,
-    external: true,
-  },
-  { label: 'Contact', href: url('/contact'), external: false },
-].filter((item): item is { label: string; href: string; external: boolean } => Boolean(item));
+/* Deep pages are no longer in a navigation bar, so the footer keeps them
+   reachable rather than orphaned. */
+const deepPages = [
+  { label: 'About', href: '/about' },
+  { label: 'Research themes', href: '/research' },
+  { label: 'All publications', href: '/publications' },
+  { label: 'All projects', href: '/projects' },
+  { label: 'Hackathons', href: '/hackathons' },
+  { label: 'Experience', href: '/experience' },
+  { label: 'Resume', href: '/resume' },
+  { label: 'Repositories', href: '/repositories' },
+  { label: 'Contact', href: '/contact' },
+];
+
+const schema = publications.map((pub) => ({
+  '@context': 'https://schema.org',
+  '@type': 'ScholarlyArticle',
+  headline: pub.title,
+  name: pub.title,
+  author: pub.authors.map((name) => ({ '@type': 'Person', name })),
+  datePublished: String(pub.year),
+  ...(pub.abstract ? { abstract: pub.abstract } : {}),
+  ...(pub.paperUrl ? { url: pub.paperUrl } : {}),
+  creativeWorkStatus: STATUS_LABELS[pub.status],
+}));
 ---
 
-<BaseLayout
-  title="Home"
-  description={profile.shortBio}
-  schema={[
-    {
-      '@context': 'https://schema.org',
-      '@type': 'ProfilePage',
-      name: `${profile.name} — ${profile.headline}`,
-      description: profile.shortBio,
-      about: { '@type': 'Person', name: profile.name },
-    },
-  ]}
->
-  {/* ---------- Hero ---------- */}
-  <section class="relative overflow-hidden border-b" style="border-color: var(--border)">
-    <div class="bg-grid pointer-events-none absolute inset-0 opacity-40" aria-hidden="true"></div>
-    <div class="container-page relative py-16 sm:py-20 lg:py-24">
-      <div
-        class:list={[
-          'animate-rise',
-          profile.avatar
-            ? 'grid gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:gap-16'
-            : 'max-w-4xl',
-        ]}
-      >
-      <div class:list={[!profile.avatar && 'max-w-4xl']}>
-        <p class="eyebrow">{profile.role} · {profile.affiliation}</p>
-        <h1 class="mt-4 text-4xl font-semibold leading-[1.1] sm:text-5xl lg:text-6xl" style="color: var(--ink)">
-          {profile.name}
-        </h1>
-        <p class="mt-6 max-w-3xl text-lg leading-relaxed sm:text-xl" style="color: var(--ink-muted)">
-          {profile.tagline}
-        </p>
+<AcademicLayout schema={schema}>
+  {/* ---------------- Masthead ---------------- */}
+  <header class="masthead">
+    <div>
+      <h1>{profile.name}</h1>
 
-        <ul class="mt-7 flex flex-wrap gap-2">
-          {profile.researchInterests.map((interest) => <li><Tag tone="accent" size="md">{interest}</Tag></li>)}
+      <p class="bio">
+        I am a Ph.D. student in Computer Science and Software Engineering at{' '}
+        <a href={profile.affiliationUrl} rel="noopener">Auburn University</a>, where my research
+        sits at the intersection of empirical evaluation and applied machine-learning systems. I
+        work on language-model evaluation, video understanding, retrieval-augmented generation and
+        agentic memory. I am first author on a systematic zero-shot evaluation of 41 open-weight
+        language models, and on a controlled study of interaction representations for early
+        violence detection in video.
+      </p>
+
+      <p class="bio">
+        Before returning to research I spent about eighteen months as an Associate Software
+        Developer at Emids Technologies in Bangalore. I hold an M.S. in Computer Science and
+        Software Engineering from Auburn University and a B.E. in Computer Science from
+        Visvesvaraya Technological University.
+      </p>
+
+      <p class="status-line">Open to research collaborations and research internships</p>
+
+      <p class="contact-line">
+        <a href={`mailto:${user}@${domain}`}>{user}<span aria-hidden="true">@</span>{domain}</a>
+        {' · '}
+        {profile.location}
+      </p>
+
+      <ProfileIcons />
+    </div>
+
+    {
+      profile.avatar && (
+        <img
+          class="portrait"
+          src={url(profile.avatar)}
+          alt={`Portrait of ${profile.name}`}
+          width="500"
+          height="500"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
+      )
+    }
+  </header>
+
+  {/* ---------------- Currently ---------------- */}
+  {
+    currentRows.length > 0 && (
+      <section class="section" aria-labelledby="current-heading">
+        <h2 id="current-heading">Currently</h2>
+        <hr class="rule" />
+
+        <ul class="current-list">
+          {currentRows.map((item) => (
+            <li>
+              <p class="current-head">
+                <span class="current-status">{item.label}</span>
+                <span class="current-since">since {item.sinceLabel}</span>
+              </p>
+              <p class="current-title">{item.href ? <a href={url(item.href)}>{item.title}</a> : item.title}</p>
+              <p class="current-blurb">{item.description}</p>
+            </li>
+          ))}
         </ul>
 
-        <div class="mt-8 flex flex-wrap items-center gap-3">
-          {
-            heroLinks.map((link, index) => (
-              <a
-                href={link.href}
-                rel={link.external ? 'noopener' : undefined}
-                class="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-medium no-underline transition-colors"
-                style={
-                  index === 0
-                    ? 'background: var(--ink); color: var(--surface-raised); border-color: var(--ink)'
-                    : 'border-color: var(--border-strong); color: var(--ink-muted); background: var(--surface-raised)'
-                }
-              >
-                {link.label}
-              </a>
-            ))
-          }
-        </div>
-        <p class="mt-4 text-sm" style="color: var(--ink-subtle)">
-          {profile.location} ·
-          <a href={`mailto:${user}@${domain}`} class="link-underline no-underline" style="color: inherit">
-            {user}<span aria-hidden="true">@</span>{domain}
-          </a>
-        </p>
-      </div>
-
-      {
-        profile.avatar && (
-          <div class="order-first lg:order-none">
-            <img
-              src={url(profile.avatar)}
-              alt={`Portrait of ${profile.name}`}
-              width="320"
-              height="400"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              class="h-auto w-40 rounded-2xl border object-cover shadow-[var(--shadow-card)] sm:w-48 lg:w-[19rem]"
-              style="border-color: var(--border); background: var(--surface-sunken); aspect-ratio: 4 / 5"
-            />
-          </div>
-        )
-      }
-      </div>
-    </div>
-  </section>
-
-  {/* ---------- Currently working on ---------- */}
-  <section class="border-b py-14 sm:py-16" style="border-color: var(--border); background: var(--surface-sunken)">
-    <div class="container-page">
-      <div class="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 class="text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Currently working on</h2>
-        <p class="text-sm" style="color: var(--ink-subtle)">
-          Updated <time datetime={currentWork.updated}>{currentWork.updated}</time>
-        </p>
-      </div>
-      <ul class="mt-8 grid gap-4 md:grid-cols-2">
-        {
-          currentWork.items.map((item) => (
-            <li class="surface-card p-5">
-              <div class="flex flex-wrap items-center gap-2">
-                <Tag tone="accent">{CURRENT_WORK_LABELS[item.status] ?? item.status}</Tag>
-                {item.since && (
-                  <span class="font-mono text-xs" style="color: var(--ink-subtle)">
-                    since {item.since}
-                  </span>
-                )}
-              </div>
-              <h3 class="mt-3 font-semibold leading-snug" style="color: var(--ink)">
-                {item.title}
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-muted)">
-                {item.description}
-              </p>
-              {item.relatedProjects.length > 0 && (
-                <p class="mt-3 text-xs">
-                  <a
-                    href={url(`/projects/${item.relatedProjects[0]}`)}
-                    class="link-underline no-underline"
-                    style="color: var(--accent)"
-                  >
-                    Read the write-up
-                  </a>
-                </p>
-              )}
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-  </section>
-
-  {/* ---------- Research themes ---------- */}
-  <section class="py-16 sm:py-20">
-    <div class="container-page">
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div class="max-w-2xl">
-          <p class="eyebrow">Research</p>
-          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">
-            Four questions the work keeps returning to
-          </h2>
-        </div>
-        <a href={url('/research')} class="link-underline text-sm no-underline" style="color: var(--accent)">
-          All research themes →
-        </a>
-      </div>
-
-      <ul class="mt-9 grid gap-5 lg:grid-cols-2">
-        {
-          featuredThemes.map((theme) => (
-            <li class="surface-card card-interactive p-6">
-              <h3 class="text-lg font-semibold" style="color: var(--ink)">
-                <a
-                  href={url(`/research#${theme.id}`)}
-                  class="no-underline transition-colors hover:text-[var(--accent)]"
-                  style="color: inherit"
-                >
-                  {theme.title}
-                </a>
-              </h3>
-              <p class="mt-3 text-sm leading-relaxed" style="color: var(--ink-muted)">
-                {theme.question}
-              </p>
-              <div class="mt-4 flex flex-wrap gap-1.5">
-                {theme.keywords.slice(0, 4).map((keyword) => (
-                  <Tag tone="outline">{keyword}</Tag>
-                ))}
-              </div>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-  </section>
-
-  {/* ---------- Selected publications ---------- */}
-  <section class="border-t py-16 sm:py-20" style="border-color: var(--border); background: var(--surface-sunken)">
-    <div class="container-page">
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p class="eyebrow">Publications</p>
-          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Selected papers</h2>
-        </div>
-        <a href={url('/publications')} class="link-underline text-sm no-underline" style="color: var(--accent)">
-          All publications →
-        </a>
-      </div>
-      <div class="mt-9 grid gap-5 lg:grid-cols-2">
-        {featuredPublications.map((publication) => <PublicationCard publication={publication} areaLabels={areaLabels} />)}
-      </div>
-    </div>
-  </section>
-
-  {/* ---------- Featured projects ---------- */}
-  <section class="py-16 sm:py-20">
-    <div class="container-page">
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p class="eyebrow">Projects</p>
-          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Featured work</h2>
-        </div>
-        <a href={url('/projects')} class="link-underline text-sm no-underline" style="color: var(--accent)">
-          All projects →
-        </a>
-      </div>
-      <div class="mt-9 grid gap-6 sm:grid-cols-2">
-        {featuredProjects.map((project) => <ProjectCard project={project} areaLabels={areaLabels} />)}
-      </div>
-    </div>
-  </section>
-
-  {/* ---------- Hackathons ---------- */}
-  <section class="border-t py-16 sm:py-20" style="border-color: var(--border); background: var(--surface-sunken)">
-    <div class="container-page">
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p class="eyebrow">Hackathons</p>
-          <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">Recent builds</h2>
-        </div>
-        <a href={url('/hackathons')} class="link-underline text-sm no-underline" style="color: var(--accent)">
-          All hackathons →
-        </a>
-      </div>
-      <div class="mt-9 grid gap-6 lg:grid-cols-2">
-        {
-          recentHackathons.map((hackathon) => (
-            <article class="surface-card card-interactive flex flex-col p-6">
-              <div class="flex flex-wrap items-center gap-2">
-                <Tag tone="ember">{hackathon.hackathon}</Tag>
-                <span class="font-mono text-xs" style="color: var(--ink-subtle)">
-                  {hackathon.dateLabel ?? formatShortDate(hackathon.date)}
-                </span>
-              </div>
-              <h3 class="mt-3 text-lg font-semibold" style="color: var(--ink)">
-                <a
-                  href={url(`/hackathons#${hackathon.id}`)}
-                  class="no-underline transition-colors hover:text-[var(--accent)]"
-                  style="color: inherit"
-                >
-                  {hackathon.projectName}
-                </a>
-              </h3>
-              <p class="mt-2 flex-1 text-sm leading-relaxed" style="color: var(--ink-muted)">
-                {hackathon.tagline}
-              </p>
-              <div class="mt-5">
-                <LinkList links={hackathon.links} repositoryPrivate={hackathon.repositoryPrivate} size="sm" />
-              </div>
-            </article>
-          ))
-        }
-      </div>
-    </div>
-  </section>
-
-  {/* ---------- GitHub activity ---------- */}
-  {
-    activeRepos.length > 0 && (
-      <section class="py-16 sm:py-20">
-        <div class="container-page">
-          <div class="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p class="eyebrow">GitHub</p>
-              <h2 class="mt-2 text-2xl font-semibold sm:text-3xl" style="color: var(--ink)">
-                Recent repository activity
-              </h2>
-            </div>
-            <a href={url('/repositories')} class="link-underline text-sm no-underline" style="color: var(--accent)">
-              All repositories →
-            </a>
-          </div>
-          <ul class="mt-9 grid gap-4 sm:grid-cols-2">
-            {activeRepos.map((repo) => (
-              <li class="surface-card card-interactive p-5">
-                <div class="flex min-w-0 items-baseline justify-between gap-3">
-                  {/* A long monospace repository name would otherwise force the
-                      card wider than a 320px viewport, so it wraps instead. */}
-                  <a
-                    href={repo.url}
-                    rel="noopener"
-                    class="min-w-0 font-mono text-sm font-medium no-underline transition-colors hover:text-[var(--accent)]"
-                    style="color: var(--ink); overflow-wrap: anywhere"
-                  >
-                    {repo.name}
-                  </a>
-                  {repo.language && (
-                    <span class="shrink-0 text-xs" style="color: var(--ink-subtle)">
-                      {repo.language}
-                    </span>
-                  )}
-                </div>
-                <p class="mt-2 text-sm leading-relaxed" style="color: var(--ink-muted)">
-                  {repo.description}
-                </p>
-                <p class="mt-2 text-xs" style="color: var(--ink-subtle)">
-                  Last push {relativeDate(repo.pushedAt)}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p class="current-updated">Last updated {formatDate(currentWork.updated)}.</p>
       </section>
     )
   }
-</BaseLayout>
+
+  {/* ---------------- Research ---------------- */}
+  <section class="section" aria-labelledby="research-heading">
+    <h2 id="research-heading">Research</h2>
+    <hr class="rule" />
+
+    <p class="section-lead">
+      My work is organised around two questions. The first is a measurement question:
+      <strong>when we say one model or one representation is better, what exactly have we
+      measured</strong>, and would that conclusion survive a different dataset, a perturbed input,
+      or a significance test? The second is a systems question: <strong>what does a model actually
+      need to remember, retrieve or represent</strong> to be useful under real constraints? Those
+      run through <strong>language-model evaluation</strong>, <strong>video understanding</strong>,{' '}
+      <strong>retrieval-augmented generation</strong> and <strong>agentic memory</strong>. Where a
+      section is missing from a page below, it is because there was no verified source for it — not
+      because it went unmeasured.
+    </p>
+
+    <ul class="entries">
+      {
+        researchRows.map((row, index) => (
+          <EntryRow
+            title={row.title}
+            titleHref={row.titleHref}
+            authors={row.authors}
+            self={profile.name}
+            venue={row.venue}
+            blurb={row.blurb}
+            links={row.links}
+            tags={row.tags}
+            image={row.image}
+            imageAlt={row.imageAlt}
+            eager={index === 0}
+          />
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* ---------------- Experience ---------------- */}
+  <section class="section" aria-labelledby="experience-heading">
+    <h2 id="experience-heading">Experience</h2>
+    <hr class="rule" />
+
+    <ol class="timeline">
+      {
+        roles.map(({ entry, highlights }) => (
+          <li class="timeline-row">
+            <div class="timeline-when">{formatRange(entry.start, entry.end)}</div>
+            <div>
+              <p class="timeline-role">{entry.role}</p>
+              <p class="timeline-org">
+                {entry.organizationUrl ? (
+                  <a href={entry.organizationUrl} rel="noopener">
+                    {entry.organization}
+                  </a>
+                ) : (
+                  entry.organization
+                )}
+              </p>
+              {entry.location && <p class="timeline-where">{entry.location}</p>}
+              {highlights.length > 0 && (
+                <ul class="timeline-detail">
+                  {highlights.map((name) => (
+                    <li>{name}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {/* ---------------- Miscellaneous ---------------- */}
+  <section class="section" aria-labelledby="misc-heading">
+    <h2 id="misc-heading">Miscellaneous</h2>
+    <hr class="rule" />
+
+    <div class="misc-row">
+      <div class="misc-label">Education</div>
+      <ul class="misc-body">
+        {
+          educationRows.map((row) => (
+            <li>{row.degree}, {row.institutionUrl ? <a href={row.institutionUrl} rel="noopener">{row.institution}</a> : row.institution} {row.detail}</li>
+          ))
+        }
+      </ul>
+    </div>
+
+    {
+      serviceItems.length > 0 && (
+        <div class="misc-row">
+          <div class="misc-label">Service</div>
+          <ul class="misc-body">
+            {serviceItems.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    {
+      courseworkProjects.length > 0 && (
+        <div class="misc-row">
+          <div class="misc-label">
+            Earlier work
+            <span class="misc-note">Learning projects, kept for completeness.</span>
+          </div>
+          <ul class="misc-body">
+            {courseworkProjects.map((project) => (
+              <li><a href={url(`/projects/${project.id}`)}>{project.name}</a>{project.links.repo ? <> [<a href={project.links.repo.url} rel="noopener">GitHub</a>]</> : ''}</li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+
+    <div class="misc-row">
+      <div class="misc-label">
+        Open to
+        <span class="misc-note">Happy to hear from you by email.</span>
+      </div>
+      <ul class="misc-body">
+        {profile.openTo.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------------- Footer ---------------- */}
+  <footer class="page-footer" slot="footer">
+    <ul class="footer-links">
+      {
+        deepPages.map((page) => (
+          <li>
+            <a href={url(page.href)}>{page.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      © {year} {profile.name}. Built with Astro; every page is generated from validated content
+      files.
+    </p>
+  </footer>
+</AcademicLayout>

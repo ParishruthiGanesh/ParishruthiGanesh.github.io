@@ -10,8 +10,8 @@ substitute for substance. Everything below follows from that.
 
 1. **Evidence is the visual hierarchy.** The largest, most prominent element on
    a page is the actual work — a research question, a paper title, a result —
-   not a decorative hero. The homepage hero is deliberately short so featured
-   work is visible without scrolling far.
+   not a decorative hero. The home page carries no hero at all: a name, a short
+   bio and then the work.
 2. **Restraint is the aesthetic.** One accent colour, one warm accent reserved
    for featured and award context, and a hairline grid used once. No gradients
    beyond a single soft radial, no particles, no fake terminal, no skill bars.
@@ -96,11 +96,61 @@ without adding another heading level.
 
 ---
 
+## Two layouts
+
+The site runs two shells, deliberately.
+
+**`AcademicLayout`** is the home page, and only the home page. It follows the
+single-column convention research portfolios have converged on: no navigation
+bar, no hero, one scroll. A masthead (name, bio, availability, contacts,
+portrait), then `Currently`, `Research`, `Experience` and `Miscellaneous`. Every
+entry links out to its own detail page, the way a paper links its project page,
+so the deep pages are reached through the work rather than through a menu. The
+footer carries a plain link row so none of them is orphaned. Its tokens live in
+`src/styles/academic.css`, independent of the Tailwind theme the rest of the
+site uses.
+
+Two details in that file are load-bearing:
+
+- Paragraph rules are scoped by class (`.masthead p.bio`), never as
+  `.masthead p`. The bare descendant selector outranks `.status-line` and
+  `.contact-line` on specificity and silently repaints them.
+- Justification and hyphenation only switch on at `min-width: 720px`. Below
+  that the measure is too narrow and justification opens rivers between words.
+
+**`BaseLayout`** is every other page: header, navigation, command palette,
+footer. Deep pages are long-form and benefit from the chrome; the home page does
+not.
+
+### Entry rows
+
+`EntryRow` renders one item in the `Research` list — paper, system or hackathon
+build alike, so they read as one list rather than three. Thumbnail left, content
+right: title, authors (the owner bolded), a red monospace venue line, an
+optional blurb, `/`-separated links, then tag chips. A link marked `disabled`
+renders as plain text, which is how a private repository is shown without a dead
+link.
+
+Entries without a real screenshot fall back to a schematic SVG in
+`public/images/thumbs/`. These are deliberately diagrammatic rather than
+plot-like: a figure that reads as a results chart would imply measurements the
+page does not have.
+
+> **Whitespace is rendered.** Astro preserves template whitespace, so a line
+> break before a separator renders as `Name , Name`. Keep each separator on the
+> same line as the value it follows, or derive the string in the frontmatter. A
+> build test fails on any whitespace preceding `,`, `)` or `]`.
+
+---
+
 ## Components
 
 | Component | Purpose |
 | --- | --- |
-| `BaseLayout` | Page shell, metadata, Open Graph, JSON-LD, theme bootstrap |
+| `AcademicLayout` | Home-page shell: no nav, theme toggle only, metadata and JSON-LD |
+| `EntryRow` | One row in the home-page research list |
+| `ProfileIcons` | Masthead icon row, rendered only for links that exist |
+| `BaseLayout` | Shell for every other page: metadata, Open Graph, JSON-LD, theme bootstrap |
 | `SiteHeader` | Sticky nav, wider track than the prose container, mobile disclosure |
 | `CommandPalette` | ⌘K search over a build-time index; no network, no service |
 | `PageHeader` | Eyebrow + `h1` + lead, with a slot for filters or actions |
@@ -179,7 +229,8 @@ still works.
 ## Adding a page
 
 1. Create `src/pages/<name>.astro` using `BaseLayout` with a `title` and
-   `description`.
+   `description`. `AcademicLayout` is the home page's shell and is not meant to
+   be reused.
 2. Add it to `NAV_ITEMS` in `src/lib/nav.ts` — that one array drives the header,
    the mobile menu, the footer, the 404 page and the command palette.
 3. If it has indexable content, add it to `buildSearchIndex()` in

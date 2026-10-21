@@ -232,8 +232,8 @@ purpose: no invented proficiency percentages, no progress bars.
 render at all while empty, rather than showing a placeholder. Add an entry and
 the section appears on the next build.
 
-**`current-work.yml`** — `updated` plus `items[]`. Drives the homepage
-"Currently working on" section. `updated` is displayed, so a stale date is
+**`current-work.yml`** — `updated` plus `items[]`. Drives the home page
+"Currently" section, between the masthead and Research. `updated` is displayed, so a stale date is
 visible rather than hidden. `status` is one of `writing`, `experiments`,
 `building`, `reviewing`, `reading`.
 

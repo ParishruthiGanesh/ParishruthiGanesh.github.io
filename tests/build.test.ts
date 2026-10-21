@@ -76,6 +76,71 @@ describe('routes', () => {
   });
 });
 
+/**
+ * The home page is the whole site for most visitors, so nothing may quietly
+ * drop out of it when the layout changes. Each check names the content file it
+ * guards.
+ */
+describe('the home page carries every content area', () => {
+  const home = () => read('/index.html');
+
+  it('lists every publication', () => {
+    for (const pub of content.publications) {
+      expect(home(), pub.id).toContain(`/publications/${pub.id}`);
+    }
+  });
+
+  it('lists every non-coursework project', () => {
+    for (const project of content.projects) {
+      if (project.kind === 'coursework') continue;
+      expect(home(), project.id).toContain(`/projects/${project.id}`);
+    }
+  });
+
+  it('keeps coursework reachable under Miscellaneous', () => {
+    for (const project of content.projects) {
+      if (project.kind !== 'coursework') continue;
+      expect(home(), project.id).toContain(`/projects/${project.id}`);
+    }
+  });
+
+  it('renders every current-work item with its date', () => {
+    for (const item of content.currentWork.items) {
+      expect(home(), item.id).toContain(item.title);
+    }
+    expect(home()).toMatch(/Last updated/);
+  });
+
+  it('shows every role and degree', () => {
+    // Astro escapes `&` and friends, so compare against the escaped form.
+    const escape = (value: string) =>
+      value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    for (const entry of content.experience) {
+      expect(home(), entry.id).toContain(escape(entry.role));
+    }
+    for (const entry of content.education) {
+      expect(home(), entry.id).toContain(escape(entry.degree));
+    }
+  });
+
+  it('links each deep page from the footer, since there is no nav bar', () => {
+    const html = home();
+    expect(html).not.toMatch(/<header[^>]*>[\s\S]*?<nav/);
+    for (const route of ['/about', '/research', '/publications', '/projects', '/hackathons', '/experience', '/resume', '/repositories', '/contact']) {
+      expect(html, route).toContain(`href="${route}"`);
+    }
+  });
+
+  it('never renders a separator with a space before it', () => {
+    // Astro preserves template whitespace, so a line break before a comma or a
+    // bracket leaks into the rendered text.
+    const text = home()
+      .replace(/<script[\s\S]*?<\/script>/g, '')
+      .replace(/<[^>]+>/g, '');
+    expect(text).not.toMatch(/\s+[,)\]]/);
+  });
+});
+
 describe('internal links', () => {
   /** Does this site-root-relative path resolve to something in dist/? */
   function resolves(href: string): boolean {
@@ -193,9 +258,11 @@ describe('accessibility basics', () => {
   });
 
   it('every image has an alt attribute', () => {
+    // Astro serialises alt="" as a bare `alt`, which HTML reads as the empty
+    // string — the correct markup for a decorative image. Both forms count.
     for (const file of htmlFiles()) {
       for (const match of read(file).matchAll(/<img\b[^>]*>/g)) {
-        expect(match[0], `${file}: ${match[0].slice(0, 90)}`).toMatch(/\balt=/);
+        expect(match[0], `${file}: ${match[0].slice(0, 90)}`).toMatch(/\balt(=|[\s>])/);
       }
     }
   });

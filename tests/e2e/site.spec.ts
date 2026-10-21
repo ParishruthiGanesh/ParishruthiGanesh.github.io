@@ -50,9 +50,29 @@ test('the 404 page renders for an unknown route', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /does not exist/i })).toBeVisible();
 });
 
+/* The home page is a single scroll with no header: it reaches the deep pages
+   through its footer link row. Every other page still carries the nav bar and
+   the command palette, so those are exercised from /about. */
 test.describe('navigation', () => {
-  test('primary links reach their pages', async ({ page, isMobile }) => {
+  test('the home page footer reaches the deep pages', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('header nav')).toHaveCount(0);
+    await page.getByRole('contentinfo').getByRole('link', { name: 'All publications' }).click();
+    await expect(page).toHaveURL(/\/publications/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/papers/i);
+  });
+
+  test('every research entry on the home page links to its own page', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const entries = page.locator('.entries > li');
+    expect(await entries.count()).toBeGreaterThan(0);
+    for (const entry of await entries.all()) {
+      await expect(entry.locator('.entry-title a')).toHaveCount(1);
+    }
+  });
+
+  test('primary links reach their pages', async ({ page, isMobile }) => {
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     if (isMobile) {
       await page.getByRole('button', { name: /open navigation menu/i }).click();
     }
@@ -71,7 +91,7 @@ test.describe('navigation', () => {
 
 test.describe('command palette', () => {
   test('opens with the keyboard and navigates to a result', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('ControlOrMeta+k');
     const dialog = page.locator('#palette');
     await expect(dialog).toBeVisible();
@@ -84,7 +104,7 @@ test.describe('command palette', () => {
   });
 
   test('closes with Escape', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('ControlOrMeta+k');
     await expect(page.locator('#palette')).toBeVisible();
     await page.keyboard.press('Escape');
@@ -92,7 +112,7 @@ test.describe('command palette', () => {
   });
 
   test('finds a publication by a word from its title', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('ControlOrMeta+k');
     await page.locator('#palette-input').fill('intent classification');
     await expect(page.locator('#palette-results a').first()).toContainText(/intent/i);
