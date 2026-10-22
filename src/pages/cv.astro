@@ -1,0 +1,338 @@
+---
+/**
+ * The one-page CV, as a printable document.
+ *
+ * This is a sheet of paper that happens to be served over HTTP: the on-screen
+ * view is a preview, and `window.print()` (or Chromium's print-to-PDF) produces
+ * the file that gets attached to an application. It therefore does not use
+ * BaseLayout — a CV has no navigation, no theme toggle and no search.
+ *
+ * CV-specific wording lives in content/cv.yml. Facts — degrees, dates, venues,
+ * employers, links — are joined in by id from the other content files, so the
+ * CV and the site can never disagree about one.
+ *
+ * All assembly happens in this frontmatter: the template body is compiled as
+ * JSX and cannot carry TypeScript type predicates.
+ */
+import '../styles/cv.css';
+import { loadContent } from '../lib/content.js';
+import { absoluteUrl, url } from '../lib/url.js';
+import { formatMonth, splitEmail } from '../lib/format.js';
+
+const content = loadContent();
+const { profile, education, experience, publications, projects, hackathons, cv } = content;
+
+const site = Astro.site;
+const canonical = new URL('/cv', site ?? Astro.url).href;
+const pageTitle = `${profile.name} — CV`;
+const pageDescription = `Curriculum vitae for ${profile.name}, ${cv.headline}.`;
+const ogImage = absoluteUrl(profile.avatar ?? '/og-default.svg', site);
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  jobTitle: cv.headline,
+  email: `mailto:${profile.email}`,
+  url: absoluteUrl('/', site),
+  image: ogImage,
+  affiliation: { '@type': 'CollegeOrUniversity', name: profile.affiliation },
+  sameAs: Object.values(profile.links).filter(Boolean),
+};
+
+/* ---------------- Contact line ---------------- */
+
+const { user, domain } = splitEmail(profile.email);
+
+/** Only the public channels. The resume's address and telephone never appear. */
+const CONTACTS: Record<string, { label: string; text: string; href: string } | undefined> = {
+  email: { label: 'Email', text: `${user}@${domain}`, href: `mailto:${profile.email}` },
+  homepage: site
+    ? { label: 'Homepage', text: site.host, href: site.href }
+    : undefined,
+  linkedin: profile.links.linkedin
+    ? {
+        label: 'LinkedIn',
+        text: profile.links.linkedin.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''),
+        href: profile.links.linkedin,
+      }
+    : undefined,
+  googleScholar: profile.links.googleScholar
+    ? { label: 'Google Scholar', text: 'scholar.google.com', href: profile.links.googleScholar }
+    : undefined,
+  orcid: profile.links.orcid
+    ? { label: 'ORCID', text: profile.links.orcid.replace(/^https?:\/\//, ''), href: profile.links.orcid }
+    : undefined,
+  resume: { label: 'Résumé', text: profile.resume.filename, href: url(profile.resume.path) },
+};
+
+const contacts = cv.contactOrder.map((key) => CONTACTS[key]).filter(Boolean) as Array<{
+  label: string;
+  text: string;
+  href: string;
+}>;
+
+/** Split across two centred lines, the way a research CV sets its header. */
+const splitAt = Math.ceil(contacts.length / 2);
+const contactRows = [contacts.slice(0, splitAt), contacts.slice(splitAt)].filter(
+  (row) => row.length > 0,
+);
+
+/* ---------------- Education ---------------- */
+
+/** "Aug 2025 – Present", in the compressed form a CV uses. */
+function span(start: string, end: string): string {
+  const from = formatMonth(start).replace(/^(\w{3})\w* /, '$1 ');
+  const to = end === 'present' ? 'Present' : formatMonth(end).replace(/^(\w{3})\w* /, '$1 ');
+  return `${from} – ${to}`;
+}
+
+const educationRows = education.map((entry) => {
+  const details = [entry.institution, entry.grade, entry.researchFocus ? `Focus: ${entry.researchFocus.replace(/\s+/g, ' ').trim()}` : undefined];
+  return {
+    id: entry.id,
+    degree: entry.degree,
+    when: span(entry.start, entry.end),
+    sub: details.filter(Boolean).join(' · '),
+  };
+});
+
+/* ---------------- Publications ---------------- */
+
+const pubById = new Map(publications.map((pub) => [pub.id, pub]));
+
+/** "Submitted to WACV" where the record says so, else the plain status. */
+function submissionLabel(statusNote: string | undefined, status: string): string {
+  const match = statusNote?.match(/submitted to ([A-Za-z][A-Za-z0-9 ]*?)(?:[.,;]|$)/i);
+  return match ? `Submitted to ${match[1].trim()}` : status === 'preprint' ? 'Preprint' : status;
+}
+
+const publicationRows = cv.publicationOrder
+  .map((id) => pubById.get(id))
+  .filter(Boolean)
+  .map((pub) => ({
+    id: pub!.id,
+    title: pub!.title.replace(/\s+/g, ' ').trim(),
+    status: submissionLabel(pub!.statusNote, pub!.status),
+    href: pub!.paperUrl,
+    hrefLabel: pub!.arxivId ? `arXiv:${pub!.arxivId}` : 'Paper',
+  }));
+
+/* ---------------- Experience ---------------- */
+
+const experienceById = new Map(experience.map((entry) => [entry.id, entry]));
+
+const experienceRows = cv.experienceLines
+  .map((row) => ({ row, entry: experienceById.get(row.id) }))
+  .filter((pair) => pair.entry !== undefined)
+  .map(({ row, entry }) => ({
+    id: row.id,
+    role: entry!.role,
+    organization: entry!.organization,
+    location: entry!.location,
+    when: span(entry!.start, entry!.end),
+    lines: row.lines.map((line) => line.replace(/\s+/g, ' ').trim()),
+  }));
+
+/* ---------------- Projects ---------------- */
+
+const projectById = new Map(projects.map((project) => [project.id, project]));
+const hackathonById = new Map(hackathons.map((hack) => [hack.id, hack]));
+
+/** Repo, demo and video links, in a fixed order, skipping any that is private. */
+function projectLinks(ref: string, kind: 'project' | 'hackathon') {
+  const links: Array<{ label: string; href: string }> = [];
+  if (kind === 'hackathon') {
+    const hack = hackathonById.get(ref);
+    if (!hack) return links;
+    if (hack.repository && !hack.repositoryPrivate && hack.links.repo) {
+      links.push({ label: 'GitHub', href: hack.links.repo.url });
+    }
+    if (hack.links.demo) links.push({ label: 'Demo', href: hack.links.demo.url });
+    if (hack.links.video) links.push({ label: 'Video', href: hack.links.video.url });
+    return links;
+  }
+  const project = projectById.get(ref);
+  if (!project) return links;
+  if (project.links.repo) links.push({ label: 'GitHub', href: project.links.repo.url });
+  if (project.links.demo) links.push({ label: 'Demo', href: project.links.demo.url });
+  return links;
+}
+
+const projectRows = cv.projects.map((entry) => ({
+  ref: entry.ref,
+  name: entry.name,
+  context: entry.context,
+  line: entry.line.replace(/\s+/g, ' ').trim(),
+  links: projectLinks(entry.ref, entry.kind),
+}));
+
+/* ---------------- Service ---------------- */
+
+const serviceLines = [
+  ...cv.serviceLines.map((line) => line.replace(/\s+/g, ' ').trim()),
+  ...content.awards.map((award) => `${award.title}, ${award.organization} (${award.date.slice(0, 4)})`),
+  ...content.talks.map((talk) => `${talk.title}, ${talk.event} (${talk.date.slice(0, 4)})`),
+];
+
+/* The printed PDF, produced from this page by `npm run cv`. */
+const cvPdf = '/resume/Parishruthi-Ganesh-CV.pdf';
+
+const summary = cv.summary.replace(/\s+/g, ' ').trim();
+const skillLines = cv.skillLines.map((line) => ({ label: line.label, text: line.items.join(', ') }));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="author" content={profile.name} />
+
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"
+      />
+    </noscript>
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(personSchema)} />
+  </head>
+
+  <body class="cv-body">
+    <a class="cv-noprint" href="#main" style="position:absolute;left:-9999px">Skip to content</a>
+
+    <div class="cv-toolbar cv-noprint">
+      <button type="button" id="cv-print">Print</button>
+      <a href={url(cvPdf)} download>Download PDF</a>
+      <a href={url('/')}>← Back to the site</a>
+      <span>Print at Letter size with margins set to Default and backgrounds off.</span>
+    </div>
+
+    <main id="main" class="cv-sheet" tabindex="-1">
+      {/* ---------------- Masthead ---------------- */}
+      {/* Two deliberate lines, so a long profile URL never produces a ragged
+          orphan on the second one. */}
+      {contactRows.map((row) => (
+        <p class="cv-contact">
+          {row.map((contact, index) => (<>{index > 0 ? <span class="cv-sep"> · </span> : ''}<b>{contact.label}</b>: <a href={contact.href}>{contact.text}</a></>))}
+        </p>
+      ))}
+
+      <div class="cv-namerow">
+        <h1 class="cv-name">{profile.name}</h1>
+        <p class="cv-role">{cv.headline}</p>
+      </div>
+
+      <p class="cv-summary">{summary}</p>
+
+      {/* ---------------- Education ---------------- */}
+      <section class="cv-section">
+        <h2>Education</h2>
+        {
+          educationRows.map((row) => (
+            <div class="cv-block">
+              <p class="cv-head">
+                <span class="cv-head-main">{row.degree}</span>
+                <span class="cv-when">{row.when}</span>
+              </p>
+              <p class="cv-sub">{row.sub}</p>
+            </div>
+          ))
+        }
+      </section>
+
+      {/* ---------------- Skills ---------------- */}
+      <section class="cv-section">
+        <h2>Skills</h2>
+        {skillLines.map((line) => (<p class="cv-sub" style="padding-left:0"><b>{line.label}</b>: {line.text}</p>))}
+      </section>
+
+      {/* ---------------- Publications ---------------- */}
+      <section class="cv-section">
+        <h2>Computer Vision &amp; Machine Learning Publications</h2>
+        <ul class="cv-list">
+          {publicationRows.map((pub) => (<li>{pub.title}; <span class="cv-hot">{pub.status}</span>{pub.href ? <>; <a href={pub.href}>{pub.hrefLabel}</a></> : ''}</li>))}
+        </ul>
+      </section>
+
+      {/* ---------------- Experience ---------------- */}
+      <section class="cv-section">
+        <h2>Research &amp; Machine Learning Experience</h2>
+        {
+          experienceRows.map((row) => (
+            <div class="cv-block">
+              <p class="cv-head">
+                <span class="cv-head-main">{row.role}, {row.organization}</span>
+                <span class="cv-when">{row.when}</span>
+              </p>
+              <ul class="cv-list">
+                {row.lines.map((line) => (
+                  <li>{line}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </section>
+
+      {/* ---------------- Projects ---------------- */}
+      <section class="cv-section">
+        <h2>Selected Machine Learning Projects</h2>
+        {
+          projectRows.map((row) => (
+            <div class="cv-block">
+              <p class="cv-head">
+                <span class="cv-head-main">{row.name} <span class="cv-context">({row.context}{row.links.map((link) => (<>; <a href={link.href}>{link.label}</a></>))})</span></span>
+              </p>
+              <ul class="cv-list">
+                <li>{row.line}</li>
+              </ul>
+            </div>
+          ))
+        }
+      </section>
+
+      {/* ---------------- Service ---------------- */}
+      {
+        serviceLines.length > 0 && (
+          <section class="cv-section">
+            <h2>Leadership &amp; Service</h2>
+            <ul class="cv-list">
+              {serviceLines.map((line) => (
+                <li>{line}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </main>
+
+    <script>
+      document.getElementById('cv-print')?.addEventListener('click', () => window.print());
+    </script>
+  </body>
+</html>

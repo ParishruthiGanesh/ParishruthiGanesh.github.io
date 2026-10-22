@@ -20,7 +20,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check": "astro check",
-    "linkcheck": "tsx scripts/portfolio/index.ts linkcheck"
+    "linkcheck": "tsx scripts/portfolio/index.ts linkcheck",
+    "cv": "astro build && node scripts/build-cv.mjs",
+    "cv:pdf": "node scripts/build-cv.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.6",

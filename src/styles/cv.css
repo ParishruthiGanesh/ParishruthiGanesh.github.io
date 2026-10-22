@@ -1,0 +1,269 @@
+/*
+ * The one-page CV.
+ *
+ * Print-first: the on-screen view is a preview of the printed sheet, so the
+ * measurements below are in points and millimetres rather than rem. Nothing
+ * here is shared with the rest of the site — the CV is a document, not a page,
+ * and giving it its own sheet keeps a change to one from disturbing the other.
+ *
+ * Deliberately light-only. A CV is printed and read as a PDF; a dark variant
+ * would never be seen and would only risk a grey-on-grey print.
+ */
+
+:root {
+  --cv-page: #ffffff;
+  --cv-ink: #16181d;
+  --cv-mute: #4a5160;
+  /* Section headers. Dark enough to print cleanly on a mono laser printer. */
+  --cv-accent: #8c2b22;
+  /* Dates, venues and submission status — the one thing an eye should catch. */
+  --cv-hot: #c8342c;
+  --cv-rule: #b9beca;
+  --cv-sheet: 8.5in;
+  --cv-pad: 0.52in;
+}
+
+.cv-body {
+  margin: 0;
+  background: #e7e9ee;
+  color: var(--cv-ink);
+  font-family: Lato, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 10.1pt;
+  line-height: 1.3;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cv-sheet {
+  width: var(--cv-sheet);
+  margin: 1.5rem auto;
+  padding: var(--cv-pad);
+  background: var(--cv-page);
+  box-shadow: 0 1px 3px rgb(22 24 29 / 0.18);
+}
+
+.cv-sheet a {
+  color: var(--cv-hot);
+  text-decoration: none;
+}
+
+.cv-sheet a:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ */
+/* Masthead                                                            */
+/* ------------------------------------------------------------------ */
+
+.cv-contact {
+  margin: 0 0 0.5rem;
+  text-align: center;
+  font-size: 9.1pt;
+  line-height: 1.5;
+}
+
+.cv-contact b {
+  font-weight: 700;
+}
+
+.cv-namerow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.cv-name {
+  margin: 0;
+  font-size: 19pt;
+  font-weight: 700;
+  font-variant: small-caps;
+  letter-spacing: 0.012em;
+  line-height: 1.1;
+}
+
+.cv-role {
+  margin: 0;
+  font-size: 13pt;
+  font-weight: 700;
+  font-variant: small-caps;
+  color: var(--cv-accent);
+  letter-spacing: 0.012em;
+}
+
+.cv-summary {
+  margin: 0.3rem 0 0;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Sections                                                            */
+/* ------------------------------------------------------------------ */
+
+.cv-section {
+  margin-top: 0.4rem;
+  /* A section never splits across the page break mid-heading. */
+  break-inside: auto;
+}
+
+.cv-section > h2 {
+  margin: 0 0 0.2rem;
+  padding-bottom: 1px;
+  border-bottom: 1px solid var(--cv-accent);
+  font-size: 11.6pt;
+  font-weight: 700;
+  font-variant: small-caps;
+  letter-spacing: 0.015em;
+  color: var(--cv-accent);
+  break-after: avoid;
+}
+
+/* Dashed list, the form a research CV uses for everything. */
+.cv-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cv-list > li {
+  position: relative;
+  padding-left: 0.72em;
+  break-inside: avoid;
+}
+
+.cv-list > li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--cv-mute);
+}
+
+.cv-hot {
+  color: var(--cv-hot);
+  font-weight: 700;
+}
+
+.cv-quiet {
+  color: var(--cv-mute);
+}
+
+.cv-sep {
+  color: var(--cv-rule);
+}
+
+/* ------------------------------------------------------------------ */
+/* Education / experience / projects — a two-line block each           */
+/* ------------------------------------------------------------------ */
+
+.cv-block {
+  margin-top: 0.15rem;
+  break-inside: avoid;
+}
+
+.cv-block:first-of-type {
+  margin-top: 0.1rem;
+}
+
+.cv-head {
+  margin: 0;
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.cv-head-main {
+  font-weight: 700;
+}
+
+/* Right-aligned dates, as a CV reader scans them. */
+.cv-when {
+  flex: none;
+  white-space: nowrap;
+  color: var(--cv-hot);
+  font-weight: 700;
+}
+
+.cv-sub {
+  margin: 0;
+  padding-left: 0.5rem;
+  color: var(--cv-mute);
+}
+
+.cv-block .cv-list {
+  padding-left: 0.5rem;
+}
+
+.cv-context {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--cv-mute);
+}
+
+/* ------------------------------------------------------------------ */
+/* Print                                                               */
+/* ------------------------------------------------------------------ */
+
+@page {
+  size: letter;
+  margin: 0.45in;
+}
+
+@media print {
+  .cv-body {
+    background: #fff;
+    /* Sized so the whole CV lands on one Letter sheet; see the page-fit test. */
+    font-size: 9.2pt;
+    line-height: 1.23;
+  }
+
+  .cv-sheet {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .cv-noprint {
+    display: none !important;
+  }
+
+  .cv-sheet a {
+    /* Keep the colour: these are live links in the PDF. */
+    color: var(--cv-hot);
+  }
+}
+
+/* The toolbar above the sheet on screen, never in the PDF. */
+.cv-toolbar {
+  width: var(--cv-sheet);
+  margin: 1.5rem auto -0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  font-family: Lato, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 10pt;
+  color: #3c424f;
+}
+
+.cv-toolbar button,
+.cv-toolbar a {
+  font: inherit;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #9aa1b1;
+  border-radius: 3px;
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (max-width: 9in) {
+  .cv-sheet,
+  .cv-toolbar {
+    width: auto;
+    margin-inline: 0.75rem;
+  }
+}

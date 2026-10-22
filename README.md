@@ -87,6 +87,7 @@ a file, run `npm run portfolio -- validate`, and commit.
 | `research-links.yml` | Explicit paper ↔ code mappings |
 | `skills.yml`, `awards.yml`, `talks.yml` | Supporting lists |
 | `current-work.yml` | The home page "Currently" section |
+| `cv.yml` | The one-page CV at `/cv`: headline, summary, and the terse CV form of each entry |
 | `review-needed.yml` | Open questions and unverified claims (never published) |
 
 `content/generated/` is written by the sync pipeline. **Do not edit it by hand** —

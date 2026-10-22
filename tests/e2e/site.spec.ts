@@ -159,6 +159,49 @@ test.describe('filters', () => {
   });
 });
 
+test.describe('the CV', () => {
+  test('fits on exactly one printed page', async ({ page, isMobile }) => {
+    // page.pdf() is a headless-Chromium capability; the mobile project emulates
+    // a device and cannot print.
+    test.skip(isMobile === true, 'printing is only available on the desktop project');
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.fonts.ready).catch(() => {});
+    const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: false });
+    const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+    expect(pages, 'the CV must stay on one sheet').toBe(1);
+  });
+
+  test('carries no private resume field', async ({ page }) => {
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    const text = (await page.locator('body').innerText()).toLowerCase();
+    // Telephone numbers, the home address and immigration status never ship.
+    // Matched as a real phone shape (3-3-4 with separators, optional country
+    // code) so that arXiv identifiers and profile URLs do not false-positive.
+    expect(text).not.toMatch(/(\+\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/);
+    expect(text).not.toContain('visa');
+    expect(text).not.toContain('green card');
+  });
+
+  test('every degree, role and project in cv.yml is on the page', async ({ page }) => {
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    const text = await page.locator('main').innerText();
+    for (const name of ['Ph.D.', 'Auburn University', 'Emids', 'SplitShield']) {
+      expect(text, name).toContain(name);
+    }
+    // The grade Parishruthi asked to drop must not come back.
+    expect(text).not.toContain('7.7');
+  });
+
+  test('offers the printed PDF for download', async ({ page }) => {
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    const href = await page.getByRole('link', { name: /download pdf/i }).getAttribute('href');
+    expect(href).toBeTruthy();
+    const response = await page.request.get(href!);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toContain('pdf');
+  });
+});
+
 test.describe('themes', () => {
   async function backgroundOf(page: Page): Promise<string> {
     return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
