@@ -16,7 +16,15 @@ import type { EntryLink } from '../components/EntryRow.astro';
 import ProfileIcons from '../components/ProfileIcons.astro';
 import { loadContent } from '../lib/content.js';
 import { url } from '../lib/url.js';
-import { CURRENT_WORK_LABELS, formatDate, formatMonth, formatRange, STATUS_LABELS, splitEmail } from '../lib/format.js';
+import {
+  CURRENT_WORK_LABELS,
+  formatDate,
+  formatMonth,
+  formatRange,
+  mdInline,
+  STATUS_LABELS,
+  splitEmail,
+} from '../lib/format.js';
 import type { Project, Hackathon, Publication } from '../lib/schema.js';
 
 const content = loadContent();
@@ -242,22 +250,8 @@ const schema = publications.map((pub) => ({
     <div>
       <h1>{profile.name}</h1>
 
-      <p class="bio">
-        I am a Ph.D. student in Computer Science and Software Engineering at{' '}
-        <a href={profile.affiliationUrl} rel="noopener">Auburn University</a>, where my research
-        sits at the intersection of empirical evaluation and applied machine-learning systems. I
-        work on language-model evaluation, video understanding, retrieval-augmented generation and
-        agentic memory. I am first author on a systematic zero-shot evaluation of 41 open-weight
-        language models, and on a controlled study of interaction representations for early
-        violence detection in video.
-      </p>
-
-      <p class="bio">
-        Before returning to research I spent about eighteen months as an Associate Software
-        Developer at Emids Technologies in Bangalore. I hold an M.S. in Computer Science and
-        Software Engineering from Auburn University and a B.E. in Computer Science from
-        Visvesvaraya Technological University.
-      </p>
+      {/* Inline markdown so a link in the content file still renders here. */}
+      {profile.intro.map((paragraph) => (<p class="bio" set:html={mdInline(paragraph)} />))}
 
       <p class="status-line">Open to research collaborations and research internships</p>
 
@@ -316,17 +310,7 @@ const schema = publications.map((pub) => ({
     <h2 id="research-heading">Research</h2>
     <hr class="rule" />
 
-    <p class="section-lead">
-      My work is organised around two questions. The first is a measurement question:
-      <strong>when we say one model or one representation is better, what exactly have we
-      measured</strong>, and would that conclusion survive a different dataset, a perturbed input,
-      or a significance test? The second is a systems question: <strong>what does a model actually
-      need to remember, retrieve or represent</strong> to be useful under real constraints? Those
-      run through <strong>language-model evaluation</strong>, <strong>video understanding</strong>,{' '}
-      <strong>retrieval-augmented generation</strong> and <strong>agentic memory</strong>. Where a
-      section is missing from a page below, it is because there was no verified source for it — not
-      because it went unmeasured.
-    </p>
+    <p class="section-lead" set:html={mdInline(profile.researchLead)} />
 
     <ul class="entries">
       {

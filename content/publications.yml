@@ -21,7 +21,7 @@
   status: preprint
   statusNote: Preprint available on arXiv; submitted to AAAI.
   featured: true
-  order: 10
+  order: 20
   abstract: >-
     A systematic zero-shot evaluation of 41 open-weight language models spanning
     15 families and the 135M–9B parameter range, across eight English
@@ -68,7 +68,7 @@
     Preprint available on arXiv; submitted to WACV. arXiv posting is not peer
     review, so no acceptance is claimed and no venue year is asserted.
   featured: true
-  order: 20
+  order: 10
   abstract: >-
     Articulated human pose provides detailed body-configuration information
     beyond coarse spatial relationships, but whether this detail yields

@@ -80,8 +80,14 @@ export const profileSchema = z.object({
   affiliation: z.string().min(1),
   affiliationUrl: externalUrlSchema.optional(),
   location: z.string().min(1),
-  /** One-paragraph positioning statement used on the home hero. */
-  tagline: z.string().min(1),
+  /**
+   * The home-page masthead, one string per paragraph. Inline markdown only —
+   * links and emphasis — because it renders inside a <p>. Kept here rather than
+   * inline in the page so the masthead and the About bio cannot drift apart.
+   */
+  intro: z.array(z.string().min(1)).min(1),
+  /** The lead paragraph above the home page's Research list. Inline markdown. */
+  researchLead: z.string().min(1),
   /** Longer biography, markdown. Rendered on About. */
   bio: z.string().min(1),
   /** A short bio suitable for talk introductions and meta descriptions. */
