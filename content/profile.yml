@@ -89,10 +89,20 @@ links:
   linkedin: https://www.linkedin.com/in/parishruthi-ganesh-85909b188/
   googleScholar: https://scholar.google.com/citations?hl=en&user=t5XIouoAAAAJ
   universityProfile: https://www.eng.auburn.edu/csse/
+# The PDF every "Resume" link on the site points at — the masthead icon, the
+# footer, the Contact page and the Resume page all read these three fields.
+#
+# This file is GENERATED from /cv by `npm run cv`, which reads this path and
+# writes there. Do not run `portfolio set-resume` against it: that command
+# copies a hand-made PDF over this path, and the next `npm run cv` would
+# overwrite it again. To change what the CV says, edit content/cv.yml.
+#
+# The original uploaded resume is still in public/resume/ as
+# Parishruthi-Ganesh-Resume.pdf. Nothing links to it.
 resume:
-  path: /resume/Parishruthi-Ganesh-Resume.pdf
-  lastUpdated: 2026-09-03
-  filename: Parishruthi-Ganesh-Resume.pdf
+  path: /resume/Parishruthi-Ganesh-CV.pdf
+  lastUpdated: 2026-10-23
+  filename: Parishruthi-Ganesh-CV.pdf
 researchInterests:
   - Computer Vision
   - Video Understanding

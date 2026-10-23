@@ -17,10 +17,22 @@ import { spawn } from 'node:child_process';
 import { readFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse as parseYaml } from 'yaml';
 import { chromium } from '@playwright/test';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const outPath = path.join(projectRoot, 'public', 'resume', 'Parishruthi-Ganesh-CV.pdf');
+
+/*
+ * Write to whatever profile.yml calls the resume, rather than a path repeated
+ * here. Every "Resume" link on the site reads that same field, so the file this
+ * produces and the file those links point at cannot drift apart.
+ */
+const profile = parseYaml(readFileSync(path.join(projectRoot, 'content', 'profile.yml'), 'utf8'));
+const resumePath = profile?.resume?.path;
+if (typeof resumePath !== 'string' || !resumePath.endsWith('.pdf')) {
+  throw new Error('profile.yml needs a resume.path ending in .pdf for the CV to be written to');
+}
+const outPath = path.join(projectRoot, 'public', resumePath.replace(/^\//, ''));
 const port = Number(process.env.CV_PORT ?? 4327);
 
 /** Chromium is pre-installed in some environments and downloaded in others. */
@@ -67,7 +79,7 @@ try {
     );
   }
 
-  console.log(`CV written to public/resume/${path.basename(outPath)} (1 page)`);
+  console.log(`CV written to public${resumePath} (1 page)`);
 } finally {
   await browser?.close();
   preview.kill();
