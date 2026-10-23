@@ -1,0 +1,116 @@
+---
+/**
+ * Shell for the single-page academic site.
+ *
+ * Deliberately has no navigation bar: the page is one scroll, and every entry
+ * carries its own links. The only chrome is a theme toggle in the corner.
+ */
+import '../styles/academic.css';
+import { loadContent } from '../lib/content.js';
+import { absoluteUrl, url } from '../lib/url.js';
+
+interface Props {
+  title?: string;
+  description?: string;
+  schema?: Array<Record<string, unknown>>;
+}
+
+const { title, description, schema = [] } = Astro.props;
+
+const { profile } = loadContent();
+const site = Astro.site;
+const canonical = new URL(Astro.url.pathname.replace(/\/$/, '') || '/', site ?? Astro.url).href;
+const pageTitle = title ? `${title} · ${profile.name}` : `${profile.name} — ${profile.headline}`;
+const pageDescription = description ?? profile.shortBio;
+const ogImage = absoluteUrl(profile.avatar ?? '/og-default.svg', site);
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  jobTitle: profile.role,
+  description: profile.shortBio,
+  email: `mailto:${profile.email}`,
+  url: absoluteUrl('/', site),
+  image: ogImage,
+  affiliation: {
+    '@type': 'CollegeOrUniversity',
+    name: profile.affiliation,
+    ...(profile.affiliationUrl ? { url: profile.affiliationUrl } : {}),
+  },
+  knowsAbout: profile.researchInterests,
+  sameAs: Object.values(profile.links).filter(Boolean),
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content={profile.name} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <meta name="author" content={profile.name} />
+    <meta name="theme-color" content="#12141a" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${profile.name} — updates`} href={url('/rss.xml')} />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+
+    <script is:inline>
+      // Applied before first paint so the chosen theme never flashes.
+      try {
+        const stored = localStorage.getItem('theme');
+        if (stored === 'dark' || stored === 'light') document.documentElement.dataset.theme = stored;
+      } catch {
+        /* storage unavailable — fall back to prefers-color-scheme */
+      }
+    </script>
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(personSchema)} />
+    {schema.map((block) => <script type="application/ld+json" is:inline set:html={JSON.stringify(block)} />)}
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch between light and dark theme">
+    </button>
+
+    <div class="page">
+      <main id="main" tabindex="-1">
+        <slot />
+      </main>
+      <slot name="footer" />
+    </div>
+
+    <script>
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const root = document.documentElement;
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const current = root.dataset.theme ?? (prefersDark ? 'dark' : 'light');
+        const next = current === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('theme', next);
+        } catch {
+          /* private mode — the toggle still works for this page */
+        }
+      });
+    </script>
+  </body>
+</html>

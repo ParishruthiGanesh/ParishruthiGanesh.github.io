@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360" role="img">
+<rect width="480" height="360" fill="#f3f5f9"/>
+  <rect x="40" y="96" width="74" height="94" rx="3" fill="#fff" stroke="#c7cedb" stroke-width="1.5"/><rect x="47" y="103" width="74" height="94" rx="3" fill="#fff" stroke="#c7cedb" stroke-width="1.5"/><rect x="54" y="110" width="74" height="94" rx="3" fill="#fff" stroke="#c7cedb" stroke-width="1.5"/>
+  <line x1="134" y1="150" x2="208" y2="150" stroke="#8894a8" stroke-width="1.6"/>
+  <path d="M208 150 l-8 -4 v8 z" fill="#8894a8"/>
+  <circle cx="236" cy="112" r="4" fill="#0d7f86"/><circle cx="258" cy="112" r="4" fill="#c7cedb"/><circle cx="280" cy="112" r="4" fill="#c7cedb"/><circle cx="302" cy="112" r="4" fill="#c7cedb"/><circle cx="236" cy="134" r="4" fill="#c7cedb"/><circle cx="258" cy="134" r="4" fill="#0d7f86"/><circle cx="280" cy="134" r="4" fill="#c7cedb"/><circle cx="302" cy="134" r="4" fill="#c7cedb"/><circle cx="236" cy="156" r="4" fill="#c7cedb"/><circle cx="258" cy="156" r="4" fill="#c7cedb"/><circle cx="280" cy="156" r="4" fill="#0d7f86"/><circle cx="302" cy="156" r="4" fill="#c7cedb"/><circle cx="236" cy="178" r="4" fill="#c7cedb"/><circle cx="258" cy="178" r="4" fill="#c7cedb"/><circle cx="280" cy="178" r="4" fill="#c7cedb"/><circle cx="302" cy="178" r="4" fill="#0d7f86"/>
+  <line x1="330" y1="150" x2="378" y2="150" stroke="#8894a8" stroke-width="1.6"/>
+  <path d="M378 150 l-8 -4 v8 z" fill="#8894a8"/>
+  <rect x="382" y="124" width="58" height="52" rx="6" fill="none" stroke="#1b2230" stroke-width="1.8"/>
+  <path d="M396 176 l0 12 l12 -12" fill="none" stroke="#1b2230" stroke-width="1.8"/>
+  <line x1="394" y1="142" x2="428" y2="142" stroke="#c7cedb" stroke-width="2.5"/>
+  <line x1="394" y1="156" x2="418" y2="156" stroke="#c7cedb" stroke-width="2.5"/>
+  <text x="40" y="232" font-family="ui-monospace,monospace" font-size="13" fill="#8894a8">parse · embed · retrieve · ground</text>
+  <text x="240" y="338" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="15" letter-spacing="1.6" fill="#8894a8">~25,000 PAPERS · 50+ FACULTY</text></svg>

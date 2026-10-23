@@ -5,7 +5,7 @@
 - id: language-model-evaluation
   title: Language-Model Evaluation and Model Selection
   shortTitle: LLM Evaluation
-  order: 10
+  order: 20
   featured: true
   status: active
   question: >-
@@ -54,9 +54,9 @@
   projects: [intent-classification-benchmark]
 
 - id: video-understanding-safety
-  title: Video Understanding and Early Detection
+  title: Video Understanding, Human Activity and Early Detection
   shortTitle: Video Understanding
-  order: 20
+  order: 10
   featured: true
   status: active
   question: >-
@@ -81,13 +81,20 @@
   futureDirection: >-
     Reporting attributable contribution as a function of how much of an event
     has been observed, and characterising where interaction representations stop
-    helping.
+    helping. The same diagnostic — how much separation survives once the event
+    itself is removed — applies to detection and tracking benchmarks beyond
+    violence, which is the direction this is heading.
   keywords:
     - Video understanding
-    - Interaction representations
+    - Human activity detection
+    - Violence detection
+    - Person detection and tracking
+    - Pose and interaction representations
+    - Object detection
     - Early event detection
+    - Weak supervision
+    - Benchmark validity
     - Ablation study
-    - Spatio-temporal modelling
   publications: [interaction-representations-early-violence]
   projects: [early-violence-detection]
 

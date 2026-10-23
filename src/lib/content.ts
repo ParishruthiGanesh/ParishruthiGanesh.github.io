@@ -24,6 +24,7 @@ import {
   awardsSchema,
   talksSchema,
   currentWorkSchema,
+  cvSchema,
   reviewNeededSchema,
   syncedRepositoriesFileSchema,
   publicationMetadataFileSchema,
@@ -43,6 +44,7 @@ import {
   type ReviewItem,
   type SyncedRepository,
   type CurrentWorkItem,
+  type Cv,
   type PublicationMetadataEntry,
 } from './schema.js';
 import type { z } from 'zod';
@@ -139,6 +141,7 @@ export interface PortfolioContent {
   awards: Award[];
   talks: Talk[];
   currentWork: { updated: string; items: CurrentWorkItem[] };
+  cv: Cv;
   reviewItems: ReviewItem[];
   repositories: RepositoryView[];
   publicationMetadata: PublicationMetadataEntry[];
@@ -299,6 +302,7 @@ export function loadContent(): PortfolioContent {
   const awards = loadFile('awards.yml', awardsSchema);
   const talks = loadFile('talks.yml', talksSchema);
   const currentWork = loadFile('current-work.yml', currentWorkSchema);
+  const cv = loadFile('cv.yml', cvSchema);
   const reviewItems = loadFile('review-needed.yml', reviewNeededSchema);
 
   const syncedRepos = loadGeneratedJson('repositories.json', syncedRepositoriesFileSchema);
@@ -321,6 +325,7 @@ export function loadContent(): PortfolioContent {
       updated: currentWork.updated,
       items: byOrderThen(currentWork.items, (a, b) => a.title.localeCompare(b.title)),
     },
+    cv,
     reviewItems,
     repositories: buildRepositories(
       syncedRepos?.repositories ?? [],
@@ -457,6 +462,31 @@ export function checkIntegrity(content: PortfolioContent): IntegrityProblem[] {
     ref('current-work.yml', item.id, item.relatedProjects, projectIds, 'project');
     ref('current-work.yml', item.id, item.relatedPublications, publicationIds, 'publication');
   }
+  /* -- cv.yml: every id it joins on must resolve, or the CV would silently
+        omit an entry or print a name with nothing behind it -- */
+  const experienceIds = new Set(content.experience.map((e) => e.id));
+  for (const id of content.cv.publicationOrder) {
+    if (!publicationIds.has(id)) {
+      add('cv.yml', id, `publicationOrder references unknown publication "${id}"`);
+    }
+  }
+  for (const pub of content.publications) {
+    if (!content.cv.publicationOrder.includes(pub.id)) {
+      add('cv.yml', pub.id, `publication "${pub.id}" is missing from publicationOrder`);
+    }
+  }
+  for (const entry of content.cv.experienceLines) {
+    if (!experienceIds.has(entry.id)) {
+      add('cv.yml', entry.id, `experienceLines references unknown experience entry "${entry.id}"`);
+    }
+  }
+  for (const project of content.cv.projects) {
+    const pool = project.kind === 'hackathon' ? hackathonIds : projectIds;
+    if (!pool.has(project.ref)) {
+      add('cv.yml', project.ref, `projects references unknown ${project.kind} "${project.ref}"`);
+    }
+  }
+
   for (const link of content.researchLinks) {
     if (!publicationIds.has(link.paper)) {
       add('research-links.yml', link.paper, `references unknown publication "${link.paper}"`);

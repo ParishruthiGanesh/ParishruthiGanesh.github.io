@@ -50,9 +50,29 @@ test('the 404 page renders for an unknown route', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /does not exist/i })).toBeVisible();
 });
 
+/* The home page is a single scroll with no header: it reaches the deep pages
+   through its footer link row. Every other page still carries the nav bar and
+   the command palette, so those are exercised from /about. */
 test.describe('navigation', () => {
-  test('primary links reach their pages', async ({ page, isMobile }) => {
+  test('the home page footer reaches the deep pages', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('header nav')).toHaveCount(0);
+    await page.getByRole('contentinfo').getByRole('link', { name: 'All publications' }).click();
+    await expect(page).toHaveURL(/\/publications/);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/papers/i);
+  });
+
+  test('every research entry on the home page links to its own page', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const entries = page.locator('.entries > li');
+    expect(await entries.count()).toBeGreaterThan(0);
+    for (const entry of await entries.all()) {
+      await expect(entry.locator('.entry-title a')).toHaveCount(1);
+    }
+  });
+
+  test('primary links reach their pages', async ({ page, isMobile }) => {
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     if (isMobile) {
       await page.getByRole('button', { name: /open navigation menu/i }).click();
     }
@@ -71,7 +91,7 @@ test.describe('navigation', () => {
 
 test.describe('command palette', () => {
   test('opens with the keyboard and navigates to a result', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('ControlOrMeta+k');
     const dialog = page.locator('#palette');
     await expect(dialog).toBeVisible();
@@ -84,7 +104,7 @@ test.describe('command palette', () => {
   });
 
   test('closes with Escape', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('ControlOrMeta+k');
     await expect(page.locator('#palette')).toBeVisible();
     await page.keyboard.press('Escape');
@@ -92,7 +112,7 @@ test.describe('command palette', () => {
   });
 
   test('finds a publication by a word from its title', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
     await page.keyboard.press('ControlOrMeta+k');
     await page.locator('#palette-input').fill('intent classification');
     await expect(page.locator('#palette-results a').first()).toContainText(/intent/i);
@@ -136,6 +156,49 @@ test.describe('filters', () => {
     await page.goto('/projects', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'Research', exact: true }).click();
     await expect(page.locator('#project-count')).toContainText(/project/);
+  });
+});
+
+test.describe('the CV', () => {
+  test('fits on exactly one printed page', async ({ page, isMobile }) => {
+    // page.pdf() is a headless-Chromium capability; the mobile project emulates
+    // a device and cannot print.
+    test.skip(isMobile === true, 'printing is only available on the desktop project');
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.fonts.ready).catch(() => {});
+    const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: false });
+    const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) ?? []).length;
+    expect(pages, 'the CV must stay on one sheet').toBe(1);
+  });
+
+  test('carries no private resume field', async ({ page }) => {
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    const text = (await page.locator('body').innerText()).toLowerCase();
+    // Telephone numbers, the home address and immigration status never ship.
+    // Matched as a real phone shape (3-3-4 with separators, optional country
+    // code) so that arXiv identifiers and profile URLs do not false-positive.
+    expect(text).not.toMatch(/(\+\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/);
+    expect(text).not.toContain('visa');
+    expect(text).not.toContain('green card');
+  });
+
+  test('every degree, role and project in cv.yml is on the page', async ({ page }) => {
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    const text = await page.locator('main').innerText();
+    for (const name of ['Ph.D.', 'Auburn University', 'Emids', 'SplitShield']) {
+      expect(text, name).toContain(name);
+    }
+    // The grade Parishruthi asked to drop must not come back.
+    expect(text).not.toContain('7.7');
+  });
+
+  test('offers the printed PDF for download', async ({ page }) => {
+    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
+    const href = await page.getByRole('link', { name: /download pdf/i }).getAttribute('href');
+    expect(href).toBeTruthy();
+    const response = await page.request.get(href!);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toContain('pdf');
   });
 });
 

@@ -232,10 +232,28 @@ purpose: no invented proficiency percentages, no progress bars.
 render at all while empty, rather than showing a placeholder. Add an entry and
 the section appears on the next build.
 
-**`current-work.yml`** — `updated` plus `items[]`. Drives the homepage
-"Currently working on" section. `updated` is displayed, so a stale date is
+**`current-work.yml`** — `updated` plus `items[]`. Drives the home page
+"Currently" section, between the masthead and Research. `updated` is displayed, so a stale date is
 visible rather than hidden. `status` is one of `writing`, `experiments`,
 `building`, `reviewing`, `reading`.
+
+**`cv.yml`** — the one-page CV at `/cv`. It holds CV-specific framing only: the
+headline, the three-line summary, the compressed skill lines, and the one-line
+form each project and role takes on a resume. Every fact is joined in by id from
+the other files — degrees from `education.yml`, venues from `publications.yml`,
+employers from `experience.yml`, links from `projects.yml` and `hackathons.yml` —
+so a date or a venue can never differ between the CV and the site. The integrity
+check fails if an id in `publicationOrder`, `experienceLines` or `projects` does
+not resolve, or if a publication is missing from `publicationOrder`.
+
+The CV must stay on one sheet. `npm run cv` rebuilds the site and prints
+`public/resume/Parishruthi-Ganesh-CV.pdf`, failing if the result runs to two
+pages; an end-to-end test asserts the same thing. If an addition pushes it over,
+shorten a `line` in this file rather than shrinking the type further.
+
+Private resume fields — home address, telephone number, immigration status,
+references — are deliberately absent and must stay absent. A test fails if a
+phone-shaped string reaches the page.
 
 **`review-needed.yml`** — the queue of things that could not be verified. **Not
 published as a page.** Each item carries `severity`, `area`, `summary`,

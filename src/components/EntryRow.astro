@@ -1,0 +1,106 @@
+---
+/**
+ * One row in the Research list: thumbnail on the left, everything else on the
+ * right. Used for papers, projects and hackathon builds alike, so they read as
+ * one consistent list rather than three.
+ */
+import { url } from '../lib/url.js';
+
+export interface EntryLink {
+  label: string;
+  href: string;
+  /** Rendered with an "unverified" marker when a URL was never machine-checked. */
+  unverified?: boolean;
+  /** Renders as plain text rather than a link — e.g. a private repository. */
+  disabled?: boolean;
+}
+
+interface Props {
+  title: string;
+  /** Internal href for the title, when a detail page exists. */
+  titleHref?: string;
+  /** Author list. The entry owner is bolded via `self`. */
+  authors?: string[];
+  self?: string;
+  /** Venue / status line, shown in red. */
+  venue?: string;
+  /** Small italic note under the venue, e.g. "* equal contribution". */
+  note?: string;
+  links?: EntryLink[];
+  tags?: string[];
+  image?: string;
+  imageAlt?: string;
+  blurb?: string;
+  eager?: boolean;
+}
+
+const {
+  title,
+  titleHref,
+  authors = [],
+  self,
+  venue,
+  note,
+  links = [],
+  tags = [],
+  image,
+  imageAlt,
+  blurb,
+  eager = false,
+} = Astro.props;
+---
+
+<li class="entry">
+  {
+    image && (
+      <figure class="entry-figure">
+        <img
+          src={url(image)}
+          alt={imageAlt ?? ''}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          width="480"
+          height="360"
+        />
+      </figure>
+    )
+  }
+
+  <div>
+    <h3 class="entry-title">
+      {titleHref ? <a href={url(titleHref)}>{title}</a> : title}
+    </h3>
+
+    {/* Kept on one line each: Astro preserves template whitespace, so a
+        line break before the separator renders as "Name , Name". */}
+    {
+      authors.length > 0 && (
+        <p class="entry-authors">
+          {authors.map((name, index) => (<>{index > 0 ? ', ' : ''}<span class={name === self ? 'self' : undefined}>{name}</span></>))}
+        </p>
+      )
+    }
+
+    {venue && <p class="entry-venue">{venue}</p>}
+    {note && <p class="entry-note">{note}</p>}
+    {blurb && <p class="entry-blurb">{blurb}</p>}
+
+    {
+      links.length > 0 && (
+        <p class="entry-links">
+          {links.map((link, index) => (<>{index > 0 ? ' / ' : ''}{link.disabled ? <span title="This repository is private on GitHub.">{link.label}</span> : <a href={link.href} rel={link.href.startsWith('http') ? 'noopener' : undefined}>{link.label}</a>}{link.unverified ? <span class="sr-only"> (unverified link)</span> : ''}</>))}
+        </p>
+      )
+    }
+
+    {
+      tags.length > 0 && (
+        <ul class="tags">
+          {tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</li>

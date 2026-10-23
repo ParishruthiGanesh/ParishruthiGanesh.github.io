@@ -4,7 +4,7 @@
 
 name: Parishruthi Ganesh
 shortName: Parishruthi
-headline: AI/ML Researcher & Engineer
+headline: Computer Vision Researcher
 role: Ph.D. Student, Computer Science and Software Engineering
 affiliation: Auburn University
 affiliationUrl: https://www.eng.auburn.edu/csse/
@@ -16,35 +16,67 @@ location: Auburn, Alabama, USA
 # fills this field in. While it is unset, neither page shows a placeholder —
 # they simply lay out without a photo.
 avatar: /images/profile/portrait.webp
-tagline: "I build and evaluate machine-learning systems for video understanding,
-  language-model selection, and retrieval- and memory-grounded agents — with an emphasis
-  on measurement that holds up: controlled comparisons, calibration, and honest
-  reporting of what a benchmark can and cannot tell you."
+# The home-page masthead, one entry per paragraph. Inline markdown only.
+intro:
+  - >-
+    I am a Ph.D. student in Computer Science and Software Engineering at
+    [Auburn University](https://www.eng.auburn.edu/csse/), working on computer vision —
+    video understanding, human activity and violence detection, person detection and
+    tracking, and object detection. I am first author on a controlled study of what
+    interaction representations actually measure in weakly-supervised violence detection,
+    and on a systematic zero-shot evaluation of 41 open-weight language models.
+  - >-
+    Before returning to research I spent about eighteen months as an Associate Software
+    Developer at Emids Technologies in Bangalore. I hold an M.S. in Computer Science and
+    Software Engineering from Auburn University and a B.E. in Computer Science from
+    Visvesvaraya Technological University.
+
+# The lead paragraph above the home page's Research list.
+researchLead: >-
+  My work starts from a measurement question rather than an architectural one:
+  **when we say one model or one representation is better, what exactly have we
+  measured**, and would that conclusion survive a different dataset, a perturbed
+  input, or a significance test? In video that runs through **video understanding**,
+  **human activity and violence detection**, and **person detection, tracking and
+  pose**; applied to language models it produced a systematic evaluation of 41
+  open-weight models. Where a section is missing from a page below, it is because
+  there was no verified source for it — not because it went unmeasured.
+
 shortBio: Parishruthi Ganesh is a Ph.D. student in Computer Science and Software
-  Engineering at Auburn University working on large language models, NLP and computer
-  vision. Her first-author work includes a systematic zero-shot evaluation of 41
-  open-weight language models and a controlled study of interaction representations for
-  early violence detection in video.
+  Engineering at Auburn University working on computer vision — video understanding,
+  human activity and violence detection, and object detection. Her first-author work
+  includes a controlled study of interaction representations for early violence
+  detection and a systematic evaluation of 41 open-weight language models.
 bio: |
   I am a Ph.D. student in Computer Science and Software Engineering at Auburn
-  University, where my research sits at the intersection of **empirical
-  evaluation** and **applied machine-learning systems**.
+  University, working on **computer vision**: video understanding, human activity
+  and violence detection, person detection and tracking, and object detection.
 
-  Two questions run through most of my work. The first is a measurement
-  question: *when we say one model or one representation is better, what exactly
-  have we measured, and would that conclusion survive a different dataset, a
-  perturbed input, or a significance test?* That question produced a systematic
-  zero-shot evaluation of 41 open-weight language models across eight intent
-  classification datasets, where the interesting result was not a leaderboard
-  but the finding that several widely used benchmarks no longer discriminate
-  between current models at all.
+  Most of my work starts from a measurement question rather than an architectural
+  one: *when we say a representation or a model is better, what exactly have we
+  measured, and would that conclusion survive a different dataset, a perturbed
+  input, or a significance test?*
 
-  The second is a systems question: *what does a model actually need to
-  remember, retrieve, or represent in order to be useful under real
-  constraints?* That question runs through a controlled study of interaction
-  representations for early violence detection in video, a retrieval-augmented
-  system over roughly 25,000 research papers, and an incident-response agent
-  whose memory lives in a database rather than a context window.
+  In video, that question produced a controlled study of interaction
+  representations for early violence detection. Holding the tracker, the temporal
+  head, the supervision and the evaluation fixed, no pose-based representation
+  outperformed coarse bounding-box geometry. Scoring anomalous videos using only
+  the frames *preceding* the annotated onset still retained 39–91% of the
+  above-chance separation — which traced back to editorial title cards and platform
+  watermarks absent from the surveillance footage supplying the normal class.
+  Video-level AUC on these benchmarks is therefore a composite of event evidence and
+  pre-event source cues, a shared source of discrimination that can obscure real
+  differences between representations.
+
+  The same question applied to language models produced a systematic zero-shot
+  evaluation of 41 open-weight models across eight intent-classification datasets,
+  where the interesting result was not a leaderboard but the finding that several
+  widely used benchmarks no longer discriminate between current models at all.
+
+  Alongside the research I build systems: an auditor that finds duplicate images
+  leaking across dataset splits and measures how much that inflates a reported
+  accuracy, a retrieval pipeline over roughly 25,000 research papers, and a
+  digital-engineering data platform.
 
   Before returning to research I spent about eighteen months as an Associate
   Software Developer at Emids Technologies in Bangalore, building CRM modules
@@ -57,17 +89,29 @@ links:
   linkedin: https://www.linkedin.com/in/parishruthi-ganesh-85909b188/
   googleScholar: https://scholar.google.com/citations?hl=en&user=t5XIouoAAAAJ
   universityProfile: https://www.eng.auburn.edu/csse/
+# The PDF every "Resume" link on the site points at — the masthead icon, the
+# footer, the Contact page and the Resume page all read these three fields.
+#
+# This file is GENERATED from /cv by `npm run cv`, which reads this path and
+# writes there. Do not run `portfolio set-resume` against it: that command
+# copies a hand-made PDF over this path, and the next `npm run cv` would
+# overwrite it again. To change what the CV says, edit content/cv.yml.
+#
+# The original uploaded resume is still in public/resume/ as
+# Parishruthi-Ganesh-Resume.pdf. Nothing links to it.
 resume:
-  path: /resume/Parishruthi-Ganesh-Resume.pdf
-  lastUpdated: 2026-09-03
-  filename: Parishruthi-Ganesh-Resume.pdf
+  path: /resume/Parishruthi-Ganesh-CV.pdf
+  lastUpdated: 2026-10-23
+  filename: Parishruthi-Ganesh-CV.pdf
 researchInterests:
+  - Computer Vision
+  - Video Understanding
+  - Human Activity & Violence Detection
+  - Object Detection
+  - Person Detection & Tracking
+  - Pose & Interaction Representations
+  - Model Evaluation & Benchmark Validity
   - Large Language Models
-  - Model Evaluation & Benchmarking
-  - Natural Language Processing
-  - Computer Vision & Video Understanding
-  - Retrieval-Augmented Generation
-  - Agentic & Memory-Based Systems
 openTo:
   - Research collaborations
   - Research internships

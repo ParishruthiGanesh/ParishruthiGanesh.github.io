@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360" role="img">
+<rect width="480" height="360" fill="#f3f5f9"/>
+  <line x1="160" y1="90" x2="250" y2="140" stroke="#0d7f86" stroke-width="2.2"/><line x1="250" y1="140" x2="170" y2="200" stroke="#0d7f86" stroke-width="2.2"/><line x1="170" y1="200" x2="160" y2="90" stroke="#0d7f86" stroke-width="2.2"/>
+  <line x1="250" y1="140" x2="350" y2="108" stroke="#c7cedb" stroke-width="1.5"/><line x1="250" y1="140" x2="362" y2="192" stroke="#c7cedb" stroke-width="1.5"/><line x1="170" y1="200" x2="96" y2="232" stroke="#c7cedb" stroke-width="1.5"/><line x1="160" y1="90" x2="86" y2="132" stroke="#c7cedb" stroke-width="1.5"/>
+  <circle cx="160" cy="90" r="15" fill="#0d7f86" stroke="#0d7f86" stroke-width="1.8"/><circle cx="250" cy="140" r="15" fill="#0d7f86" stroke="#0d7f86" stroke-width="1.8"/><circle cx="170" cy="200" r="15" fill="#0d7f86" stroke="#0d7f86" stroke-width="1.8"/>
+  <circle cx="350" cy="108" r="15" fill="#fff" stroke="#c7cedb" stroke-width="1.8"/><circle cx="362" cy="192" r="15" fill="#fff" stroke="#c7cedb" stroke-width="1.8"/><circle cx="96" cy="232" r="15" fill="#fff" stroke="#c7cedb" stroke-width="1.8"/><circle cx="86" cy="132" r="15" fill="#fff" stroke="#c7cedb" stroke-width="1.8"/>
+  <text x="212" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#0d7f86">3-cycle</text>
+  <text x="240" y="338" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="15" letter-spacing="1.6" fill="#8894a8">CYCLE DETECTION · NODE2VEC · DBSCAN</text></svg>

@@ -1,0 +1,134 @@
+# The one-page CV.
+#
+# Everything here is CV-specific framing: the headline, the summary, and the
+# terse one-line form each entry takes on a resume. Facts themselves still come
+# from the other content files — education.yml, publications.yml, experience.yml
+# and so on — so a degree, a venue or a date is never stated twice and can never
+# drift between the site and the CV.
+#
+# The private resume fields (home address, telephone number, immigration
+# status, references) are deliberately absent and must stay absent.
+
+headline: Computer Vision (CS) Ph.D. Student
+
+# Three lines, in the register a research CV uses. Every claim here is carried
+# by a record elsewhere in content/: the preprints by publications.yml, the
+# employers by experience.yml.
+summary: >-
+  First-author preprints in video understanding and model evaluation, submitted to
+  WACV and AAAI. Research in weakly-supervised violence detection, human pose and
+  interaction representations, person detection and tracking, object detection, and
+  what video benchmarks actually measure. Past experience includes Auburn University
+  and Emids Technologies, and seeking computer vision research internships.
+
+contactOrder: [email, homepage, linkedin, googleScholar]
+
+# Research interests lead; the implementation stack follows. Both are drawn from
+# skills.yml, restated in the compressed form a CV uses.
+skillLines:
+  - label: Research
+    items:
+      - Video Understanding
+      - Human Activity & Violence Detection
+      - Object Detection
+      - Person Detection & Tracking
+      - Pose & Interaction Representations
+      - Weak Supervision
+      - Benchmark Validity
+      - Robustness & Calibration
+  - label: Languages
+    items: [Python, Java, 'C++', SQL, JavaScript]
+  - label: Frameworks & Tools
+    items:
+      - PyTorch
+      - TensorFlow
+      - Hugging Face Transformers
+      - scikit-learn
+      - 'Deep Graph Library (DGL)'
+      - Docker
+      - AWS
+      - Weights & Biases
+
+# Publication order on the CV: computer vision first, which is not the
+# reverse-chronological order the site uses.
+publicationOrder:
+  - interaction-representations-early-violence
+  - intent-classification-41-models
+
+# One line per role. Longer than this belongs on the site, not the CV.
+experienceLines:
+  - id: auburn-gra
+    lines:
+      - >-
+        Research across video understanding and applied machine learning, alongside a
+        retrieval pipeline over roughly 25,000 research papers and a digital-engineering
+        data platform.
+      - >-
+        Deliver hands-on Python and MATLAB lab sessions to undergraduates, supporting
+        programming proficiency through mentoring and assignment guidance.
+  - id: emids-associate-developer
+    lines:
+      - >-
+        Led development of a CRM platform covering marketing, product, customer service and
+        sales operations; built the Leads, Contacts, Email API, Reports and Accounts modules.
+      - >-
+        Designed Spring Boot services and RESTful APIs, and built the server-side layer
+        with JSP, JSTL and Servlets.
+
+# Selected machine-learning projects, computer vision first. Each entry names the
+# record it is drawn from, so nothing appears here that is not already published
+# on the site.
+projects:
+  - ref: proof-of-possible-2026-splitshield
+    kind: hackathon
+    name: SplitShield
+    context: Proof of Possible 2026
+    line: >-
+      Finds duplicate and near-duplicate images leaking across dataset splits with perceptual hashing
+      and MobileNetV3-Small embeddings, repairs the split, and reports how far accuracy moves.
+  - ref: circular-trade-fraud-detection
+    kind: project
+    name: Circular Trade Fraud Detection with Graph Learning
+    context: Research project
+    line: >-
+      Detects circular trading rings in invoice data with graph cycle detection, Node2Vec embeddings
+      and DBSCAN.
+  - ref: cockroachdb-aws-agentic-memory
+    kind: hackathon
+    name: Sentinel Memory
+    context: CockroachDB × AWS — Build with Agentic Memory
+    line: >-
+      An incident-response agent whose memory is a transactional database rather than a context window.
+  - ref: all-things-agentic-labguard
+    kind: hackathon
+    name: LabGuard AI
+    context: All Things Agentic Hackathon
+    line: >-
+      An autonomous research agent that challenges a scientific claim and runs the experiments that
+      could disprove it.
+  - ref: build-with-gemini-xprize
+    kind: hackathon
+    name: AstraNova
+    context: Build with Gemini XPRIZE
+    line: >-
+      An intraday options copilot combining live market data, model-scored signals and broker execution.
+  - ref: speed-august-ai-thinktrace
+    kind: hackathon
+    name: ThinkTrace AI
+    context: SPEED August AI Challenge
+    line: >-
+      Reads each student's written reasoning rather than only the final answer, and groups a class by
+      shared misconception.
+  - ref: bert-sentiment-analysis
+    kind: project
+    name: Multi-Class Sentiment Analysis with BERT
+    context: Coursework
+    line: >-
+      Fine-tuned bert-base-uncased on the SMILE annotation dataset as a study of transformer transfer
+      learning.
+
+# Service and leadership. Awards and talks render here too once there are any —
+# awards.yml and talks.yml are empty, so the section lists only what is real.
+serviceLines:
+  - >-
+    Treasurer, The Society for Responsible Artificial Intelligence (December 2024 – Present).

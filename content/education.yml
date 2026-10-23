@@ -6,9 +6,7 @@
   location: Auburn, Alabama
   start: '2025-08'
   end: present
-  researchFocus: >-
-    Artificial Intelligence, Large Language Models, Natural Language Processing,
-    Machine Learning, Computer Vision
+  researchFocus: Computer Vision, Video Understanding, Object Detection
   notes: Resume records this programme as beginning in Fall 2025.
 
 - id: auburn-ms
@@ -31,7 +29,7 @@
   location: Karnataka, India
   start: '2017-08'
   end: '2021-08'
-  grade: 'CGPA 7.7 / 10'
+  # Grade deliberately omitted at Parishruthi's request (2026-10-22).
   coursework:
     - Data Structures and Algorithms
     - Java Programming

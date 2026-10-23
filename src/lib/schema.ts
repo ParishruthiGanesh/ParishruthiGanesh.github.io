@@ -80,8 +80,14 @@ export const profileSchema = z.object({
   affiliation: z.string().min(1),
   affiliationUrl: externalUrlSchema.optional(),
   location: z.string().min(1),
-  /** One-paragraph positioning statement used on the home hero. */
-  tagline: z.string().min(1),
+  /**
+   * The home-page masthead, one string per paragraph. Inline markdown only —
+   * links and emphasis — because it renders inside a <p>. Kept here rather than
+   * inline in the page so the masthead and the About bio cannot drift apart.
+   */
+  intro: z.array(z.string().min(1)).min(1),
+  /** The lead paragraph above the home page's Research list. Inline markdown. */
+  researchLead: z.string().min(1),
   /** Longer biography, markdown. Rendered on About. */
   bio: z.string().min(1),
   /** A short bio suitable for talk introductions and meta descriptions. */
@@ -601,6 +607,51 @@ export const currentWorkSchema = z.object({
 export type CurrentWorkItem = z.infer<typeof currentWorkItemSchema>;
 
 /* ------------------------------------------------------------------ */
+/* cv.yml                                                              */
+/* ------------------------------------------------------------------ */
+
+/**
+ * CV-specific framing only. Facts live in the other content files and are
+ * joined in by id, so a date or a venue can never drift between the CV and the
+ * site. `ref` must resolve to a project or hackathon; `id` to an experience
+ * entry; the integrity check enforces both.
+ */
+export const cvSkillLineSchema = z.object({
+  label: z.string().min(1),
+  items: z.array(z.string().min(1)).min(1),
+});
+
+export const cvExperienceLineSchema = z.object({
+  id: idSchema,
+  lines: z.array(z.string().min(1)).min(1),
+});
+
+export const cvProjectSchema = z.object({
+  ref: idSchema,
+  kind: z.enum(['project', 'hackathon']),
+  name: z.string().min(1),
+  /** Italic parenthetical after the name — a venue, a hackathon, "Coursework". */
+  context: z.string().min(1),
+  line: z.string().min(1),
+});
+
+export const cvSchema = z.object({
+  headline: z.string().min(1),
+  summary: z.string().min(1),
+  contactOrder: z
+    .array(z.enum(['email', 'homepage', 'linkedin', 'googleScholar', 'orcid', 'resume']))
+    .min(1),
+  skillLines: z.array(cvSkillLineSchema).min(1),
+  publicationOrder: z.array(idSchema).default([]),
+  experienceLines: z.array(cvExperienceLineSchema).default([]),
+  projects: z.array(cvProjectSchema).default([]),
+  serviceLines: z.array(z.string().min(1)).default([]),
+});
+export type Cv = z.infer<typeof cvSchema>;
+export type CvProject = z.infer<typeof cvProjectSchema>;
+export type CvSkillLine = z.infer<typeof cvSkillLineSchema>;
+
+/* ------------------------------------------------------------------ */
 /* review-needed.yml                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -646,6 +697,7 @@ export const contentFiles = {
   'awards.yml': awardsSchema,
   'talks.yml': talksSchema,
   'current-work.yml': currentWorkSchema,
+  'cv.yml': cvSchema,
   'review-needed.yml': reviewNeededSchema,
 } as const;
 
