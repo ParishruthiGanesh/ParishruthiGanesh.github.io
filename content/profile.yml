@@ -26,8 +26,8 @@ intro:
     interaction representations actually measure in weakly-supervised violence detection,
     and on a systematic zero-shot evaluation of 41 open-weight language models.
   - >-
-    Before returning to research I spent about eighteen months as an Associate Software
-    Developer at Emids Technologies in Bangalore. I hold an M.S. in Computer Science and
+    Before returning to research I spent about eighteen months as a Software Developer
+    at Emids Technologies in Bangalore. I hold an M.S. in Computer Science and
     Software Engineering from Auburn University and a B.E. in Computer Science from
     Visvesvaraya Technological University.
 
@@ -78,8 +78,8 @@ bio: |
   accuracy, a retrieval pipeline over roughly 25,000 research papers, and a
   digital-engineering data platform.
 
-  Before returning to research I spent about eighteen months as an Associate
-  Software Developer at Emids Technologies in Bangalore, building CRM modules
+  Before returning to research I spent about eighteen months as a Software
+  Developer at Emids Technologies in Bangalore, building CRM modules
   and REST services in Java and Spring Boot. That period is why I care about
   systems that are maintainable and honest about their own failure modes, not
   just accurate on a held-out split.
@@ -101,7 +101,7 @@ links:
 # Parishruthi-Ganesh-Resume.pdf. Nothing links to it.
 resume:
   path: /resume/Parishruthi-Ganesh-CV.pdf
-  lastUpdated: 2026-10-23
+  lastUpdated: 2026-10-26
   filename: Parishruthi-Ganesh-CV.pdf
 researchInterests:
   - Computer Vision

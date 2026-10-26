@@ -17,7 +17,7 @@
 import '../styles/cv.css';
 import { loadContent } from '../lib/content.js';
 import { absoluteUrl, url } from '../lib/url.js';
-import { formatMonth, splitEmail } from '../lib/format.js';
+import { formatMonth, mdInline, splitEmail, STATUS_LABELS } from '../lib/format.js';
 
 const content = loadContent();
 const { profile, education, experience, publications, projects, hackathons, cv } = content;
@@ -101,19 +101,18 @@ const educationRows = education.map((entry) => {
 
 const pubById = new Map(publications.map((pub) => [pub.id, pub]));
 
-/** "Submitted to WACV" where the record says so, else the plain status. */
-function submissionLabel(statusNote: string | undefined, status: string): string {
-  const match = statusNote?.match(/submitted to ([A-Za-z][A-Za-z0-9 ]*?)(?:[.,;]|$)/i);
-  return match ? `Submitted to ${match[1].trim()}` : status === 'preprint' ? 'Preprint' : status;
-}
-
+/*
+ * Only the publication status and its arXiv link. Where a paper has been
+ * submitted is deliberately not printed: a submission is not an acceptance, and
+ * naming the venue on a CV invites it to be read as one.
+ */
 const publicationRows = cv.publicationOrder
   .map((id) => pubById.get(id))
   .filter(Boolean)
   .map((pub) => ({
     id: pub!.id,
     title: pub!.title.replace(/\s+/g, ' ').trim(),
-    status: submissionLabel(pub!.statusNote, pub!.status),
+    status: STATUS_LABELS[pub!.status] ?? pub!.status,
     href: pub!.paperUrl,
     hrefLabel: pub!.arxivId ? `arXiv:${pub!.arxivId}` : 'Paper',
   }));
@@ -131,7 +130,7 @@ const experienceRows = cv.experienceLines
     organization: entry!.organization,
     location: entry!.location,
     when: span(entry!.start, entry!.end),
-    lines: row.lines.map((line) => line.replace(/\s+/g, ' ').trim()),
+    lines: row.lines.map((line) => mdInline(line.replace(/\s+/g, ' ').trim())),
   }));
 
 /* ---------------- Projects ---------------- */
@@ -161,11 +160,18 @@ function projectLinks(ref: string, kind: 'project' | 'hackathon') {
 
 const projectRows = cv.projects.map((entry) => ({
   ref: entry.ref,
+  group: entry.group,
   name: entry.name,
   context: entry.context,
-  line: entry.line.replace(/\s+/g, ' ').trim(),
+  line: mdInline(entry.line.replace(/\s+/g, ' ').trim()),
   links: projectLinks(entry.ref, entry.kind),
 }));
+
+/* Machine-learning work under its own heading; everything else after it. */
+const projectGroups = [
+  { heading: 'Selected Machine Learning Projects', rows: projectRows.filter((r) => r.group === 'ml') },
+  { heading: 'Other Projects', rows: projectRows.filter((r) => r.group === 'other') },
+].filter((group) => group.rows.length > 0);
 
 /* ---------------- Service ---------------- */
 
@@ -273,7 +279,7 @@ const skillLines = cv.skillLines.map((line) => ({ label: line.label, text: line.
 
       {/* ---------------- Publications ---------------- */}
       <section class="cv-section">
-        <h2>Computer Vision &amp; Machine Learning Publications</h2>
+        <h2>Publications</h2>
         <ul class="cv-list">
           {publicationRows.map((pub) => (<li>{pub.title}; <span class="cv-hot">{pub.status}</span>{pub.href ? <>; <a href={pub.href}>{pub.hrefLabel}</a></> : ''}</li>))}
         </ul>
@@ -291,7 +297,7 @@ const skillLines = cv.skillLines.map((line) => ({ label: line.label, text: line.
               </p>
               <ul class="cv-list">
                 {row.lines.map((line) => (
-                  <li>{line}</li>
+                  <li set:html={line} />
                 ))}
               </ul>
             </div>
@@ -300,21 +306,23 @@ const skillLines = cv.skillLines.map((line) => ({ label: line.label, text: line.
       </section>
 
       {/* ---------------- Projects ---------------- */}
-      <section class="cv-section">
-        <h2>Selected Machine Learning Projects</h2>
-        {
-          projectRows.map((row) => (
-            <div class="cv-block">
-              <p class="cv-head">
-                <span class="cv-head-main">{row.name} <span class="cv-context">({row.context}{row.links.map((link) => (<>; <a href={link.href}>{link.label}</a></>))})</span></span>
-              </p>
-              <ul class="cv-list">
-                <li>{row.line}</li>
-              </ul>
-            </div>
-          ))
-        }
-      </section>
+      {
+        projectGroups.map((group) => (
+          <section class="cv-section">
+            <h2>{group.heading}</h2>
+            {group.rows.map((row) => (
+              <div class="cv-block">
+                <p class="cv-head">
+                  <span class="cv-head-main">{row.name} <span class="cv-context">({row.context}{row.links.map((link) => (<>; <a href={link.href}>{link.label}</a></>))})</span></span>
+                </p>
+                <ul class="cv-list">
+                  <li set:html={row.line} />
+                </ul>
+              </div>
+            ))}
+          </section>
+        ))
+      }
 
       {/* ---------------- Service ---------------- */}
       {
