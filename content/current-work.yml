@@ -1,53 +1,22 @@
-# "Currently working on" — drives the homepage section.
-# Keep this short and current; `updated` is shown next to the heading, so a
-# stale date is visible rather than hidden.
-updated: '2026-08-18'
+# "Currently" — the one thing actively being written.
+#
+# Deliberately a single entry. A list of four parallel workstreams reads as a
+# status board; one line reads as a person with a paper in progress. Everything
+# else that is ongoing is visible under Research and Projects anyway.
+#
+# `updated` is shown next to the section, so a stale date is visible rather
+# than hidden.
+updated: '2026-10-26'
 items:
-  - id: wacv-interaction-study
-    title: Interaction representations for early violence detection
-    status: reviewing
-    since: '2026-01'
+  - id: cvpr-video-benchmark-paper
+    title: Preparing a CVPR submission on video anomaly benchmarks
+    status: writing
+    since: '2026-09'
     order: 10
     description: >-
-      A controlled study isolating how much explicitly modelling person-to-person
-      interaction contributes to early detection in video, currently under review
-      at WACV.
+      Extending the pre-event separability diagnostic — scoring anomalous videos using
+      only the frames before the annotated onset — beyond the two benchmarks it was
+      first measured on, and characterising how much of a reported gain survives once
+      that shared source of discrimination is removed.
     researchAreas: [video-understanding-safety]
     relatedPublications: [interaction-representations-early-violence]
-    relatedProjects: [early-violence-detection]
-
-  - id: intent-benchmark-extension
-    title: Model selection under statistical scrutiny
-    status: experiments
-    since: '2026-03'
-    order: 20
-    description: >-
-      Following the 41-model zero-shot evaluation, extending the protocol beyond
-      single-label intent classification and treating benchmark saturation as a
-      quantity to monitor rather than discover after the fact.
-    researchAreas: [language-model-evaluation]
-    relatedPublications: [intent-classification-41-models]
-    relatedProjects: [intent-classification-benchmark]
-
-  - id: ausme-rag-deployment
-    title: Faculty expertise retrieval at institutional scale
-    status: building
-    since: '2024-01'
-    order: 30
-    description: >-
-      Extending the AUSME retrieval pipeline over roughly 25,000 papers toward a
-      deployment that lets faculty and research groups query publications in
-      natural language.
-    researchAreas: [retrieval-augmented-generation]
-    relatedProjects: [ausme-faculty-rag]
-
-  - id: dema-cim4de
-    title: CIM4DE data models for digital engineering
-    status: building
-    since: '2024-06'
-    order: 40
-    description: >-
-      Building out entity relationships, classification hierarchies and
-      automated data-quality classification inside the DEMA desktop platform.
-    researchAreas: [applied-ai-data-systems]
-    relatedProjects: [dema-platform]

@@ -42,20 +42,14 @@ function read(route: string): string {
   return readFileSync(path.join(distDir, route.replace(/^\//, '')), 'utf8');
 }
 
+/*
+ * The site is one page. /cv is the printable CV and the source the PDF is
+ * printed from; 404 catches stale inbound links. Nothing else is a route, and
+ * this test fails if one reappears — a second page is a decision, not a
+ * side-effect of adding content.
+ */
 describe('routes', () => {
-  const expected = [
-    'index.html',
-    'about/index.html',
-    'research/index.html',
-    'publications/index.html',
-    'projects/index.html',
-    'hackathons/index.html',
-    'experience/index.html',
-    'resume/index.html',
-    'repositories/index.html',
-    'contact/index.html',
-    '404.html',
-  ];
+  const expected = ['index.html', 'cv/index.html', '404.html'];
 
   for (const route of expected) {
     it(`renders /${route}`, () => {
@@ -63,16 +57,8 @@ describe('routes', () => {
     });
   }
 
-  it('renders a detail page for every publication', () => {
-    for (const pub of content.publications) {
-      expect(existsSync(path.join(distDir, 'publications', pub.id, 'index.html')), pub.id).toBe(true);
-    }
-  });
-
-  it('renders a detail page for every project', () => {
-    for (const project of content.projects) {
-      expect(existsSync(path.join(distDir, 'projects', project.id, 'index.html')), project.id).toBe(true);
-    }
+  it('builds no page beyond those three', () => {
+    expect(htmlFiles().map((file) => file.replace(/^\//, '')).sort()).toEqual([...expected].sort());
   });
 });
 
@@ -84,23 +70,19 @@ describe('routes', () => {
 describe('the home page carries every content area', () => {
   const home = () => read('/index.html');
 
-  it('lists every publication', () => {
+  it('lists every publication by title', () => {
     for (const pub of content.publications) {
-      expect(home(), pub.id).toContain(`/publications/${pub.id}`);
+      const title = pub.title.replace(/\s+/g, ' ').trim();
+      expect(home().replace(/\s+/g, ' '), pub.id).toContain(title);
     }
   });
 
-  it('lists every non-coursework project', () => {
+  it('lists every project by name, coursework included', () => {
+    const html = home().replace(/\s+/g, ' ');
     for (const project of content.projects) {
-      if (project.kind === 'coursework') continue;
-      expect(home(), project.id).toContain(`/projects/${project.id}`);
-    }
-  });
-
-  it('keeps coursework reachable under Miscellaneous', () => {
-    for (const project of content.projects) {
-      if (project.kind !== 'coursework') continue;
-      expect(home(), project.id).toContain(`/projects/${project.id}`);
+      // Papers carry their own project; those appear under Research instead.
+      if (project.relatedPublications.length > 0) continue;
+      expect(html, project.id).toContain(project.name.replace(/&/g, '&amp;'));
     }
   });
 
@@ -123,11 +105,20 @@ describe('the home page carries every content area', () => {
     }
   });
 
-  it('links each deep page from the footer, since there is no nav bar', () => {
+  it('has no navigation bar and links only the CV from the footer', () => {
     const html = home();
     expect(html).not.toMatch(/<header[^>]*>[\s\S]*?<nav/);
-    for (const route of ['/about', '/research', '/publications', '/projects', '/hackathons', '/experience', '/resume', '/repositories', '/contact']) {
-      expect(html, route).toContain(`href="${route}"`);
+    expect(html).toContain('href="/cv"');
+    // No link back to a page that no longer exists.
+    for (const gone of ['/about', '/research', '/publications', '/projects', '/hackathons', '/experience', '/resume', '/repositories', '/contact']) {
+      expect(html, gone).not.toContain(`href="${gone}"`);
+    }
+  });
+
+  it('sends every research and project entry to a real external artifact', () => {
+    const html = home();
+    for (const match of html.matchAll(/class="entry-title">\s*<a href="([^"]+)"/g)) {
+      expect(match[1], 'entry titles link out, not to a removed page').toMatch(/^https?:\/\//);
     }
   });
 
@@ -235,10 +226,11 @@ describe('metadata and structured data', () => {
     }
   });
 
-  it('emits ScholarlyArticle structured data on publication pages', () => {
+  it('emits ScholarlyArticle structured data for every publication', () => {
+    const html = read('index.html');
+    expect(html).toContain('"@type":"ScholarlyArticle"');
     for (const pub of content.publications) {
-      const html = read(`publications/${pub.id}/index.html`);
-      expect(html, pub.id).toContain('"@type":"ScholarlyArticle"');
+      expect(html, pub.id).toContain(JSON.stringify(pub.title.replace(/\s+/g, ' ').trim()).slice(1, -1));
     }
   });
 });
@@ -278,9 +270,9 @@ describe('accessibility basics', () => {
 
 describe('privacy and security of the output', () => {
   it('no YouTube iframe is loaded until the visitor presses play', () => {
-    const html = read('hackathons/index.html');
-    expect(html).not.toMatch(/<iframe[^>]*youtube/i);
-    expect(html).toContain('youtube-nocookie.com');
+    for (const file of htmlFiles()) {
+      expect(read(file).toLowerCase(), file).not.toContain('<iframe');
+    }
   });
 
   it('no third-party analytics or tracker script is embedded', () => {

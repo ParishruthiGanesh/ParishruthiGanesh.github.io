@@ -13,21 +13,21 @@ schedule, and a `portfolio` CLI handles the day-to-day maintenance.
 
 ## What the site contains
 
-| Page | What's on it |
-| --- | --- |
-| **Home** | Positioning, current work, featured research, selected papers, recent hackathons, live GitHub activity |
-| **About** | Research biography, education, research philosophy, current goals, collaboration interests |
-| **Research** | Five themes, each with its research question, why it matters, findings, related papers, code and projects |
-| **Publications** | Filterable by year, area and status; BibTeX copy/download; a detail page per paper with full provenance |
-| **Projects** | Long-form write-ups: problem, method, experimental setup, results, error analysis, limitations, responsible use |
-| **Hackathons** | Each build with its problem, architecture, source, demo, Devpost link and privacy-preserving video embed |
-| **Experience** | Research, industry and teaching roles with the technical contributions in each |
-| **Resume** | Inline PDF preview, download, and the same content rendered as accessible HTML |
-| **Repositories** | Auto-synchronised GitHub index with filters, curated summaries and related paper/hackathon links |
-| **Contact** | Verified links only, with an obfuscated `mailto:` and no backend form |
+It is **one page**. There are no detail pages and no navigation bar: every entry
+links straight out to the paper, the repository or the demo, which is where the
+material actually lives.
 
-Plus a ⌘K command palette, an RSS feed, a sitemap, Schema.org structured data,
-a custom 404 page, and light/dark themes.
+| Route | What's on it |
+| --- | --- |
+| **`/`** | Masthead, Currently, Research, Projects, Experience, Miscellaneous |
+| **`/cv`** | The one-page CV, and the source the PDF is printed from |
+| **`404`** | Catches stale inbound links from the earlier multi-page site |
+
+Plus an RSS feed whose items link to the real artifacts, a sitemap, Schema.org
+structured data, and light/dark themes.
+
+A build test asserts that exactly those three pages exist. A second page is a
+decision, not a side-effect of adding content.
 
 ---
 
@@ -268,11 +268,11 @@ docs/               content, CLI, automation, deployment and design docs
 public/             static assets: resume PDF, images, favicon, OG image
 scripts/portfolio/  the `portfolio` CLI and sync pipeline
 src/
-  components/       Astro components
-  layouts/          page shell, metadata, structured data
-  lib/              schemas, content loading, search index, formatting
-  pages/            routes
-  styles/           design tokens and global CSS
+  components/       EntryRow (one row of the Research/Projects lists), ProfileIcons
+  layouts/          AcademicLayout — the page shell, metadata, structured data
+  lib/              schemas, content loading, formatting, URL building
+  pages/            index, cv, 404, rss.xml, robots.txt
+  styles/           academic.css (the page), cv.css (the printed CV)
 tests/              Vitest suites
   e2e/              Playwright browser tests
 ```

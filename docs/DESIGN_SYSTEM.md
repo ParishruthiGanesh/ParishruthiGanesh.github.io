@@ -25,7 +25,7 @@ substitute for substance. Everything below follows from that.
 
 ## Colour
 
-Tokens live in `src/styles/global.css`. **Components never hard-code a hex
+Tokens live in `src/styles/academic.css`. **Components never hard-code a hex
 value** — they reference semantic tokens, which is what makes dark mode work.
 
 ### Palette
@@ -96,36 +96,38 @@ without adding another heading level.
 
 ---
 
-## Two layouts
+## One page, one shell
 
-The site runs two shells, deliberately.
+The site is a single page. `AcademicLayout` is its only shell, and it follows
+the convention research portfolios have converged on: no navigation bar, no
+hero, one scroll. A masthead (name, bio, availability, contacts, portrait), then
+`Currently`, `Research`, `Projects`, `Experience` and `Miscellaneous`.
 
-**`AcademicLayout`** is the home page, and only the home page. It follows the
-single-column convention research portfolios have converged on: no navigation
-bar, no hero, one scroll. A masthead (name, bio, availability, contacts,
-portrait), then `Currently`, `Research`, `Experience` and `Miscellaneous`. Every
-entry links out to its own detail page, the way a paper links its project page,
-so the deep pages are reached through the work rather than through a menu. The
-footer carries a plain link row so none of them is orphaned. Its tokens live in
-`src/styles/academic.css`, independent of the Tailwind theme the rest of the
-site uses.
+There are no detail pages. Every entry links straight out to the paper, the
+repository or the demo — the material already exists there, and a wrapper page
+around a link is a page to maintain for no reader's benefit. `/cv` is the only
+other route, and it exists because the PDF is printed from it. A build test
+asserts that exactly three pages are produced (`/`, `/cv`, `404`), so a second
+page has to be a decision rather than a side-effect.
 
-Two details in that file are load-bearing:
+Tokens live in `src/styles/academic.css` and `src/styles/cv.css`. There is no
+Tailwind theme any more: the two stylesheets are the whole design system.
+
+Three details are load-bearing:
 
 - Paragraph rules are scoped by class (`.masthead p.bio`), never as
   `.masthead p`. The bare descendant selector outranks `.status-line` and
   `.contact-line` on specificity and silently repaints them.
 - Justification and hyphenation only switch on at `min-width: 720px`. Below
   that the measure is too narrow and justification opens rivers between words.
-
-**`BaseLayout`** is every other page: header, navigation, command palette,
-footer. Deep pages are long-form and benefit from the chrome; the home page does
-not.
+- `url()` returns an absolute URL or a `mailto:` untouched. Entries link out,
+  and prefixing the base to one of those yields `/https://…` — a broken link
+  that still looks plausible in the markup.
 
 ### Entry rows
 
-`EntryRow` renders one item in the `Research` list — paper, system or hackathon
-build alike, so they read as one list rather than three. Thumbnail left, content
+`EntryRow` renders one item in the `Research` or `Projects` list — paper,
+system and hackathon build alike, so they read as one list rather than three. Thumbnail left, content
 right: title, authors (the owner bolded), a red monospace venue line, an
 optional blurb, `/`-separated links, then tag chips. A link marked `disabled`
 renders as plain text, which is how a private repository is shown without a dead
@@ -147,31 +149,20 @@ page does not have.
 
 | Component | Purpose |
 | --- | --- |
-| `AcademicLayout` | Home-page shell: no nav, theme toggle only, metadata and JSON-LD |
-| `EntryRow` | One row in the home-page research list |
+| `AcademicLayout` | The page shell: no nav, theme toggle only, metadata and JSON-LD |
+| `EntryRow` | One row in the Research or Projects list |
 | `ProfileIcons` | Masthead icon row, rendered only for links that exist |
-| `BaseLayout` | Shell for every other page: metadata, Open Graph, JSON-LD, theme bootstrap |
-| `SiteHeader` | Sticky nav, wider track than the prose container, mobile disclosure |
-| `CommandPalette` | ⌘K search over a build-time index; no network, no service |
-| `PageHeader` | Eyebrow + `h1` + lead, with a slot for filters or actions |
-| `PublicationCard` / `ProjectCard` | List cards carrying filter data attributes |
-| `LinkList` | Outbound links, with `unverified` markers and private-repo handling |
-| `YouTubeEmbed` | Locally-drawn facade; loads nothing from Google until play |
-| `Screenshot` | Lazy image with caption; first image on a page loads eagerly |
-| `DetailSection` | One labelled markdown section; renders nothing when empty |
-| `RelatedContent` | "Related paper / code / demo" cross-links |
-| `Prose` | Markdown from a content field, styled by `.prose-research` |
-| `Tag` | Chip in four tones: neutral, accent, ember, outline |
+
+Everything else — the header, the command palette, the card and detail
+components, the Tailwind layer — was deleted when the site became one page.
+`git log` has them if a multi-page version is ever wanted again.
 
 ### Utility classes
 
-- `.container-page` — 72rem max, the standard content track
-- `.container-prose` — 46rem max, for long-form reading
-- `.header-track` — 88rem max; the header is chrome and needs more room than prose
-- `.surface-card` / `.card-interactive` — card surface, and the 2px hover lift
-- `.scroll-x` — wide content (tables, code, BibTeX) scrolls inside itself so the
-  page body never scrolls horizontally
-- `.eyebrow`, `.link-underline`, `.prose-research`
+The classes are in `academic.css` and named for what they are: `.page`,
+`.masthead`, `.section`, `.rule`, `.entries`, `.entry`, `.timeline`,
+`.misc-row`, `.current-list`, `.page-footer`, `.theme-toggle`, `.sr-only`,
+`.skip-link`.
 
 ---
 
@@ -228,13 +219,10 @@ still works.
 
 ## Adding a page
 
-1. Create `src/pages/<name>.astro` using `BaseLayout` with a `title` and
-   `description`. `AcademicLayout` is the home page's shell and is not meant to
-   be reused.
-2. Add it to `NAV_ITEMS` in `src/lib/nav.ts` — that one array drives the header,
-   the mobile menu, the footer, the 404 page and the command palette.
-3. If it has indexable content, add it to `buildSearchIndex()` in
-   `src/lib/search.ts`.
-4. Use `url()` for every internal link.
-5. Run `npm test` — the build tests will check its heading structure, metadata,
-   alt text and skip link automatically.
+Don't, by default. The site is one page, and the route test will fail if a new
+one appears — that failure is the design working, not a bug to route around.
+
+New material goes into `content/` and renders into an existing section. If a
+page genuinely is the right answer, build it on `AcademicLayout`, add it to
+`expected` in the routes test with a note saying why, and use `url()` for every
+internal link.
