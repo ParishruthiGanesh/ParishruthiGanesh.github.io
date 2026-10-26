@@ -6,8 +6,16 @@
  */
 const BASE = import.meta.env.BASE_URL || '/';
 
-/** Build an internal path honouring the configured base. */
+/**
+ * Build an internal path honouring the configured base.
+ *
+ * An absolute URL or a mailto: is returned untouched: entries on the home page
+ * link straight out to a paper or a repository, and prefixing the base to one
+ * of those produces "/https://..." — a broken link that still looks plausible
+ * in the markup.
+ */
 export function url(pathname: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(pathname) || pathname.startsWith('//')) return pathname;
   const clean = pathname.replace(/^\/+/, '');
   const base = BASE.endsWith('/') ? BASE : `${BASE}/`;
   return clean ? `${base}${clean}` : base;

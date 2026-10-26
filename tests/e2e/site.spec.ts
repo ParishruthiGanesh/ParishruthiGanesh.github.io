@@ -1,30 +1,19 @@
 /**
  * Critical browser journeys.
  *
- * These cover the things static analysis cannot: that navigation works, that
- * the command palette and filters behave, that both themes render, and that the
- * layout does not overflow horizontally on a phone.
+ * The site is a single page plus a printable CV, so these cover what static
+ * analysis cannot: that entries link out to something real, that the CV still
+ * prints on one sheet, that both themes render, and that the layout does not
+ * overflow horizontally on a phone.
+ *
+ * Pages are asserted after `domcontentloaded` rather than `load`: everything
+ * checked here is DOM, layout or interaction, and waiting for `load` would mean
+ * waiting on third-party web fonts that have nothing to do with the behaviour
+ * under test.
  */
 import { test, expect, type Page } from '@playwright/test';
 
-/**
- * Pages are asserted after `domcontentloaded` rather than `load`: everything
- * these tests check is DOM, layout or interaction, and waiting for `load` would
- * mean waiting on third-party web fonts that have nothing to do with the
- * behaviour under test.
- */
-const ROUTES = [
-  '/',
-  '/about',
-  '/research',
-  '/publications',
-  '/projects',
-  '/hackathons',
-  '/experience',
-  '/resume',
-  '/repositories',
-  '/contact',
-];
+const ROUTES = ['/', '/cv'];
 
 test.describe('every route renders', () => {
   for (const route of ROUTES) {
@@ -50,112 +39,48 @@ test('the 404 page renders for an unknown route', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /does not exist/i })).toBeVisible();
 });
 
-/* The home page is a single scroll with no header: it reaches the deep pages
-   through its footer link row. Every other page still carries the nav bar and
-   the command palette, so those are exercised from /about. */
-test.describe('navigation', () => {
-  test('the home page footer reaches the deep pages', async ({ page }) => {
+/*
+ * One page, no navigation. Every entry has to carry its own way out, because
+ * there is no detail page behind it any more.
+ */
+test.describe('the single page', () => {
+  test('has no navigation bar', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('header nav')).toHaveCount(0);
-    await page.getByRole('contentinfo').getByRole('link', { name: 'All publications' }).click();
-    await expect(page).toHaveURL(/\/publications/);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(/papers/i);
   });
 
-  test('every research entry on the home page links to its own page', async ({ page }) => {
+  test('carries every section', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const entries = page.locator('.entries > li');
-    expect(await entries.count()).toBeGreaterThan(0);
-    for (const entry of await entries.all()) {
-      await expect(entry.locator('.entry-title a')).toHaveCount(1);
+    for (const heading of ['Currently', 'Research', 'Projects', 'Experience', 'Miscellaneous']) {
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
     }
   });
 
-  test('primary links reach their pages', async ({ page, isMobile }) => {
-    await page.goto('/about', { waitUntil: 'domcontentloaded' });
-    if (isMobile) {
-      await page.getByRole('button', { name: /open navigation menu/i }).click();
-    }
-    await page.getByRole('navigation').getByRole('link', { name: 'Publications', exact: true }).first().click();
-    await expect(page).toHaveURL(/\/publications/);
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(/papers/i);
-  });
-
-  test('the skip link moves focus to the main region', async ({ page }) => {
+  test('every entry title links to a real external artifact', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.keyboard.press('Tab');
-    const skip = page.getByRole('link', { name: /skip to content/i });
-    await expect(skip).toBeFocused();
-  });
-});
-
-test.describe('command palette', () => {
-  test('opens with the keyboard and navigates to a result', async ({ page }) => {
-    await page.goto('/about', { waitUntil: 'domcontentloaded' });
-    await page.keyboard.press('ControlOrMeta+k');
-    const dialog = page.locator('#palette');
-    await expect(dialog).toBeVisible();
-
-    await page.locator('#palette-input').fill('sentinel');
-    const first = page.locator('#palette-results a').first();
-    await expect(first).toBeVisible();
-    await first.click();
-    await expect(page).toHaveURL(/sentinel-memory|repositories|hackathons/);
+    const titles = page.locator('.entry-title a');
+    expect(await titles.count()).toBeGreaterThan(0);
+    for (const href of await titles.evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('href') ?? ''),
+    )) {
+      expect(href, 'entry titles link out, never to a removed page').toMatch(/^https?:\/\//);
+    }
   });
 
-  test('closes with Escape', async ({ page }) => {
-    await page.goto('/about', { waitUntil: 'domcontentloaded' });
-    await page.keyboard.press('ControlOrMeta+k');
-    await expect(page.locator('#palette')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('#palette')).toBeHidden();
+  test('no link points at a page that no longer exists', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const internal = await page
+      .locator('a[href^="/"]')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href') ?? ''));
+    for (const href of internal) {
+      const allowed = href === '/' || href === '/cv' || /\.(pdf|xml|svg|webp|png|txt|ico)$/i.test(href);
+      expect(allowed, `${href} is not one of the two routes that exist`).toBe(true);
+    }
   });
 
-  test('finds a publication by a word from its title', async ({ page }) => {
-    await page.goto('/about', { waitUntil: 'domcontentloaded' });
-    await page.keyboard.press('ControlOrMeta+k');
-    await page.locator('#palette-input').fill('intent classification');
-    await expect(page.locator('#palette-results a').first()).toContainText(/intent/i);
-  });
-});
-
-test.describe('filters', () => {
-  test('publication filters narrow the list and report the count', async ({ page }) => {
-    await page.goto('/publications', { waitUntil: 'domcontentloaded' });
-    const cards = page.locator('#publication-list article');
-    const total = await cards.count();
-    expect(total).toBeGreaterThan(0);
-
-    await page.locator('#filter-status').selectOption('preprint');
-    await expect(page.locator('#publication-count')).toContainText(/Showing \d+ of/);
-    const visible = await cards.evaluateAll((nodes) => nodes.filter((node) => !(node as HTMLElement).hidden).length);
-    expect(visible).toBeGreaterThan(0);
-    expect(visible).toBeLessThanOrEqual(total);
-  });
-
-  test('clearing filters restores every publication', async ({ page }) => {
-    await page.goto('/publications', { waitUntil: 'domcontentloaded' });
-    const total = await page.locator('#publication-list article').count();
-    await page.locator('#filter-search').fill('zzzznomatch');
-    await expect(page.locator('#publication-empty')).toBeVisible();
-    await page.getByRole('button', { name: /clear filters/i }).click();
-    await expect(page.locator('#publication-count')).toContainText(`Showing ${total} of ${total}`);
-  });
-
-  test('repository search filters the list', async ({ page }) => {
-    await page.goto('/repositories', { waitUntil: 'domcontentloaded' });
-    await page.locator('#repo-search').fill('sentinel');
-    const visible = await page
-      .locator('#repo-list li')
-      .evaluateAll((nodes) => nodes.filter((node) => !(node as HTMLElement).hidden).length);
-    expect(visible).toBeGreaterThan(0);
-    expect(visible).toBeLessThan(8);
-  });
-
-  test('project type filter works', async ({ page }) => {
-    await page.goto('/projects', { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: 'Research', exact: true }).click();
-    await expect(page.locator('#project-count')).toContainText(/project/);
+  test('shows only the one thing currently in progress', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.current-list > li')).toHaveCount(1);
   });
 });
 
@@ -192,13 +117,23 @@ test.describe('the CV', () => {
     expect(text).not.toContain('7.7');
   });
 
-  test('offers the printed PDF for download', async ({ page }) => {
-    await page.goto('/cv', { waitUntil: 'domcontentloaded' });
-    const href = await page.getByRole('link', { name: /download pdf/i }).getAttribute('href');
-    expect(href).toBeTruthy();
-    const response = await page.request.get(href!);
-    expect(response.status()).toBe(200);
-    expect(response.headers()['content-type']).toContain('pdf');
+  test('is downloadable as a real PDF from both the CV page and the footer', async ({
+    page,
+    request,
+  }) => {
+    for (const route of ['/cv', '/']) {
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
+      const href = await page
+        .getByRole('link', { name: /(download pdf|cv \(pdf\))/i })
+        .first()
+        .getAttribute('href');
+      expect(href, `no PDF link on ${route}`).toBeTruthy();
+
+      const response = await request.get(href!);
+      expect(response.status()).toBe(200);
+      expect(response.headers()['content-type']).toContain('pdf');
+      expect((await response.body()).subarray(0, 5).toString('latin1')).toBe('%PDF-');
+    }
   });
 });
 
@@ -223,7 +158,6 @@ test.describe('themes', () => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const background = await backgroundOf(page);
-    // Deep navy: every channel well below mid-grey.
     const channels = background.match(/\d+/g)?.slice(0, 3).map(Number) ?? [];
     expect(Math.max(...channels)).toBeLessThan(80);
   });
@@ -231,8 +165,7 @@ test.describe('themes', () => {
   test('light mode renders when the system prefers it', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const channels =
-      (await backgroundOf(page)).match(/\d+/g)?.slice(0, 3).map(Number) ?? [];
+    const channels = (await backgroundOf(page)).match(/\d+/g)?.slice(0, 3).map(Number) ?? [];
     expect(Math.min(...channels)).toBeGreaterThan(200);
   });
 });
@@ -241,7 +174,7 @@ test.describe('responsive layout', () => {
   for (const width of [320, 375, 768, 1024, 1440]) {
     test(`no horizontal overflow at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
-      for (const route of ['/', '/projects/sentinel-memory', '/hackathons', '/repositories', '/publications']) {
+      for (const route of ROUTES) {
         await page.goto(route, { waitUntil: 'domcontentloaded' });
         const overflow = await page.evaluate(
           () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -252,57 +185,46 @@ test.describe('responsive layout', () => {
   }
 });
 
-test.describe('resume', () => {
-  test('the PDF is downloadable and really is a PDF', async ({ page, request }) => {
-    await page.goto('/resume', { waitUntil: 'domcontentloaded' });
-    const link = page.getByRole('link', { name: /download pdf/i });
-    await expect(link).toBeVisible();
-    const href = await link.getAttribute('href');
-    expect(href).toBeTruthy();
-
-    const response = await request.get(href!);
-    expect(response.status()).toBe(200);
-    expect(response.headers()['content-type']).toContain('pdf');
-    expect((await response.body()).subarray(0, 5).toString('latin1')).toBe('%PDF-');
-  });
-
-  test('resume content is readable without the PDF', async ({ page }) => {
-    await page.goto('/resume', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { name: 'Education' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Experience' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Publications' })).toBeVisible();
-    await expect(page.getByText('Auburn University').first()).toBeVisible();
-  });
-});
-
-test.describe('YouTube embeds', () => {
-  test('no iframe loads until the visitor presses play', async ({ page }) => {
-    const youtubeRequests: string[] = [];
+test.describe('privacy of the output', () => {
+  test('nothing is embedded from YouTube or any other third party', async ({ page }) => {
+    const thirdParty: string[] = [];
     page.on('request', (request) => {
-      if (/youtube(-nocookie)?\.com/.test(request.url())) youtubeRequests.push(request.url());
+      const host = new URL(request.url()).host;
+      // Google Fonts is the one allowed outbound host; it is stylesheet-only.
+      if (host && !host.startsWith('127.0.0.1') && !/fonts\.(googleapis|gstatic)\.com$/.test(host)) {
+        thirdParty.push(request.url());
+      }
     });
 
-    await page.goto('/hackathons', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
-    expect(youtubeRequests, 'no YouTube request should fire on load').toEqual([]);
-    await expect(page.locator('iframe')).toHaveCount(0);
-
-    const play = page.getByRole('button', { name: /play video/i }).first();
-    await expect(play).toBeVisible();
-    await play.click();
-    await expect(page.locator('iframe').first()).toHaveAttribute('src', /youtube-nocookie\.com/);
+    for (const route of ROUTES) {
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1200);
+      await expect(page.locator('iframe')).toHaveCount(0);
+    }
+    expect(thirdParty, 'no third-party request should fire on load').toEqual([]);
   });
 });
 
 test.describe('honest presentation', () => {
   test('a private repository is labelled, not linked', async ({ page }) => {
-    await page.goto('/hackathons', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/repository is private/i).first()).toBeVisible();
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const label = page.getByText(/code \(private\)/i).first();
+    await expect(label).toBeAttached();
+    // Plain text, not an anchor: a private repo URL is a 404 for a visitor.
+    expect(await label.evaluate((node) => node.tagName)).not.toBe('A');
+  });
+
+  test('no entry title points at a private repository', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const hrefs = await page
+      .locator('.entry-title a')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href') ?? ''));
+    expect(hrefs).not.toContain('https://github.com/ParishruthiGanesh/astranova-trading-copilot');
   });
 
   test('unverified links carry a marker', async ({ page }) => {
-    await page.goto('/hackathons', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText('unverified').first()).toBeVisible();
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByText('unverified link').first()).toBeAttached();
   });
 });
 
@@ -311,8 +233,8 @@ test.describe('reduced motion', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const duration = await page.evaluate(() => {
-      const hero = document.querySelector('.animate-rise');
-      return hero ? getComputedStyle(hero).animationDuration : '0s';
+      const animated = document.querySelector('.animate-rise');
+      return animated ? getComputedStyle(animated).animationDuration : '0s';
     });
     expect(parseFloat(duration)).toBeLessThan(0.05);
   });

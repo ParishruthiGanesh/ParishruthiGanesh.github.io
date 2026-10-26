@@ -1,5 +1,11 @@
 # Portfolio review
 
+> **Historical record.** This describes the site as first built, when it had ten
+> pages, a command palette and per-item detail routes. It is now a single page
+> plus a printable CV; see README.md and docs/DESIGN_SYSTEM.md for the current
+> structure. The review items below about content and verification still stand.
+
+
 What was built, what needs your attention, and what to do next.
 
 Built: **18 August 2026** · Not published as a page.

@@ -2,10 +2,9 @@
 /**
  * The single-page academic site.
  *
- * Everything a reader needs is on one scroll — masthead, research list,
- * experience, miscellaneous — in the layout the research-portfolio format has
- * converged on. Detail pages still exist and are linked per entry, the way a
- * paper links its own project page.
+ * This is the whole site. There are no detail pages: every entry links
+ * straight out to the paper, the repository or the demo, which is where the
+ * real material lives anyway. The only other route is /cv, the printable CV.
  *
  * All assembly happens here in the frontmatter, because the template body is
  * compiled as JSX and cannot carry TypeScript type predicates.
@@ -102,7 +101,7 @@ const paperRows: Row[] = publications.map((pub) => {
   return {
     key: `pub-${pub.id}`,
     title: pub.title,
-    titleHref: `/publications/${pub.id}`,
+    titleHref: pub.paperUrl,
     authors: pub.authors,
     venue: venueLine(pub),
     links: keep([
@@ -111,7 +110,6 @@ const paperRows: Row[] = publications.map((pub) => {
       ...mapped.map((entry) => link('Code', `https://github.com/${entry.repository}`)),
       link('Dataset', pub.datasetUrl),
       link('Video', pub.videoUrl),
-      link('Project Page', project ? url(`/projects/${project.id}`) : undefined),
     ]),
     tags: pub.researchAreas.map((area) => areaLabels[area] ?? area),
     image: thumbFor(project, project?.id ?? '', pub.id),
@@ -119,11 +117,11 @@ const paperRows: Row[] = publications.map((pub) => {
   };
 });
 
-/* Systems next, in the curated order already set in projects.yml. Anything
-   already represented by a paper above is not repeated; coursework moves to
-   Miscellaneous. */
+/* Everything that is not a paper, in the curated order already set in
+   projects.yml. A project already represented by a paper above is not
+   repeated. */
 const projectRows: Row[] = projects
-  .filter((project) => project.kind !== 'coursework' && project.relatedPublications.length === 0)
+  .filter((project) => project.relatedPublications.length === 0)
   .map((project) => {
     const hackathon = hackathonByProject.get(project.id);
     const repoPrivate = content.repositories.find(
@@ -136,7 +134,6 @@ const projectRows: Row[] = projects
 
     const links = keep([
       project.links.paper ? { label: 'Paper', href: project.links.paper.url } : null,
-      { label: 'Project Page', href: url(`/projects/${project.id}`) },
       project.links.repo
         ? repoPrivate
           ? { label: 'Code (private)', href: project.links.repo.url, disabled: true }
@@ -156,7 +153,13 @@ const projectRows: Row[] = projects
     return {
       key: `project-${project.id}`,
       title: project.name,
-      titleHref: `/projects/${project.id}`,
+      /* A private repository is not a destination — sending the title there
+         gives a visitor a GitHub 404. Fall through to something they can open. */
+      titleHref:
+        (repoPrivate ? undefined : project.links.repo?.url) ??
+        project.links.demo?.url ??
+        project.links.devpost?.url ??
+        project.links.video?.url,
       venue,
       blurb: project.tagline,
       links,
@@ -169,7 +172,7 @@ const projectRows: Row[] = projects
     };
   });
 
-const researchRows = [...paperRows, ...projectRows];
+/* Papers under Research; everything else under Projects. */
 
 /* ---------------- Currently ---------------- */
 
@@ -179,12 +182,7 @@ const currentRows = [...currentWork.items]
     ...item,
     label: CURRENT_WORK_LABELS[item.status] ?? item.status,
     sinceLabel: formatMonth(item.since),
-    href:
-      item.relatedPublications[0] !== undefined
-        ? `/publications/${item.relatedPublications[0]}`
-        : item.relatedProjects[0] !== undefined
-          ? `/projects/${item.relatedProjects[0]}`
-          : undefined,
+    href: publications.find((pub) => pub.id === item.relatedPublications[0])?.paperUrl,
   }));
 
 /* ---------------- Experience ---------------- */
@@ -212,24 +210,8 @@ const educationRows = education.map((entry) => ({
   detail: `(${formatRange(entry.start, entry.end)}${entry.grade ? `, ${entry.grade}` : ''})`,
 }));
 
-const courseworkProjects = projects.filter((project) => project.kind === 'coursework');
 const { user, domain } = splitEmail(profile.email);
 const year = new Date().getFullYear();
-
-/* Deep pages are no longer in a navigation bar, so the footer keeps them
-   reachable rather than orphaned. */
-const deepPages = [
-  { label: 'About', href: '/about' },
-  { label: 'CV', href: '/cv' },
-  { label: 'Research themes', href: '/research' },
-  { label: 'All publications', href: '/publications' },
-  { label: 'All projects', href: '/projects' },
-  { label: 'Hackathons', href: '/hackathons' },
-  { label: 'Experience', href: '/experience' },
-  { label: 'Resume', href: '/resume' },
-  { label: 'Repositories', href: '/repositories' },
-  { label: 'Contact', href: '/contact' },
-];
 
 const schema = publications.map((pub) => ({
   '@context': 'https://schema.org',
@@ -314,7 +296,7 @@ const schema = publications.map((pub) => ({
 
     <ul class="entries">
       {
-        researchRows.map((row, index) => (
+        paperRows.map((row, index) => (
           <EntryRow
             title={row.title}
             titleHref={row.titleHref}
@@ -327,6 +309,29 @@ const schema = publications.map((pub) => ({
             image={row.image}
             imageAlt={row.imageAlt}
             eager={index === 0}
+          />
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* ---------------- Projects ---------------- */}
+  <section class="section" aria-labelledby="projects-heading">
+    <h2 id="projects-heading">Projects</h2>
+    <hr class="rule" />
+
+    <ul class="entries">
+      {
+        projectRows.map((row) => (
+          <EntryRow
+            title={row.title}
+            titleHref={row.titleHref}
+            venue={row.venue}
+            blurb={row.blurb}
+            links={row.links}
+            tags={row.tags}
+            image={row.image}
+            imageAlt={row.imageAlt}
           />
         ))
       }
@@ -398,22 +403,6 @@ const schema = publications.map((pub) => ({
       )
     }
 
-    {
-      courseworkProjects.length > 0 && (
-        <div class="misc-row">
-          <div class="misc-label">
-            Earlier work
-            <span class="misc-note">Learning projects, kept for completeness.</span>
-          </div>
-          <ul class="misc-body">
-            {courseworkProjects.map((project) => (
-              <li><a href={url(`/projects/${project.id}`)}>{project.name}</a>{project.links.repo ? <> [<a href={project.links.repo.url} rel="noopener">GitHub</a>]</> : ''}</li>
-            ))}
-          </ul>
-        </div>
-      )
-    }
-
     <div class="misc-row">
       <div class="misc-label">
         Open to
@@ -428,16 +417,14 @@ const schema = publications.map((pub) => ({
   {/* ---------------- Footer ---------------- */}
   <footer class="page-footer" slot="footer">
     <ul class="footer-links">
-      {
-        deepPages.map((page) => (
-          <li>
-            <a href={url(page.href)}>{page.label}</a>
-          </li>
-        ))
-      }
+      <li><a href={url('/cv')}>CV</a></li>
+      <li><a href={url(profile.resume.path)} download={profile.resume.filename}>CV (PDF)</a></li>
+      <li><a href={`mailto:${profile.email}`}>Email</a></li>
+      {profile.links.github && <li><a href={profile.links.github} rel="me noopener">GitHub</a></li>}
+      {profile.links.googleScholar && <li><a href={profile.links.googleScholar} rel="me noopener">Google Scholar</a></li>}
     </ul>
     <p>
-      © {year} {profile.name}. Built with Astro; every page is generated from validated content
+      © {year} {profile.name}. Built with Astro; the page is generated from validated content
       files.
     </p>
   </footer>
