@@ -103,7 +103,8 @@
 
 - id: emids-associate-developer
   organization: Emids Technologies Pvt Ltd
-  role: Associate Software Developer
+  # Title corrected by Parishruthi, 2026-10-26.
+  role: Software Developer
   type: industry
   location: Bangalore, India
   start: '2021-12'

@@ -102,7 +102,7 @@
 /* ------------------------------------------------------------------ */
 
 .cv-section {
-  margin-top: 0.4rem;
+  margin-top: 0.3rem;
   /* A section never splits across the page break mid-heading. */
   break-inside: auto;
 }
@@ -157,7 +157,7 @@
 /* ------------------------------------------------------------------ */
 
 .cv-block {
-  margin-top: 0.15rem;
+  margin-top: 0.12rem;
   break-inside: avoid;
 }
 

@@ -11,43 +11,26 @@
 
 headline: Computer Vision (CS) Ph.D. Student
 
-# Three lines, in the register a research CV uses. Every claim here is carried
-# by a record elsewhere in content/: the preprints by publications.yml, the
-# employers by experience.yml.
+# The opening statement. Written in the register of a research CV: what the work
+# is about and where it is aimed, rather than a list of what has been published.
+# Every area named here is carried by publications.yml or projects.yml.
 summary: >-
-  First-author preprints in video understanding and model evaluation, submitted to
-  WACV and AAAI. Research in weakly-supervised violence detection, human pose and
-  interaction representations, person detection and tracking, object detection, and
-  what video benchmarks actually measure. Past experience includes Auburn University
-  and Emids Technologies, and seeking computer vision research internships.
+  Computer Science Ph.D. student with a specialised focus in computer vision and
+  machine learning — video understanding, human activity detection, object detection
+  and multi-object tracking. Aiming to contribute to the applied science and robotics
+  industry through research in sensory data interpretation and algorithm development.
 
 contactOrder: [email, homepage, linkedin, googleScholar]
 
-# Research interests lead; the implementation stack follows. Both are drawn from
-# skills.yml, restated in the compressed form a CV uses.
+# Supplied directly by Parishruthi, 2026-10-26. Three lines, in the order a
+# screening reader scans them.
 skillLines:
-  - label: Research
-    items:
-      - Video Understanding
-      - Human Activity & Violence Detection
-      - Object Detection
-      - Person Detection & Tracking
-      - Pose & Interaction Representations
-      - Weak Supervision
-      - Benchmark Validity
-      - Robustness & Calibration
   - label: Languages
-    items: [Python, Java, 'C++', SQL, JavaScript]
-  - label: Frameworks & Tools
-    items:
-      - PyTorch
-      - TensorFlow
-      - Hugging Face Transformers
-      - scikit-learn
-      - 'Deep Graph Library (DGL)'
-      - Docker
-      - AWS
-      - Weights & Biases
+    items: [Python, SQL, JavaScript, 'C#', Java, HTML/CSS]
+  - label: Frameworks/Libraries
+    items: [PyTorch, Pandas, Scikit-learn, Node.js, Matplotlib, ASP.NET]
+  - label: Tools
+    items: [AWS, Azure, Docker, Linux, Git]
 
 # Publication order on the CV: computer vision first, which is not the
 # reverse-chronological order the site uses.
@@ -55,77 +38,97 @@ publicationOrder:
   - interaction-representations-early-violence
   - intent-classification-41-models
 
-# One line per role. Longer than this belongs on the site, not the CV.
+# One line per responsibility; three at most. Inline markdown, so a project name
+# can be picked out. Anything longer belongs on the site, not the CV.
 experienceLines:
   - id: auburn-gra
     lines:
       - >-
-        Research across video understanding and applied machine learning, alongside a
-        retrieval pipeline over roughly 25,000 research papers and a digital-engineering
-        data platform.
+        **DEMA** — architecting a full-stack engineering data platform on the CIM4DE
+        information model, and exploring how LLMs can classify record quality and answer
+        questions over the data it holds.
       - >-
-        Deliver hands-on Python and MATLAB lab sessions to undergraduates, supporting
+        **AUSME** — built a retrieval pipeline over roughly 25,000 research papers that
+        summarises faculty work and exposes it through a conversational interface for
+        finding expertise across 50+ faculty.
+      - >-
+        Delivered hands-on **Python and MATLAB** lab sessions to undergraduates, supporting
         programming proficiency through mentoring and assignment guidance.
   - id: emids-associate-developer
     lines:
       - >-
-        Led development of a CRM platform covering marketing, product, customer service and
-        sales operations; built the Leads, Contacts, Email API, Reports and Accounts modules.
+        Built the Reports, Accounts, Leads and Contacts modules of an enterprise CRM,
+        including the SQL queries and aggregations behind its reporting views.
       - >-
-        Designed Spring Boot services and RESTful APIs, and built the server-side layer
-        with JSP, JSTL and Servlets.
+        Designed Spring Boot REST services moving customer and sales data between modules,
+        and built the server-side layer with JSP, JSTL and Servlets.
 
-# Selected machine-learning projects, computer vision first. Each entry names the
-# record it is drawn from, so nothing appears here that is not already published
-# on the site.
+# Machine-learning work first, under its own heading; everything else follows
+# under "Other Projects". Each entry names the record it is drawn from, so nothing
+# appears here that is not already published on the site.
 projects:
   - ref: proof-of-possible-2026-splitshield
     kind: hackathon
+    group: ml
     name: SplitShield
     context: Proof of Possible 2026
     line: >-
-      Finds duplicate and near-duplicate images leaking across dataset splits with perceptual hashing
-      and MobileNetV3-Small embeddings, repairs the split, and reports how far accuracy moves.
+      Finds duplicate images leaking across dataset splits with perceptual hashing and
+      MobileNetV3-Small embeddings, and reports how far accuracy moves once they are removed.
+
   - ref: circular-trade-fraud-detection
     kind: project
+    group: ml
     name: Circular Trade Fraud Detection with Graph Learning
     context: Research project
     line: >-
-      Detects circular trading rings in invoice data with graph cycle detection, Node2Vec embeddings
-      and DBSCAN.
-  - ref: cockroachdb-aws-agentic-memory
-    kind: hackathon
-    name: Sentinel Memory
-    context: CockroachDB × AWS — Build with Agentic Memory
-    line: >-
-      An incident-response agent whose memory is a transactional database rather than a context window.
-  - ref: all-things-agentic-labguard
-    kind: hackathon
-    name: LabGuard AI
-    context: All Things Agentic Hackathon
-    line: >-
-      An autonomous research agent that challenges a scientific claim and runs the experiments that
-      could disprove it.
+      Detects circular trading rings in invoice data with graph cycle detection, Node2Vec
+      embeddings and DBSCAN.
+
   - ref: build-with-gemini-xprize
     kind: hackathon
+    group: ml
     name: AstraNova
     context: Build with Gemini XPRIZE
     line: >-
-      An intraday options copilot combining live market data, model-scored signals and broker execution.
-  - ref: speed-august-ai-thinktrace
-    kind: hackathon
-    name: ThinkTrace AI
-    context: SPEED August AI Challenge
-    line: >-
-      Reads each student's written reasoning rather than only the final answer, and groups a class by
-      shared misconception.
+      An intraday options copilot combining live market data, model-scored signals and broker
+      execution.
+
   - ref: bert-sentiment-analysis
     kind: project
+    group: ml
     name: Multi-Class Sentiment Analysis with BERT
     context: Coursework
     line: >-
-      Fine-tuned bert-base-uncased on the SMILE annotation dataset as a study of transformer transfer
-      learning.
+      Fine-tuned bert-base-uncased on the SMILE annotation dataset as a study of transformer
+      transfer learning.
+
+  - ref: cockroachdb-aws-agentic-memory
+    kind: hackathon
+    group: other
+    name: Sentinel Memory
+    context: CockroachDB × AWS — Build with Agentic Memory
+    line: >-
+      An incident-response agent whose memory is a transactional database rather than a context
+      window.
+
+  - ref: all-things-agentic-labguard
+    kind: hackathon
+    group: other
+    name: LabGuard AI
+    context: All Things Agentic Hackathon
+    line: >-
+      An autonomous research agent that challenges a scientific claim and runs the experiments
+      that could disprove it.
+
+  - ref: speed-august-ai-thinktrace
+    kind: hackathon
+    group: other
+    name: ThinkTrace AI
+    context: SPEED August AI Challenge
+    line: >-
+      Reads each student's written reasoning rather than only the final answer, and groups a class
+      by shared misconception.
 
 # Service and leadership. Awards and talks render here too once there are any —
 # awards.yml and talks.yml are empty, so the section lists only what is real.

@@ -632,7 +632,10 @@ export const cvProjectSchema = z.object({
   name: z.string().min(1),
   /** Italic parenthetical after the name — a venue, a hackathon, "Coursework". */
   context: z.string().min(1),
+  /** Inline markdown: emphasis is used to pick out a project or tool name. */
   line: z.string().min(1),
+  /** Which section the entry lands in. Machine-learning work leads. */
+  group: z.enum(['ml', 'other']).default('ml'),
 });
 
 export const cvSchema = z.object({
